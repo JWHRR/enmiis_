@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>ENMIIS — The Luxury Department Store</title>
+  <meta name="description" content="ENMIIS — a world-class luxury department store. Discover designer fashion, beauty, accessories and home from the world's finest houses.">
+  <meta property="og:title" content="ENMIIS — The Luxury Department Store">
+  <meta property="og:description" content="Discover designer fashion, beauty, accessories and home from the world's finest houses.">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#FFFFFF">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://images.unsplash.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23111111'/%3E%3Ctext x='16' y='22' font-family='Georgia' font-size='18' fill='%23C8A86B' text-anchor='middle'%3EE%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ======================= HEADER ======================= -->
+  <header class="site-header" id="siteHeader">
+
+    <!-- Utility bar -->
+    <div class="utility-bar">
+      <div class="container utility-bar__inner">
+        <p class="utility-bar__note">Complimentary shipping &amp; returns on all orders over CHF 100</p>
+        <nav class="utility-bar__links" aria-label="Utility">
+          <a href="#">Stores</a>
+          <a href="#">Services</a>
+          <a href="#">Customer Care</a>
+          <button class="utility-bar__lang" type="button">EN / CHF</button>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Main header row -->
+    <div class="header-main">
+      <div class="container header-main__inner">
+
+        <div class="header-main__left">
+          <button class="icon-btn header-burger" id="burgerBtn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">
+            <span class="burger-lines"><span></span><span></span></span>
+          </button>
+          <a class="header-logo" href="#" aria-label="ENMIIS home">
+            <img src="img/logo-enmiis.png" alt="ENMIIS — Says Who You Are">
+          </a>
+        </div>
+
+        <div class="header-main__right">
+          <button class="icon-btn" id="searchBtn" type="button" aria-label="Search">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+          </button>
+          <a class="icon-btn header-account" href="#" aria-label="Account">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
+          </a>
+          <button class="icon-btn header-wishlist" type="button" aria-label="Wishlist">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5l-8-7.5c-2.2-2-2.2-5.4 0-7.4 2-1.9 5.2-1.9 7.2 0l.8.8.8-.8c2-1.9 5.2-1.9 7.2 0 2.2 2 2.2 5.4 0 7.4l-8 7.5z"/></svg>
+            <span class="icon-btn__badge" id="wishlistCount" hidden>0</span>
+          </button>
+          <button class="icon-btn header-cart" id="cartBtn" type="button" aria-label="Shopping bag">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8h12l1 13H5L6 8z"/><path d="M9 10V6a3 3 0 0 1 6 0v4"/></svg>
+            <span class="icon-btn__badge" id="cartCount" hidden>0</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Main navigation -->
+    <nav class="main-nav" aria-label="Main">
+      <div class="container">
+        <ul class="main-nav__list" id="mainNavList">
+
+          <li class="main-nav__item has-mega">
+            <a href="#" class="main-nav__link" aria-haspopup="true" aria-expanded="false">Women</a>
+            <div class="mega-menu" aria-hidden="true">
+              <div class="container mega-menu__inner">
+                <div class="mega-menu__col">
+                  <p class="mega-menu__heading">Clothing</p>
+                  <ul>
+                    <li><a href="#">Dresses</a></li>
+                    <li><a href="#">Coats &amp; Jackets</a></li>
+                    <li><a href="#">Knitwear</a></li>
+                    <li><a href="#">Tops &amp; Blouses</a></li>
+                    <li><a href="#">Trousers</a></li>
+                    <li><a href="#">Skirts</a></li>
+                  </ul>
+                </div>
+                <div class="mega-menu__col">
+                  <p class="mega-menu__heading">Shoes</p>
+                  <ul>
+                    <li><a href="#">Sneakers</a></li>
+                    <li><a href="#">Pumps</a></li>
+                    <li><a href="#">Sandals</a></li>
+                    <li><a href="#">Boots</a></li>
+                    <li><a href="#">Loafers</a></li>
+                  </ul>
+                </div>
+                <div class="mega-menu__col">
+                  <p class="mega-menu__heading">Bags &amp; Accessories</p>
+                  <ul>
+                    <li><a href="#">Handbags</a></li>
+                    <li><a href="#">Shoulder Bags</a></li>
+                    <li><a href="#">Wallets &amp; Small Leather</a></li>
+                    <li><a href="#">Belts</a></li>
+                    <li><a href="#">Sunglasses</a></li>
+                  </ul>
+                </div>
+                <div class="mega-menu__col">
+                  <p class="mega-menu__heading">Featured</p>
+                  <ul>
+                    <li><a href="#" class="is-accent">New Arrivals</a></li>
+                    <li><a href="#">Trending Now</a></li>
+                    <li><a href="#">The Summer Edit</a></li>
+                    <li><a href="#">Back in Stock</a></li>
+                  </ul>
+                </div>
+                <a href="#" class="mega-menu__feature">
+                  <div class="mega-menu__feature-media">
+                    <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=800&auto=format&fit=crop" alt="The Summer Edit — women" loading="lazy" decoding="async">
+                  </div>
+                  <p class="mega-menu__feature-label">The Summer Edit</p>
+                  <p class="mega-menu__feature-cta">Discover now</p>
+                </a>
+              </div>
+            </div>
+          </li>
+
+          <li class="main-nav__item has-mega">
+            <a href="#" class="main-nav__link" aria-haspopup="true" aria-expanded="false">Men</a>
+            <div class="mega-menu" aria-hidden="true">
+              <div class="container mega-menu__inner">
+                <div class="mega-menu__col">
+                  <p class="mega-menu__heading">Clothing</p>
+                  <ul>
+                    <li><a href="#">Suits &amp; Tailoring</a></li>
+                    <li><a href="#">Coats &amp; Jackets</a></li>
+                    <li><a href="#">Knitwear</a></li>
+                    <li><a href="#">Shirts</a></li>
+                    <li><a href="#">Trousers</a></li>
+                    <li><a href="#">Polos &amp; T-Shirts</a></li>
+                  </ul>
+                </div>
+                <div class="mega-menu__col">
+                  <p class="mega-menu__heading">Shoes</p>
+                  <ul>
+                    <li><a href="#">Sneakers</a></li>
+                    <li><a href="#">Derbies &amp; Oxfords</a></li>
+                    <li><a href="#">Loafers</a></li>
+                    <li><a href="#">Boots</a></li>
+                  </ul>
+                </div>
+                <div class="mega-menu__col">
+                  <p class="mega-menu__heading">Accessories</p>
+                  <ul>
+                    <li><a href="#">Watches</a></li>
+                    <li><a href="#">Bags &amp; Briefcases</a></li>
+                    <li><a href="#">Belts</a></li>
+                    <li><a href="#">Ties &amp; Pocket Squares</a></li>
+                    <li><a href="#">Sunglasses</a></li>
+                  </ul>
+                </div>
+                <div class="mega-menu__col">
+                  <p class="mega-menu__heading">Featured</p>
+                  <ul>
+                    <li><a href="#" class="is-accent">New Arrivals</a></li>
+                    <li><a href="#">The Tailoring Edit</a></li>
+                    <li><a href="#">Weekend Essentials</a></li>
+                  </ul>
+                </div>
+                <a href="#" class="mega-menu__feature">
+                  <div class="mega-menu__feature-media">
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop" alt="Men's tailoring edit" loading="lazy" decoding="async">
+                  </div>
+                  <p class="mega-menu__feature-label">The Tailoring Edit</p>
+                  <p class="mega-menu__feature-cta">Discover now</p>
+                </a>
+              </div>
+            </div>
+          </li>
+
+          <li class="main-nav__item has-mega">
+            <a href="#" class="main-nav__link" aria-haspopup="true" aria-expanded="false">Designer</a>
+            <div class="mega-menu" aria-hidden="true">
+              <div class="container mega-menu__inner">
+                <div class="mega-menu__col">
+                  <p class="mega-menu__heading">Featured Designers</p>
+                  <ul>
+                    <li><a href="#">Jacquemus</a></li>
+                    <li><a href="#">Loewe</a></li>
+                    <li><a href="#">Totême</a></li>
+                    <li><a href="#">Lemaire</a></li>
+                    <li><a href="#">The Row</a></li>
+                    <li><a href="#">Khaite</a></li>
+                  </ul>
+                </div>
+                <div class="mega-menu__col">
+                  <p class="mega-menu__heading">Houses</p>
+                  <ul>
+                    <li><a href="#">Bottega Veneta</a></li>
+                    <li><a href="#">Saint Laurent</a></li>
+                    <li><a href="#">Valentino</a></li>
+                    <li><a href="#">Burberry</a></li>
+                    <li><a href="#">Chloé</a></li>
+                  </ul>
+                </div>
+                <div class="mega-menu__col">
+                  <p class="mega-menu__heading">Explore</p>
+                  <ul>
+                    <li><a href="#" class="is-accent">New Designer Arrivals</a></li>
+                    <li><a href="#">Designer Spotlight</a></li>
+                    <li><a href="#">Runway Edit</a></li>
+                    <li><a href="#">All Designers A–Z</a></li>
+                  </ul>
+                </div>
+                <a href="#" class="mega-menu__feature">
+                  <div class="mega-menu__feature-media">
+                    <img src="https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=800&auto=format&fit=crop" alt="Designer spotlight" loading="lazy" decoding="async">
+                  </div>
+                  <p class="mega-menu__feature-label">Designer Spotlight</p>
+                  <p class="mega-menu__feature-cta">Discover now</p>
+                </a>
+              </div>
+            </div>
+          </li>
+
+          <li class="main-nav__item has-mega">
+            <a href="#" class="main-nav__link" aria-haspopup="true" aria-expanded="false">Beauty</a>
+            <div class="mega-menu" aria-hidden="true">
+              <div class="container mega-menu__inner">
+                <div class="mega-menu__col">
+                  <p class="mega-menu__heading">Categories</p>
+                  <ul>
+                    <li><a href="#">Skincare</a></li>
+                    <li><a href="#">Makeup</a></li>
+                    <li><a href="#">Fragrance</a></li>
+                    <li><a href="#">Hair &amp; Body</a></li>
+                    <li><a href="#">Wellness</a></li>
+                  </ul>
+                </div>
+                <div class="mega-menu__col">
+                  <p class="mega-menu__heading">Maisons</p>
+                  <ul>
+                    <li><a href="#">La Mer</a></li>
+                    <li><a href="#">Byredo</a></li>
+                    <li><a href="#">Augustinus Bader</a></li>
+                    <li><a href="#">Diptyque</a></li>
+                    <li><a href="#">Dr. Barbara Sturm</a></li>
+                  </ul>
+                </div>
+                <div class="mega-menu__col">
+                  <p class="mega-menu__heading">Explore</p>
+                  <ul>
+                    <li><a href="#" class="is-accent">New in Beauty</a></li>
+                    <li><a href="#">Summer Beauty Trends</a></li>
+                    <li><a href="#">Fragrance Bar</a></li>
+                  </ul>
+                </div>
+                <a href="#" class="mega-menu__feature">
+                  <div class="mega-menu__feature-media">
+                    <img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=800&auto=format&fit=crop" alt="New beauty trends" loading="lazy" decoding="async">
+                  </div>
+                  <p class="mega-menu__feature-label">New Beauty Trends</p>
+                  <p class="mega-menu__feature-cta">Discover now</p>
+                </a>
+              </div>
+            </div>
+          </li>
+
+          <li class="main-nav__item"><a href="#" class="main-nav__link">Accessories</a></li>
+          <li class="main-nav__item"><a href="#" class="main-nav__link">Home</a></li>
+          <li class="main-nav__item"><a href="#" class="main-nav__link is-accent">New Arrivals</a></li>
+          <li class="main-nav__item"><a href="#" class="main-nav__link">Brands</a></li>
+          <li class="main-nav__item"><a href="#" class="main-nav__link">Gifts</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="header-veil" id="headerVeil" aria-hidden="true"></div>
+  </header>
+
+  <!-- ======================= SEARCH OVERLAY ======================= -->
+  <div class="search-overlay" id="searchOverlay" aria-hidden="true" role="dialog" aria-label="Search">
+    <div class="container search-overlay__inner">
+      <form class="search-overlay__form" role="search" onsubmit="return false;">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+        <input type="search" id="searchInput" placeholder="Search designers, products, stories…" autocomplete="off">
+        <button class="search-overlay__close" id="searchClose" type="button" aria-label="Close search">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
+        </button>
+      </form>
+      <div class="search-overlay__suggestions">
+        <p class="search-overlay__label">Trending searches</p>
+        <ul>
+          <li><a href="#">Summer dresses</a></li>
+          <li><a href="#">Jacquemus</a></li>
+          <li><a href="#">Linen tailoring</a></li>
+          <li><a href="#">Eau de parfum</a></li>
+          <li><a href="#">Gold jewellery</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================= MOBILE MENU ======================= -->
+  <div class="mobile-menu" id="mobileMenu" aria-hidden="true" role="dialog" aria-label="Menu">
+    <div class="mobile-menu__header">
+      <span class="mobile-menu__logo"><img src="img/logo-enmiis.png" alt="ENMIIS"></span>
+      <button class="icon-btn mobile-menu__close" id="mobileMenuClose" type="button" aria-label="Close menu">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
+      </button>
+    </div>
+
+    <nav class="mobile-menu__nav" aria-label="Mobile">
+      <ul class="mobile-menu__list">
+        <li class="mobile-menu__item" data-stagger>
+          <button class="mobile-menu__toggle" type="button" aria-expanded="false">Women
+            <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="8 5 16 12 8 19"/></svg>
+          </button>
+          <ul class="mobile-menu__sub">
+            <li><a href="#" class="is-accent">New Arrivals</a></li>
+            <li><a href="#">Dresses</a></li>
+            <li><a href="#">Coats &amp; Jackets</a></li>
+            <li><a href="#">Knitwear</a></li>
+            <li><a href="#">Shoes</a></li>
+            <li><a href="#">Handbags</a></li>
+            <li><a href="#">The Summer Edit</a></li>
+          </ul>
+        </li>
+        <li class="mobile-menu__item" data-stagger>
+          <button class="mobile-menu__toggle" type="button" aria-expanded="false">Men
+            <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="8 5 16 12 8 19"/></svg>
+          </button>
+          <ul class="mobile-menu__sub">
+            <li><a href="#" class="is-accent">New Arrivals</a></li>
+            <li><a href="#">Suits &amp; Tailoring</a></li>
+            <li><a href="#">Knitwear</a></li>
+            <li><a href="#">Shoes</a></li>
+            <li><a href="#">Watches</a></li>
+            <li><a href="#">The Tailoring Edit</a></li>
+          </ul>
+        </li>
+        <li class="mobile-menu__item" data-stagger>
+          <button class="mobile-menu__toggle" type="button" aria-expanded="false">Designer
+            <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="8 5 16 12 8 19"/></svg>
+          </button>
+          <ul class="mobile-menu__sub">
+            <li><a href="#">Jacquemus</a></li>
+            <li><a href="#">Loewe</a></li>
+            <li><a href="#">Totême</a></li>
+            <li><a href="#">The Row</a></li>
+            <li><a href="#">Saint Laurent</a></li>
+            <li><a href="#">All Designers A–Z</a></li>
+          </ul>
+        </li>
+        <li class="mobile-menu__item" data-stagger>
+          <button class="mobile-menu__toggle" type="button" aria-expanded="false">Beauty
+            <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="8 5 16 12 8 19"/></svg>
+          </button>
+          <ul class="mobile-menu__sub">
+            <li><a href="#">Skincare</a></li>
+            <li><a href="#">Makeup</a></li>
+            <li><a href="#">Fragrance</a></li>
+            <li><a href="#">Hair &amp; Body</a></li>
+          </ul>
+        </li>
+        <li class="mobile-menu__item" data-stagger><a class="mobile-menu__link" href="#">Accessories</a></li>
+        <li class="mobile-menu__item" data-stagger><a class="mobile-menu__link" href="#">Home</a></li>
+        <li class="mobile-menu__item" data-stagger><a class="mobile-menu__link is-accent" href="#">New Arrivals</a></li>
+        <li class="mobile-menu__item" data-stagger><a class="mobile-menu__link" href="#">Brands</a></li>
+        <li class="mobile-menu__item" data-stagger><a class="mobile-menu__link" href="#">Gifts</a></li>
+      </ul>
+    </nav>
+
+    <div class="mobile-menu__footer" data-stagger>
+      <a href="#" class="mobile-menu__utility">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
+        Sign in / Register
+      </a>
+      <a href="#" class="mobile-menu__utility">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-5.2-7-11a7 7 0 0 1 14 0c0 5.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+        Find a store
+      </a>
+      <button class="mobile-menu__utility" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3z"/></svg>
+        EN / CHF
+      </button>
+    </div>
+  </div>
+  <div class="scrim" id="scrim" aria-hidden="true"></div>
+
+  <main id="main">
+
+    <!-- ======================= HERO ======================= -->
+    <section class="hero" id="hero" aria-roledescription="carousel" aria-label="Featured campaigns">
+      <div class="hero__slides">
+
+        <article class="hero__slide is-active" aria-hidden="false">
+          <div class="hero__media">
+            <img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2000&auto=format&fit=crop" alt="Elegant woman in wide-brimmed hat, summer light" fetchpriority="high" decoding="async">
+          </div>
+          <div class="hero__content container">
+            <p class="hero__label">Summer Collection</p>
+            <h1 class="hero__title">The Art of Summer</h1>
+            <a href="#collections" class="btn btn--hero">Discover now</a>
+          </div>
+        </article>
+
+        <article class="hero__slide" aria-hidden="true">
+          <div class="hero__media">
+            <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2000&auto=format&fit=crop" alt="Woman with shopping bags in the city" loading="lazy" decoding="async">
+          </div>
+          <div class="hero__content container">
+            <p class="hero__label">New Designer Arrivals</p>
+            <h2 class="hero__title">Defined by Design</h2>
+            <a href="#trending" class="btn btn--hero">Shop new in</a>
+          </div>
+        </article>
+
+        <article class="hero__slide" aria-hidden="true">
+          <div class="hero__media">
+            <img src="https://images.unsplash.com/photo-1445205170230-053b83016050?q=80&w=2000&auto=format&fit=crop" alt="Elegant neutral-toned wardrobe pieces" loading="lazy" decoding="async">
+          </div>
+          <div class="hero__content container">
+            <p class="hero__label">Luxury Essentials</p>
+            <h2 class="hero__title">Quiet Luxury, Perfected</h2>
+            <a href="#trending" class="btn btn--hero">Explore essentials</a>
+          </div>
+        </article>
+
+        <article class="hero__slide" aria-hidden="true">
+          <div class="hero__media">
+            <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2000&auto=format&fit=crop" alt="Curated boutique interior" loading="lazy" decoding="async">
+          </div>
+          <div class="hero__content container">
+            <p class="hero__label">Exclusive Brands</p>
+            <h2 class="hero__title">The World's Finest Houses</h2>
+            <a href="#brands" class="btn btn--hero">Meet the brands</a>
+          </div>
+        </article>
+
+      </div>
+
+      <div class="hero__arrows">
+        <button class="hero__arrow" id="heroPrev" type="button" aria-label="Previous slide">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 5 8 12 15 19"/></svg>
+        </button>
+        <button class="hero__arrow" id="heroNext" type="button" aria-label="Next slide">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="9 5 16 12 9 19"/></svg>
+        </button>
+      </div>
+
+      <div class="hero__dots container" role="tablist" aria-label="Slides">
+        <button class="hero__dot is-active" type="button" role="tab" aria-label="Slide 1" aria-selected="true"><span></span></button>
+        <button class="hero__dot" type="button" role="tab" aria-label="Slide 2" aria-selected="false"><span></span></button>
+        <button class="hero__dot" type="button" role="tab" aria-label="Slide 3" aria-selected="false"><span></span></button>
+        <button class="hero__dot" type="button" role="tab" aria-label="Slide 4" aria-selected="false"><span></span></button>
+      </div>
+    </section>
+
+    <!-- ======================= QUICK SEARCH + CATEGORIES (mobile) ======================= -->
+    <section class="quick-shop" aria-label="Search and categories">
+      <button class="quick-search" id="quickSearchBtn" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+        <span class="quick-search__placeholder">What are you looking for?</span>
+        <span class="quick-search__scan" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M4 7v10M7.5 7v10M10 7v10M13.5 7v10M16 7v10M20 7v10"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2L9 5h6l1.5 2h2A1.5 1.5 0 0 1 20 8.5v8a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 16.5v-8z"/><circle cx="12" cy="12.5" r="3.25"/></svg>
+        </span>
+      </button>
+      <nav class="category-grid" aria-label="Shop by category">
+        <a href="#">Sale</a>
+        <a href="#">Women</a>
+        <a href="#">Men</a>
+        <a href="#">Designer</a>
+        <a href="#">Beauty</a>
+        <a href="#">Accessories</a>
+        <a href="#">Home</a>
+        <a href="#collections">New Arrivals</a>
+        <a href="#brands">Brands</a>
+        <a href="#">Gifts</a>
+      </nav>
+    </section>
+
+    <!-- ======================= REASSURANCE ======================= -->
+    <section class="reassurance" aria-label="Our services">
+      <div class="container reassurance__inner">
+        <p data-reveal>Complimentary shipping &amp; returns</p>
+        <p data-reveal>Signature gift wrapping</p>
+        <p data-reveal>Personal shopping on request</p>
+        <p data-reveal>Secure payment &amp; care</p>
+      </div>
+    </section>
+
+    <!-- ======================= FEATURED COLLECTIONS ======================= -->
+    <section class="section collections" id="collections">
+      <div class="container">
+        <header class="section-head" data-reveal>
+          <p class="section-head__label">Curated for you</p>
+          <h2 class="section-head__title">Featured Collections</h2>
+        </header>
+
+        <div class="collections__grid">
+          <a href="#" class="collection-card collection-card--tall" data-reveal>
+            <div class="collection-card__media">
+              <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=1200&auto=format&fit=crop" alt="Model in summer styles" loading="lazy" decoding="async">
+            </div>
+            <div class="collection-card__body">
+              <p class="collection-card__label">Women</p>
+              <h3 class="collection-card__title">Summer Styles</h3>
+              <span class="collection-card__cta">Shop the edit</span>
+            </div>
+          </a>
+
+          <a href="#" class="collection-card" data-reveal>
+            <div class="collection-card__media">
+              <img src="https://images.unsplash.com/photo-1487222477894-8943e31ef7b2?q=80&w=1200&auto=format&fit=crop" alt="Designer accessories flat lay" loading="lazy" decoding="async">
+            </div>
+            <div class="collection-card__body">
+              <p class="collection-card__label">Designer</p>
+              <h3 class="collection-card__title">Designer Picks</h3>
+              <span class="collection-card__cta">Shop the edit</span>
+            </div>
+          </a>
+
+          <a href="#" class="collection-card" data-reveal>
+            <div class="collection-card__media">
+              <img src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=1200&auto=format&fit=crop" alt="Beauty products and makeup" loading="lazy" decoding="async">
+            </div>
+            <div class="collection-card__body">
+              <p class="collection-card__label">Beauty</p>
+              <h3 class="collection-card__title">New Beauty Trends</h3>
+              <span class="collection-card__cta">Shop the edit</span>
+            </div>
+          </a>
+
+          <a href="#" class="collection-card collection-card--wide" data-reveal>
+            <div class="collection-card__media">
+              <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=1600&auto=format&fit=crop" alt="Refined living room interior" loading="lazy" decoding="async">
+            </div>
+            <div class="collection-card__body">
+              <p class="collection-card__label">Home</p>
+              <h3 class="collection-card__title">Home Collection</h3>
+              <span class="collection-card__cta">Shop the edit</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= BRANDS ======================= -->
+    <section class="section brands" id="brands">
+      <header class="section-head section-head--center container" data-reveal>
+        <p class="section-head__label">The finest houses</p>
+        <h2 class="section-head__title">Our Brands</h2>
+      </header>
+      <div class="brands__marquee" id="brandsMarquee" data-reveal>
+        <div class="brands__track" id="brandsTrack">
+          <span class="brands__logo">JACQUEMUS</span>
+          <span class="brands__logo brands__logo--serif">Loewe</span>
+          <span class="brands__logo">SAINT&nbsp;LAURENT</span>
+          <span class="brands__logo brands__logo--serif">Totême</span>
+          <span class="brands__logo">BOTTEGA&nbsp;VENETA</span>
+          <span class="brands__logo brands__logo--serif">Chloé</span>
+          <span class="brands__logo">VALENTINO</span>
+          <span class="brands__logo brands__logo--serif">Byredo</span>
+          <span class="brands__logo">BURBERRY</span>
+          <span class="brands__logo brands__logo--serif">La&nbsp;Mer</span>
+          <span class="brands__logo">LEMAIRE</span>
+          <span class="brands__logo brands__logo--serif">The&nbsp;Row</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= TRENDING PRODUCTS ======================= -->
+    <section class="section trending" id="trending">
+      <div class="container">
+        <header class="section-head" data-reveal>
+          <p class="section-head__label">Most coveted</p>
+          <h2 class="section-head__title">Trending Now</h2>
+          <a href="#" class="section-head__link">View all</a>
+        </header>
+
+        <div class="product-grid">
+
+          <article class="product-card" data-reveal
+            data-name="Le Chiquito Leather Bag" data-brand="Jacquemus" data-price="CHF 790"
+            data-desc="An icon in miniature. Structured Italian leather with gold-tone hardware and a detachable shoulder strap.">
+            <div class="product-card__media">
+              <img class="product-card__img product-card__img--primary" src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=900&auto=format&fit=crop" alt="Le Chiquito leather bag" loading="lazy" decoding="async">
+              <img class="product-card__img product-card__img--secondary" src="https://images.unsplash.com/photo-1548036328-c9fa89d128fa?q=80&w=900&auto=format&fit=crop" alt="" aria-hidden="true" loading="lazy" decoding="async">
+              <button class="product-card__wishlist" type="button" aria-label="Add to wishlist" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5l-8-7.5c-2.2-2-2.2-5.4 0-7.4 2-1.9 5.2-1.9 7.2 0l.8.8.8-.8c2-1.9 5.2-1.9 7.2 0 2.2 2 2.2 5.4 0 7.4l-8 7.5z"/></svg>
+              </button>
+              <button class="product-card__quickview" type="button">Quick view</button>
+            </div>
+            <div class="product-card__info">
+              <p class="product-card__brand">Jacquemus</p>
+              <h3 class="product-card__name">Le Chiquito Leather Bag</h3>
+              <p class="product-card__price">CHF 790</p>
+            </div>
+          </article>
+
+          <article class="product-card" data-reveal
+            data-name="Camel Twill Blouson Jacket" data-brand="Totême" data-price="CHF 1,290"
+            data-desc="Cut in Italy from dry-touch cotton twill. A clean, timeless silhouette designed to be worn for decades.">
+            <div class="product-card__media">
+              <img class="product-card__img product-card__img--primary" src="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=900&auto=format&fit=crop" alt="Camel twill blouson jacket" loading="lazy" decoding="async">
+              <img class="product-card__img product-card__img--secondary" src="https://images.unsplash.com/photo-1544022613-e87ca75a784a?q=80&w=900&auto=format&fit=crop" alt="" aria-hidden="true" loading="lazy" decoding="async">
+              <button class="product-card__wishlist" type="button" aria-label="Add to wishlist" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5l-8-7.5c-2.2-2-2.2-5.4 0-7.4 2-1.9 5.2-1.9 7.2 0l.8.8.8-.8c2-1.9 5.2-1.9 7.2 0 2.2 2 2.2 5.4 0 7.4l-8 7.5z"/></svg>
+              </button>
+              <button class="product-card__quickview" type="button">Quick view</button>
+            </div>
+            <div class="product-card__info">
+              <p class="product-card__brand">Totême</p>
+              <h3 class="product-card__name">Camel Twill Blouson Jacket</h3>
+              <p class="product-card__price">CHF 1,290</p>
+            </div>
+          </article>
+
+          <article class="product-card" data-reveal
+            data-name="Automatic Chronograph 40mm" data-brand="Baume &amp; Mercier" data-price="CHF 2,450"
+            data-desc="Swiss-made automatic movement, sapphire crystal and a hand-finished steel case on a supple leather strap.">
+            <div class="product-card__media">
+              <img class="product-card__img product-card__img--primary" src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=900&auto=format&fit=crop" alt="Automatic chronograph watch" loading="lazy" decoding="async">
+              <img class="product-card__img product-card__img--secondary" src="https://images.unsplash.com/photo-1524805444758-089113d48a6d?q=80&w=900&auto=format&fit=crop" alt="" aria-hidden="true" loading="lazy" decoding="async">
+              <button class="product-card__wishlist" type="button" aria-label="Add to wishlist" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5l-8-7.5c-2.2-2-2.2-5.4 0-7.4 2-1.9 5.2-1.9 7.2 0l.8.8.8-.8c2-1.9 5.2-1.9 7.2 0 2.2 2 2.2 5.4 0 7.4l-8 7.5z"/></svg>
+              </button>
+              <button class="product-card__quickview" type="button">Quick view</button>
+            </div>
+            <div class="product-card__info">
+              <p class="product-card__brand">Baume &amp; Mercier</p>
+              <h3 class="product-card__name">Automatic Chronograph 40mm</h3>
+              <p class="product-card__price">CHF 2,450</p>
+            </div>
+          </article>
+
+          <article class="product-card" data-reveal
+            data-name="Coco Noir Eau de Parfum, 100ml" data-brand="Chanel" data-price="CHF 215"
+            data-desc="A deep, luminous composition of grasse jasmine, rose and sandalwood, presented in the signature noir flacon.">
+            <div class="product-card__media">
+              <img class="product-card__img product-card__img--primary" src="https://images.unsplash.com/photo-1594035910387-fea47794261f?q=80&w=900&auto=format&fit=crop" alt="Eau de parfum bottle" loading="lazy" decoding="async">
+              <img class="product-card__img product-card__img--secondary" src="https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?q=80&w=900&auto=format&fit=crop" alt="" aria-hidden="true" loading="lazy" decoding="async">
+              <button class="product-card__wishlist" type="button" aria-label="Add to wishlist" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5l-8-7.5c-2.2-2-2.2-5.4 0-7.4 2-1.9 5.2-1.9 7.2 0l.8.8.8-.8c2-1.9 5.2-1.9 7.2 0 2.2 2 2.2 5.4 0 7.4l-8 7.5z"/></svg>
+              </button>
+              <button class="product-card__quickview" type="button">Quick view</button>
+            </div>
+            <div class="product-card__info">
+              <p class="product-card__brand">Chanel</p>
+              <h3 class="product-card__name">Coco Noir Eau de Parfum, 100ml</h3>
+              <p class="product-card__price">CHF 215</p>
+            </div>
+          </article>
+
+          <article class="product-card" data-reveal
+            data-name="Achilles Leather Sneakers" data-brand="Common Projects" data-price="CHF 420"
+            data-desc="The definitive minimalist sneaker. Nappa leather upper, margom sole, and the signature gold serial stamp.">
+            <div class="product-card__media">
+              <img class="product-card__img product-card__img--primary" src="https://images.unsplash.com/photo-1560343090-f0409e92791a?q=80&w=900&auto=format&fit=crop" alt="Minimalist leather sneakers" loading="lazy" decoding="async">
+              <img class="product-card__img product-card__img--secondary" src="https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=900&auto=format&fit=crop" alt="" aria-hidden="true" loading="lazy" decoding="async">
+              <button class="product-card__wishlist" type="button" aria-label="Add to wishlist" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5l-8-7.5c-2.2-2-2.2-5.4 0-7.4 2-1.9 5.2-1.9 7.2 0l.8.8.8-.8c2-1.9 5.2-1.9 7.2 0 2.2 2 2.2 5.4 0 7.4l-8 7.5z"/></svg>
+              </button>
+              <button class="product-card__quickview" type="button">Quick view</button>
+            </div>
+            <div class="product-card__info">
+              <p class="product-card__brand">Common Projects</p>
+              <h3 class="product-card__name">Achilles Leather Sneakers</h3>
+              <p class="product-card__price">CHF 420</p>
+            </div>
+          </article>
+
+          <article class="product-card" data-reveal
+            data-name="Square Acetate Sunglasses" data-brand="Saint Laurent" data-price="CHF 380"
+            data-desc="Hand-finished Italian acetate with a bold square silhouette and gold-tone signature at the temple.">
+            <div class="product-card__media">
+              <img class="product-card__img product-card__img--primary" src="https://images.unsplash.com/photo-1572635196237-14b3f281503f?q=80&w=900&auto=format&fit=crop" alt="Square acetate sunglasses" loading="lazy" decoding="async">
+              <img class="product-card__img product-card__img--secondary" src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?q=80&w=900&auto=format&fit=crop" alt="" aria-hidden="true" loading="lazy" decoding="async">
+              <button class="product-card__wishlist" type="button" aria-label="Add to wishlist" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5l-8-7.5c-2.2-2-2.2-5.4 0-7.4 2-1.9 5.2-1.9 7.2 0l.8.8.8-.8c2-1.9 5.2-1.9 7.2 0 2.2 2 2.2 5.4 0 7.4l-8 7.5z"/></svg>
+              </button>
+              <button class="product-card__quickview" type="button">Quick view</button>
+            </div>
+            <div class="product-card__info">
+              <p class="product-card__brand">Saint Laurent</p>
+              <h3 class="product-card__name">Square Acetate Sunglasses</h3>
+              <p class="product-card__price">CHF 380</p>
+            </div>
+          </article>
+
+          <article class="product-card" data-reveal
+            data-name="Crème de la Mer, 60ml" data-brand="La Mer" data-price="CHF 380"
+            data-desc="The legendary moisturizer with Miracle Broth™. Deeply soothing, visibly renewing — an icon of modern skincare.">
+            <div class="product-card__media">
+              <img class="product-card__img product-card__img--primary" src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=900&auto=format&fit=crop" alt="Luxury skincare cream" loading="lazy" decoding="async">
+              <img class="product-card__img product-card__img--secondary" src="https://images.unsplash.com/photo-1556228720-195a672e8a03?q=80&w=900&auto=format&fit=crop" alt="" aria-hidden="true" loading="lazy" decoding="async">
+              <button class="product-card__wishlist" type="button" aria-label="Add to wishlist" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5l-8-7.5c-2.2-2-2.2-5.4 0-7.4 2-1.9 5.2-1.9 7.2 0l.8.8.8-.8c2-1.9 5.2-1.9 7.2 0 2.2 2 2.2 5.4 0 7.4l-8 7.5z"/></svg>
+              </button>
+              <button class="product-card__quickview" type="button">Quick view</button>
+            </div>
+            <div class="product-card__info">
+              <p class="product-card__brand">La Mer</p>
+              <h3 class="product-card__name">Crème de la Mer, 60ml</h3>
+              <p class="product-card__price">CHF 380</p>
+            </div>
+          </article>
+
+          <article class="product-card" data-reveal
+            data-name="Pearl &amp; Gold Vermeil Necklace" data-brand="Missoma" data-price="CHF 240"
+            data-desc="Baroque pearls on 18ct gold vermeil, cast from recycled sterling silver. Designed to be layered or worn alone.">
+            <div class="product-card__media">
+              <img class="product-card__img product-card__img--primary" src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=900&auto=format&fit=crop" alt="Gold chain necklace" loading="lazy" decoding="async">
+              <img class="product-card__img product-card__img--secondary" src="https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=900&auto=format&fit=crop" alt="" aria-hidden="true" loading="lazy" decoding="async">
+              <button class="product-card__wishlist" type="button" aria-label="Add to wishlist" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5l-8-7.5c-2.2-2-2.2-5.4 0-7.4 2-1.9 5.2-1.9 7.2 0l.8.8.8-.8c2-1.9 5.2-1.9 7.2 0 2.2 2 2.2 5.4 0 7.4l-8 7.5z"/></svg>
+              </button>
+              <button class="product-card__quickview" type="button">Quick view</button>
+            </div>
+            <div class="product-card__info">
+              <p class="product-card__brand">Missoma</p>
+              <h3 class="product-card__name">Pearl &amp; Gold Vermeil Necklace</h3>
+              <p class="product-card__price">CHF 240</p>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= EDITORIAL ======================= -->
+    <section class="section editorial">
+      <div class="container">
+
+        <article class="editorial-feature" data-reveal>
+          <div class="editorial-feature__media">
+            <img src="https://images.unsplash.com/photo-1496747611176-843222e1e57c?q=80&w=1600&auto=format&fit=crop" alt="Editorial fashion portrait in warm summer light" loading="lazy" decoding="async">
+          </div>
+          <div class="editorial-feature__body">
+            <p class="editorial-feature__label">The Journal</p>
+            <h2 class="editorial-feature__title">Discover Summer Luxury</h2>
+            <p class="editorial-feature__text">From sun-washed linen to sculptural gold, this season is an exercise in effortless refinement. Our editors traveled from Lake Geneva to the Amalfi Coast to compose a wardrobe that moves with the light — pieces chosen not for a season, but for a lifetime.</p>
+            <a href="#" class="btn btn--line">Read the story</a>
+          </div>
+        </article>
+
+        <div class="editorial__grid">
+          <a href="#" class="editorial-card" data-reveal>
+            <div class="editorial-card__media">
+              <img src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=1000&auto=format&fit=crop" alt="Model in minimalist trench coat" loading="lazy" decoding="async">
+            </div>
+            <p class="editorial-card__label">Fashion</p>
+            <h3 class="editorial-card__title">Designer Spotlight: The New Minimalists</h3>
+            <span class="editorial-card__cta">Read more</span>
+          </a>
+          <a href="#" class="editorial-card" data-reveal>
+            <div class="editorial-card__media">
+              <img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=1000&auto=format&fit=crop" alt="Refined beauty products arranged on marble" loading="lazy" decoding="async">
+            </div>
+            <p class="editorial-card__label">Beauty</p>
+            <h3 class="editorial-card__title">Beauty Trends: Skin First, Always</h3>
+            <span class="editorial-card__cta">Read more</span>
+          </a>
+          <a href="#" class="editorial-card" data-reveal>
+            <div class="editorial-card__media">
+              <img src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?q=80&w=1000&auto=format&fit=crop" alt="Curated boutique rail of exclusive pieces" loading="lazy" decoding="async">
+            </div>
+            <p class="editorial-card__label">Exclusives</p>
+            <h3 class="editorial-card__title">Exclusive Collections, Only at ENMIIS</h3>
+            <span class="editorial-card__cta">Read more</span>
+          </a>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ======================= EXPERIENCES ======================= -->
+    <section class="section experiences">
+      <div class="container">
+        <header class="section-head section-head--center" data-reveal>
+          <p class="section-head__label">Beyond shopping</p>
+          <h2 class="section-head__title">The ENMIIS Experience</h2>
+        </header>
+
+        <div class="experiences__grid">
+          <a href="#" class="experience-card" data-reveal>
+            <div class="experience-card__media">
+              <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=900&auto=format&fit=crop" alt="Personal shopper advising a client" loading="lazy" decoding="async">
+            </div>
+            <h3 class="experience-card__title">Personal Shopping</h3>
+            <p class="experience-card__text">One-to-one styling with our in-house experts, in private suites or at home.</p>
+            <span class="experience-card__cta">Book an appointment</span>
+          </a>
+          <a href="#" class="experience-card" data-reveal>
+            <div class="experience-card__media">
+              <img src="https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=900&auto=format&fit=crop" alt="Elegantly wrapped gift box" loading="lazy" decoding="async">
+            </div>
+            <h3 class="experience-card__title">Gift Services</h3>
+            <p class="experience-card__text">Signature wrapping, handwritten notes and same-day city delivery.</p>
+            <span class="experience-card__cta">Discover gifting</span>
+          </a>
+          <a href="#" class="experience-card" data-reveal>
+            <div class="experience-card__media">
+              <img src="https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?q=80&w=900&auto=format&fit=crop" alt="Private evening event with candlelit tables" loading="lazy" decoding="async">
+            </div>
+            <h3 class="experience-card__title">Exclusive Events</h3>
+            <p class="experience-card__text">Designer previews, trunk shows and evenings reserved for our guests.</p>
+            <span class="experience-card__cta">View calendar</span>
+          </a>
+          <a href="#" class="experience-card" data-reveal>
+            <div class="experience-card__media">
+              <img src="https://images.unsplash.com/photo-1521017432531-fbd92d768814?q=80&w=900&auto=format&fit=crop" alt="Quiet members lounge interior" loading="lazy" decoding="async">
+            </div>
+            <h3 class="experience-card__title">Premium Membership</h3>
+            <p class="experience-card__text">Priority access, private lounges and rewards designed around you.</p>
+            <span class="experience-card__cta">Become a member</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= NEWSLETTER ======================= -->
+    <section class="newsletter">
+      <div class="container newsletter__inner" data-reveal>
+        <p class="section-head__label">Stay in the know</p>
+        <h2 class="newsletter__title">The World of ENMIIS,<br>Delivered First</h2>
+        <p class="newsletter__text">New arrivals, private events and editor stories — a considered letter, never noise.</p>
+        <form class="newsletter__form" id="newsletterForm">
+          <label class="visually-hidden" for="newsletterEmail">Email address</label>
+          <input type="email" id="newsletterEmail" placeholder="Your email address" required>
+          <button class="btn btn--solid" type="submit">Subscribe</button>
+        </form>
+        <p class="newsletter__success" id="newsletterSuccess" hidden>Welcome to ENMIIS. Your first letter is on its way.</p>
+        <p class="newsletter__legal">By subscribing you agree to our privacy policy. Unsubscribe at any time.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ======================= FOOTER ======================= -->
+  <footer class="site-footer">
+    <div class="container">
+
+      <div class="site-footer__grid">
+        <nav class="site-footer__col" aria-label="Customer service">
+          <p class="site-footer__heading">Customer Service</p>
+          <ul>
+            <li><a href="#">Contact Us</a></li>
+            <li><a href="#">Shipping</a></li>
+            <li><a href="#">Returns &amp; Exchanges</a></li>
+            <li><a href="#">Payment Options</a></li>
+            <li><a href="#">FAQ</a></li>
+          </ul>
+        </nav>
+        <nav class="site-footer__col" aria-label="About">
+          <p class="site-footer__heading">About ENMIIS</p>
+          <ul>
+            <li><a href="#">Our Maison</a></li>
+            <li><a href="#">Careers</a></li>
+            <li><a href="#">Sustainability</a></li>
+            <li><a href="#">Press</a></li>
+          </ul>
+        </nav>
+        <nav class="site-footer__col" aria-label="Stores and services">
+          <p class="site-footer__heading">Stores &amp; Services</p>
+          <ul>
+            <li><a href="#">Find a Store</a></li>
+            <li><a href="#">Personal Shopping</a></li>
+            <li><a href="#">Gift Services</a></li>
+            <li><a href="#">Premium Membership</a></li>
+          </ul>
+        </nav>
+        <div class="site-footer__col site-footer__col--social">
+          <p class="site-footer__heading">Follow Us</p>
+          <ul class="site-footer__social">
+            <li><a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4.5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg></a></li>
+            <li><a href="#" aria-label="Pinterest"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M10.2 17.5c.6-2.4 1.1-4.6 1.1-4.6s-.3-.6-.3-1.5c0-1.4.8-2.4 1.8-2.4.9 0 1.3.6 1.3 1.4 0 .9-.6 2.2-.9 3.4-.2 1 .5 1.8 1.5 1.8 1.8 0 3-2.3 3-5 0-2.1-1.4-3.6-3.9-3.6-2.9 0-4.7 2.1-4.7 4.5 0 .8.2 1.4.6 1.9"/></svg></a></li>
+            <li><a href="#" aria-label="TikTok"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 4v9.8a3.3 3.3 0 1 1-3.3-3.3M14.5 4c.3 2.4 1.9 4.3 4.5 4.6"/></svg></a></li>
+            <li><a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="3"/><polygon points="10.5 9.5 15 12 10.5 14.5" fill="currentColor" stroke="none"/></svg></a></li>
+          </ul>
+          <p class="site-footer__heading site-footer__heading--gap">Contact</p>
+          <ul>
+            <li><a href="mailto:care@enmiis.com">care@enmiis.com</a></li>
+            <li><a href="tel:+41000000000">+41 (0)00 000 00 00</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="site-footer__bottom">
+        <p class="site-footer__logo"><img src="img/logo-enmiis.png" alt="ENMIIS" loading="lazy"></p>
+        <p class="site-footer__copy">© 2026 ENMIIS Maison de Luxe. All rights reserved.</p>
+        <ul class="site-footer__legal">
+          <li><a href="#">Privacy</a></li>
+          <li><a href="#">Terms</a></li>
+          <li><a href="#">Cookies</a></li>
+          <li><a href="#">Imprint</a></li>
+        </ul>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- ======================= QUICK VIEW MODAL ======================= -->
+  <div class="modal" id="quickviewModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="qvName">
+    <div class="modal__backdrop" data-modal-close></div>
+    <div class="modal__panel">
+      <button class="modal__close" type="button" aria-label="Close" data-modal-close>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
+      </button>
+      <div class="modal__media"><img id="qvImage" src="" alt=""></div>
+      <div class="modal__body">
+        <p class="modal__brand" id="qvBrand"></p>
+        <h3 class="modal__name" id="qvName"></h3>
+        <p class="modal__price" id="qvPrice"></p>
+        <p class="modal__desc" id="qvDesc"></p>
+        <div class="modal__sizes" id="qvSizes" aria-label="Select size">
+          <button type="button" class="is-active">One size</button>
+        </div>
+        <button class="btn btn--solid modal__add" id="qvAdd" type="button">Add to Shopping Bag</button>
+        <p class="modal__note">Complimentary shipping &amp; signature gift wrapping included.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/main.js" defer></script>
+</body>
+</html>
