@@ -3,16 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>ENMIIS — Soutenance, Broderie & Collections</title>
-  <meta name="description" content="ENMIIS — tenues de soutenance, broderie personnalisée et collections. Créations faites main en Tunisie.">
-  <meta property="og:title" content="ENMIIS — Soutenance, Broderie & Collections">
-  <meta property="og:description" content="Tenues de soutenance, broderie personnalisée et collections. Créations faites main en Tunisie.">
-  <meta property="og:type" content="website">
+  <title>Soutenances — Nos Créations | ENMIIS</title>
+  <meta name="description" content="Découvrez les créations soutenance ENMIIS : toges, écharpes brodées, box cadeaux et décorations pour votre grand jour.">
   <meta name="theme-color" content="#FFFFFF">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://images.unsplash.com">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="css/styles.css">
@@ -25,7 +21,6 @@
   <!-- ======================= HEADER ======================= -->
   <header class="site-header" id="siteHeader">
 
-    <!-- Utility bar -->
     <div class="utility-bar">
       <div class="container utility-bar__inner">
         <p class="utility-bar__note">Livraison dans toute la Tunisie — offerte dès 200 TND</p>
@@ -38,7 +33,6 @@
       </div>
     </div>
 
-    <!-- Main header row -->
     <div class="header-main">
       <div class="container header-main__inner">
 
@@ -71,13 +65,12 @@
       </div>
     </div>
 
-    <!-- Main navigation -->
     <nav class="main-nav" aria-label="Navigation principale">
       <div class="container">
         <ul class="main-nav__list" id="mainNavList">
           <li class="main-nav__item"><a href="#" class="main-nav__link" data-soon>Nouveautés</a></li>
           <li class="main-nav__item"><a href="#" class="main-nav__link" data-soon>Collections</a></li>
-          <li class="main-nav__item"><a href="soutenance.html" class="main-nav__link is-accent">Soutenances</a></li>
+          <li class="main-nav__item"><a href="soutenance.html" class="main-nav__link is-accent" aria-current="page">Soutenances</a></li>
           <li class="main-nav__item"><a href="#" class="main-nav__link" data-soon>Broderies</a></li>
         </ul>
       </div>
@@ -146,168 +139,168 @@
 
   <main id="main">
 
-    <!-- ======================= HERO ======================= -->
-    <section class="hero" id="hero" aria-roledescription="carousel" aria-label="Campagnes en vedette">
-      <div class="hero__slides">
-
-        <article class="hero__slide is-active" aria-hidden="false">
-          <div class="hero__media">
-            <img src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=2000&auto=format&fit=crop" alt="Diplômés en toge lançant leurs mortiers" fetchpriority="high" decoding="async">
-          </div>
-          <div class="hero__content container">
-            <p class="hero__label">La Collection Soutenance</p>
-            <h1 class="hero__title">Votre Jour de Gloire</h1>
-            <a href="soutenance.html" class="btn btn--hero">Découvrir nos créations</a>
-          </div>
-        </article>
-
-        <article class="hero__slide" aria-hidden="true">
-          <div class="hero__media">
-            <img src="https://images.unsplash.com/photo-1528698827591-e19ccd7bc23d?q=80&w=2000&auto=format&fit=crop" alt="Atelier de broderie — machine à coudre en gros plan" loading="lazy" decoding="async">
-          </div>
-          <div class="hero__content container">
-            <p class="hero__label">Sur Mesure</p>
-            <h2 class="hero__title">Créée pour Vous,<br>Brodée pour Durer</h2>
-            <a href="customizer.html" class="btn btn--hero">Personnaliser ma tenue</a>
-          </div>
-        </article>
-
-        <article class="hero__slide" aria-hidden="true">
-          <div class="hero__media">
-            <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2000&auto=format&fit=crop" alt="Intérieur de boutique raffiné" loading="lazy" decoding="async">
-          </div>
-          <div class="hero__content container">
-            <p class="hero__label">Bientôt</p>
-            <h2 class="hero__title">Les Nouvelles Collections</h2>
-            <a href="#" class="btn btn--hero" data-soon>En savoir plus</a>
-          </div>
-        </article>
-
-      </div>
-
-      <div class="hero__arrows">
-        <button class="hero__arrow" id="heroPrev" type="button" aria-label="Diapositive précédente">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 5 8 12 15 19"/></svg>
-        </button>
-        <button class="hero__arrow" id="heroNext" type="button" aria-label="Diapositive suivante">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="9 5 16 12 9 19"/></svg>
-        </button>
-      </div>
-
-      <div class="hero__dots container" role="tablist" aria-label="Diapositives">
-        <button class="hero__dot is-active" type="button" role="tab" aria-label="Diapositive 1" aria-selected="true"><span></span></button>
-        <button class="hero__dot" type="button" role="tab" aria-label="Diapositive 2" aria-selected="false"><span></span></button>
-        <button class="hero__dot" type="button" role="tab" aria-label="Diapositive 3" aria-selected="false"><span></span></button>
+    <!-- ======================= PAGE HERO ======================= -->
+    <section class="page-hero">
+      <div class="page-hero__inner" data-reveal>
+        <p class="page-hero__label">Le grand jour mérite le plus grand soin</p>
+        <h1 class="page-hero__title">Nos Créations Soutenance</h1>
+        <p class="page-hero__text">Toges, écharpes brodées, box cadeaux et décorations — chaque création est réalisée à la main pour célébrer votre réussite. Découvrez nos réalisations, puis composez la vôtre.</p>
       </div>
     </section>
 
-    <!-- ======================= QUICK SEARCH + CATEGORIES (mobile) ======================= -->
-    <section class="quick-shop" aria-label="Recherche et catégories">
-      <button class="quick-search" id="quickSearchBtn" type="button">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
-        <span class="quick-search__placeholder">Que cherchez-vous ?</span>
-        <span class="quick-search__scan" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M4 7v10M7.5 7v10M10 7v10M13.5 7v10M16 7v10M20 7v10"/></svg>
-          <svg viewBox="0 0 24 24"><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2L9 5h6l1.5 2h2A1.5 1.5 0 0 1 20 8.5v8a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 16.5v-8z"/><circle cx="12" cy="12.5" r="3.25"/></svg>
-        </span>
-      </button>
-      <nav class="category-grid" aria-label="Nos catégories">
-        <a href="#" data-soon>Nouveautés</a>
-        <a href="#" data-soon>Collections</a>
-        <a href="soutenance.html">Soutenances</a>
-        <a href="#" data-soon>Broderies</a>
-      </nav>
-    </section>
+    <!-- ======================= FILTERS ======================= -->
+    <div class="works-filter" id="worksFilter" role="group" aria-label="Filtrer les créations">
+      <button type="button" class="is-active" data-filter="all" aria-pressed="true">Tout</button>
+      <button type="button" data-filter="toges" aria-pressed="false">Toges</button>
+      <button type="button" data-filter="echarpes" aria-pressed="false">Écharpes</button>
+      <button type="button" data-filter="box" aria-pressed="false">Box &amp; Cadeaux</button>
+      <button type="button" data-filter="decor" aria-pressed="false">Décoration</button>
+    </div>
 
-    <!-- ======================= REASSURANCE ======================= -->
-    <section class="reassurance" aria-label="Nos services">
-      <div class="container reassurance__inner">
-        <p data-reveal>Livraison dans toute la Tunisie</p>
-        <p data-reveal>Broderie personnalisée</p>
-        <p data-reveal>Fait main avec soin</p>
-        <p data-reveal>Paiement à la livraison</p>
-      </div>
-    </section>
-
-    <!-- ======================= NOS UNIVERS ======================= -->
-    <section class="section collections" id="collections">
+    <!-- ======================= WORKS GRID ======================= -->
+    <section class="section" style="padding-top: 0;">
       <div class="container">
-        <header class="section-head" data-reveal>
-          <p class="section-head__label">La maison ENMIIS</p>
-          <h2 class="section-head__title">Nos Univers</h2>
-        </header>
+        <div class="works-grid">
 
-        <div class="collections__grid">
-          <a href="soutenance.html" class="collection-card collection-card--tall" data-reveal>
-            <div class="collection-card__media">
-              <img src="https://images.unsplash.com/photo-1594122230689-45899d9e6f69?q=80&w=1200&auto=format&fit=crop" alt="Soutenance dans un amphithéâtre" loading="lazy" decoding="async">
+          <a href="customizer.html" class="work-card" data-category="toges" data-reveal>
+            <div class="work-card__media">
+              <img src="img/works/toge-01.jpg" alt="Toge de soutenance personnalisée" loading="lazy" decoding="async">
+              <button class="work-card__wishlist" type="button" aria-label="Ajouter aux favoris" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5l-8-7.5c-2.2-2-2.2-5.4 0-7.4 2-1.9 5.2-1.9 7.2 0l.8.8.8-.8c2-1.9 5.2-1.9 7.2 0 2.2 2 2.2 5.4 0 7.4l-8 7.5z"/></svg>
+              </button>
             </div>
-            <div class="collection-card__body">
-              <p class="collection-card__label">Le grand jour</p>
-              <h3 class="collection-card__title">Soutenances</h3>
-              <span class="collection-card__cta">Voir nos créations</span>
-            </div>
+            <p class="work-card__label">Toges</p>
+            <h3 class="work-card__title">Toge Classique Noire &amp; Or</h3>
           </a>
 
-          <a href="#" class="collection-card" data-reveal data-soon>
-            <div class="collection-card__media">
-              <img src="https://images.unsplash.com/photo-1528698827591-e19ccd7bc23d?q=80&w=1200&auto=format&fit=crop" alt="Broderie artisanale en cours de réalisation" loading="lazy" decoding="async">
+          <a href="customizer.html" class="work-card" data-category="toges" data-reveal>
+            <div class="work-card__media">
+              <img src="img/works/toge-02.jpg" alt="Toge de soutenance bordeaux avec broderie" loading="lazy" decoding="async">
+              <button class="work-card__wishlist" type="button" aria-label="Ajouter aux favoris" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5l-8-7.5c-2.2-2-2.2-5.4 0-7.4 2-1.9 5.2-1.9 7.2 0l.8.8.8-.8c2-1.9 5.2-1.9 7.2 0 2.2 2 2.2 5.4 0 7.4l-8 7.5z"/></svg>
+              </button>
             </div>
-            <div class="collection-card__body">
-              <p class="collection-card__label">Personnalisation</p>
-              <h3 class="collection-card__title">Broderies</h3>
-              <span class="collection-card__cta">Bientôt disponible</span>
-            </div>
+            <p class="work-card__label">Toges</p>
+            <h3 class="work-card__title">Toge Bordeaux Brodée</h3>
           </a>
 
-          <a href="#" class="collection-card" data-reveal data-soon>
-            <div class="collection-card__media">
-              <img src="https://images.unsplash.com/photo-1445205170230-053b83016050?q=80&w=1200&auto=format&fit=crop" alt="Pièces de garde-robe aux tons neutres" loading="lazy" decoding="async">
+          <a href="customizer.html" class="work-card" data-category="echarpes" data-reveal>
+            <div class="work-card__media">
+              <img src="img/works/echarpe-01.jpg" alt="Écharpe satin brodée Félicitations Docteur" loading="lazy" decoding="async">
+              <button class="work-card__wishlist" type="button" aria-label="Ajouter aux favoris" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5l-8-7.5c-2.2-2-2.2-5.4 0-7.4 2-1.9 5.2-1.9 7.2 0l.8.8.8-.8c2-1.9 5.2-1.9 7.2 0 2.2 2 2.2 5.4 0 7.4l-8 7.5z"/></svg>
+              </button>
             </div>
-            <div class="collection-card__body">
-              <p class="collection-card__label">Prêt-à-porter</p>
-              <h3 class="collection-card__title">Collections</h3>
-              <span class="collection-card__cta">Bientôt disponible</span>
-            </div>
+            <p class="work-card__label">Écharpes</p>
+            <h3 class="work-card__title">Écharpe « Félicitations Dr »</h3>
           </a>
 
-          <a href="customizer.html" class="collection-card collection-card--wide" data-reveal>
-            <div class="collection-card__media">
-              <img src="https://images.unsplash.com/photo-1571260899304-425eee4c7efc?q=80&w=1600&auto=format&fit=crop" alt="Étudiants à l'université préparant leur soutenance" loading="lazy" decoding="async">
+          <a href="customizer.html" class="work-card" data-category="echarpes" data-reveal>
+            <div class="work-card__media">
+              <img src="img/works/echarpe-02.jpg" alt="Écharpe personnalisée avec nom et date" loading="lazy" decoding="async">
+              <button class="work-card__wishlist" type="button" aria-label="Ajouter aux favoris" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5l-8-7.5c-2.2-2-2.2-5.4 0-7.4 2-1.9 5.2-1.9 7.2 0l.8.8.8-.8c2-1.9 5.2-1.9 7.2 0 2.2 2 2.2 5.4 0 7.4l-8 7.5z"/></svg>
+              </button>
             </div>
-            <div class="collection-card__body">
-              <p class="collection-card__label">Le configurateur</p>
-              <h3 class="collection-card__title">Créez Votre Tenue</h3>
-              <span class="collection-card__cta">Personnaliser maintenant</span>
-            </div>
+            <p class="work-card__label">Écharpes</p>
+            <h3 class="work-card__title">Écharpe Nom &amp; Date</h3>
           </a>
+
+          <a href="soutenance.html#" class="work-card" data-category="box" data-reveal data-soon>
+            <div class="work-card__media">
+              <img src="img/works/box-01.jpg" alt="Box cadeau soutenance avec dragées et bouquet" loading="lazy" decoding="async">
+              <button class="work-card__wishlist" type="button" aria-label="Ajouter aux favoris" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5l-8-7.5c-2.2-2-2.2-5.4 0-7.4 2-1.9 5.2-1.9 7.2 0l.8.8.8-.8c2-1.9 5.2-1.9 7.2 0 2.2 2 2.2 5.4 0 7.4l-8 7.5z"/></svg>
+              </button>
+            </div>
+            <p class="work-card__label">Box &amp; Cadeaux</p>
+            <h3 class="work-card__title">Box Prestige Soutenance</h3>
+          </a>
+
+          <a href="soutenance.html#" class="work-card" data-category="box" data-reveal data-soon>
+            <div class="work-card__media">
+              <img src="img/works/box-02.jpg" alt="Coffret cadeau personnalisé pour diplômé" loading="lazy" decoding="async">
+              <button class="work-card__wishlist" type="button" aria-label="Ajouter aux favoris" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5l-8-7.5c-2.2-2-2.2-5.4 0-7.4 2-1.9 5.2-1.9 7.2 0l.8.8.8-.8c2-1.9 5.2-1.9 7.2 0 2.2 2 2.2 5.4 0 7.4l-8 7.5z"/></svg>
+              </button>
+            </div>
+            <p class="work-card__label">Box &amp; Cadeaux</p>
+            <h3 class="work-card__title">Coffret Mug &amp; Dragées</h3>
+          </a>
+
+          <a href="soutenance.html#" class="work-card" data-category="decor" data-reveal data-soon>
+            <div class="work-card__media">
+              <img src="img/works/decor-01.jpg" alt="Décoration de soutenance avec backdrop personnalisé" loading="lazy" decoding="async">
+              <button class="work-card__wishlist" type="button" aria-label="Ajouter aux favoris" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5l-8-7.5c-2.2-2-2.2-5.4 0-7.4 2-1.9 5.2-1.9 7.2 0l.8.8.8-.8c2-1.9 5.2-1.9 7.2 0 2.2 2 2.2 5.4 0 7.4l-8 7.5z"/></svg>
+              </button>
+            </div>
+            <p class="work-card__label">Décoration</p>
+            <h3 class="work-card__title">Backdrop « Félicitations »</h3>
+          </a>
+
+          <a href="soutenance.html#" class="work-card" data-category="decor" data-reveal data-soon>
+            <div class="work-card__media">
+              <img src="img/works/decor-02.jpg" alt="Arche de ballons pour réception de soutenance" loading="lazy" decoding="async">
+              <button class="work-card__wishlist" type="button" aria-label="Ajouter aux favoris" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5l-8-7.5c-2.2-2-2.2-5.4 0-7.4 2-1.9 5.2-1.9 7.2 0l.8.8.8-.8c2-1.9 5.2-1.9 7.2 0 2.2 2 2.2 5.4 0 7.4l-8 7.5z"/></svg>
+              </button>
+            </div>
+            <p class="work-card__label">Décoration</p>
+            <h3 class="work-card__title">Arche de Ballons Or &amp; Noir</h3>
+          </a>
+
+          <a href="customizer.html" class="work-card" data-category="toges" data-reveal>
+            <div class="work-card__media">
+              <img src="img/works/toge-03.jpg" alt="Toge bleu marine avec mortier assorti" loading="lazy" decoding="async">
+              <button class="work-card__wishlist" type="button" aria-label="Ajouter aux favoris" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5l-8-7.5c-2.2-2-2.2-5.4 0-7.4 2-1.9 5.2-1.9 7.2 0l.8.8.8-.8c2-1.9 5.2-1.9 7.2 0 2.2 2 2.2 5.4 0 7.4l-8 7.5z"/></svg>
+              </button>
+            </div>
+            <p class="work-card__label">Toges</p>
+            <h3 class="work-card__title">Toge Marine &amp; Mortier Assorti</h3>
+          </a>
+
+          <a href="customizer.html" class="work-card" data-category="echarpes" data-reveal>
+            <div class="work-card__media">
+              <img src="img/works/echarpe-03.jpg" alt="Écharpe brodée aux couleurs de l'université" loading="lazy" decoding="async">
+              <button class="work-card__wishlist" type="button" aria-label="Ajouter aux favoris" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5l-8-7.5c-2.2-2-2.2-5.4 0-7.4 2-1.9 5.2-1.9 7.2 0l.8.8.8-.8c2-1.9 5.2-1.9 7.2 0 2.2 2 2.2 5.4 0 7.4l-8 7.5z"/></svg>
+              </button>
+            </div>
+            <p class="work-card__label">Écharpes</p>
+            <h3 class="work-card__title">Écharpe Couleurs Université</h3>
+          </a>
+
+          <a href="soutenance.html#" class="work-card" data-category="box" data-reveal data-soon>
+            <div class="work-card__media">
+              <img src="img/works/box-03.jpg" alt="Bouquet et cadre photo personnalisé" loading="lazy" decoding="async">
+              <button class="work-card__wishlist" type="button" aria-label="Ajouter aux favoris" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5l-8-7.5c-2.2-2-2.2-5.4 0-7.4 2-1.9 5.2-1.9 7.2 0l.8.8.8-.8c2-1.9 5.2-1.9 7.2 0 2.2 2 2.2 5.4 0 7.4l-8 7.5z"/></svg>
+              </button>
+            </div>
+            <p class="work-card__label">Box &amp; Cadeaux</p>
+            <h3 class="work-card__title">Bouquet &amp; Cadre Souvenir</h3>
+          </a>
+
+          <a href="soutenance.html#" class="work-card" data-category="decor" data-reveal data-soon>
+            <div class="work-card__media">
+              <img src="img/works/decor-03.jpg" alt="Cake topper et décoration de table de soutenance" loading="lazy" decoding="async">
+              <button class="work-card__wishlist" type="button" aria-label="Ajouter aux favoris" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5l-8-7.5c-2.2-2-2.2-5.4 0-7.4 2-1.9 5.2-1.9 7.2 0l.8.8.8-.8c2-1.9 5.2-1.9 7.2 0 2.2 2 2.2 5.4 0 7.4l-8 7.5z"/></svg>
+              </button>
+            </div>
+            <p class="work-card__label">Décoration</p>
+            <h3 class="work-card__title">Table « Docteur » &amp; Cake Topper</h3>
+          </a>
+
         </div>
-      </div>
-    </section>
 
-    <!-- ======================= CUSTOMIZER PROMO ======================= -->
-    <section class="section customizer-promo">
-      <div class="container customizer-promo__inner" data-reveal>
-        <p class="section-head__label">Exclusivité ENMIIS</p>
-        <h2 class="customizer-promo__title">Votre Toge, Vos Couleurs,<br>Votre Nom Brodé</h2>
-        <p class="customizer-promo__text">Choisissez votre modèle, vos tissus et vos couleurs, ajoutez une broderie personnalisée — et visualisez votre tenue de soutenance en direct, avant même de commander.</p>
-        <a href="customizer.html" class="btn btn--solid customizer-promo__cta">Lancer le configurateur</a>
-      </div>
-    </section>
-
-    <!-- ======================= NEWSLETTER ======================= -->
-    <section class="newsletter">
-      <div class="container newsletter__inner" data-reveal>
-        <p class="section-head__label">Restez informé·e</p>
-        <h2 class="newsletter__title">L'Univers ENMIIS,<br>En Avant-Première</h2>
-        <p class="newsletter__text">Nouveautés, créations sur mesure et offres privées — une lettre soignée, jamais de bruit.</p>
-        <form class="newsletter__form" id="newsletterForm">
-          <label class="visually-hidden" for="newsletterEmail">Adresse e-mail</label>
-          <input type="email" id="newsletterEmail" placeholder="Votre adresse e-mail" required>
-          <button class="btn btn--solid" type="submit">S'abonner</button>
-        </form>
-        <p class="newsletter__success" id="newsletterSuccess" hidden>Bienvenue chez ENMIIS. Votre première lettre arrive bientôt.</p>
-        <p class="newsletter__legal">En vous abonnant, vous acceptez notre politique de confidentialité. Désabonnement à tout moment.</p>
+        <!-- ======================= CTA ======================= -->
+        <div class="works-cta" data-reveal>
+          <p class="section-head__label" style="margin-bottom: 1rem;">Envie de la vôtre ?</p>
+          <a href="customizer.html" class="btn btn--solid">Personnaliser ma tenue</a>
+        </div>
       </div>
     </section>
 

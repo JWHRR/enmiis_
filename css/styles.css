@@ -226,6 +226,14 @@ svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width:
   transition: transform 0.3s var(--ease-lux);
 }
 .icon-btn__badge.is-bumped { animation: badge-bump 0.5s var(--ease-lux); }
+
+.icon-btn--disabled {
+  color: var(--ink-faint);
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: default;
+}
+.icon-btn--disabled:hover { color: var(--ink-faint); }
 @keyframes badge-bump {
   0% { transform: scale(1); }
   40% { transform: scale(1.5); }
@@ -1456,6 +1464,75 @@ svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width:
 }
 
 /* ============================================================
+   COMING SOON OVERLAY
+   ============================================================ */
+.construction {
+  position: fixed;
+  inset: 0;
+  z-index: 250;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--gutter);
+  visibility: hidden;
+  transition: visibility 0s linear 0.4s;
+}
+.construction.is-open { visibility: visible; transition-delay: 0s; }
+
+.construction__backdrop {
+  position: absolute; inset: 0;
+  background: rgba(17, 17, 17, 0.5);
+  opacity: 0;
+  transition: opacity 0.4s var(--ease-lux);
+}
+.construction.is-open .construction__backdrop { opacity: 1; }
+
+.construction__panel {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 26rem;
+  background: var(--white);
+  padding: 3rem var(--gutter) 2.5rem;
+  text-align: center;
+  transform: translateY(16px);
+  opacity: 0;
+  transition: transform 0.4s var(--ease-lux), opacity 0.4s var(--ease-lux);
+}
+.construction.is-open .construction__panel { transform: translateY(0); opacity: 1; }
+
+.construction__close {
+  position: absolute;
+  top: 0.75rem; right: 0.75rem;
+  width: 44px; height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+}
+.construction__close svg { width: 18px; height: 18px; }
+
+.construction__label {
+  font-size: var(--fs-label);
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+  margin-bottom: 0.75rem;
+}
+.construction__title {
+  font-family: var(--serif);
+  font-size: 1.7rem;
+  font-weight: 500;
+  line-height: 1.2;
+  margin-bottom: 0.6rem;
+}
+.construction__text {
+  font-size: var(--fs-small);
+  color: var(--ink-soft);
+}
+
+/* ============================================================
    TOAST
    ============================================================ */
 .toast {
@@ -1608,6 +1685,185 @@ svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width:
   .product-card__quickview { transform: translateY(0); background: rgba(255, 255, 255, 0.88); }
   .product-card:active .product-card__img--primary { opacity: 0; }
   .product-card:active .product-card__img--secondary { opacity: 1; }
+}
+
+/* ============================================================
+   CUSTOMIZER PROMO (accueil)
+   ============================================================ */
+.customizer-promo {
+  background: var(--ink);
+  color: var(--white);
+}
+.customizer-promo__inner {
+  padding-block: clamp(3.5rem, 3rem + 4vw, 6.5rem);
+  text-align: center;
+  max-width: 46rem;
+}
+.customizer-promo .section-head__label { color: var(--gold); }
+.customizer-promo__title {
+  font-family: var(--serif);
+  font-size: var(--fs-h2);
+  font-weight: 500;
+  line-height: 1.15;
+  margin: 0.75rem 0 1rem;
+}
+.customizer-promo__text {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: var(--fs-small);
+  max-width: 34rem;
+  margin: 0 auto 2rem;
+}
+.customizer-promo__cta {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--ink);
+}
+.customizer-promo__cta:hover { background: var(--gold-deep); border-color: var(--gold-deep); }
+
+/* ============================================================
+   PAGE HERO (pages intérieures)
+   ============================================================ */
+.page-hero {
+  padding: calc(var(--header-h) * 0) var(--gutter) 0;
+  text-align: center;
+}
+.page-hero__inner {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding-block: clamp(3rem, 2rem + 4vw, 5.5rem) clamp(2rem, 1.5rem + 2vw, 3rem);
+}
+.page-hero__label {
+  font-size: var(--fs-label);
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+  margin-bottom: 0.9rem;
+}
+.page-hero__title {
+  font-family: var(--serif);
+  font-size: var(--fs-h2);
+  font-weight: 500;
+  line-height: 1.1;
+  margin-bottom: 1rem;
+}
+.page-hero__text {
+  color: var(--ink-soft);
+  font-size: var(--fs-small);
+  max-width: 36rem;
+  margin: 0 auto;
+}
+
+/* ============================================================
+   GALERIE DE RÉALISATIONS (soutenance.html)
+   ============================================================ */
+.works-filter {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0 var(--gutter);
+  margin-bottom: clamp(2rem, 1.5rem + 2vw, 3.25rem);
+}
+.works-filter button {
+  padding: 0.55em 1.3em;
+  border: 1px solid var(--line);
+  font-size: var(--fs-label);
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  border-radius: 999px;
+  transition: border-color 0.3s var(--ease-lux), color 0.3s var(--ease-lux), background 0.3s var(--ease-lux);
+}
+.works-filter button:hover { border-color: var(--ink); color: var(--ink); }
+.works-filter button.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--white);
+}
+
+.works-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.25rem 1.25rem;
+}
+
+.work-card {
+  position: relative;
+  display: block;
+}
+.work-card.is-hidden { display: none; }
+.work-card__media {
+  position: relative;
+  overflow: hidden;
+  background: var(--off-white);
+  margin-bottom: 0.9rem;
+}
+.work-card__media img {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  transition: transform 1.1s var(--ease-lux);
+}
+.work-card:hover .work-card__media img { transform: scale(1.05); }
+
+.work-card__wishlist {
+  position: absolute;
+  top: 0.6rem; right: 0.6rem;
+  width: 40px; height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.88);
+  border-radius: 999px;
+  color: var(--ink);
+  transition: color 0.3s var(--ease-lux), transform 0.3s var(--ease-lux);
+}
+.work-card__wishlist svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+.work-card__wishlist.is-active { color: var(--gold-deep); }
+.work-card__wishlist.is-active svg { fill: currentColor; }
+.work-card__wishlist.is-popped { animation: badge-bump 0.5s var(--ease-lux); }
+
+.work-card__label {
+  font-size: var(--fs-label);
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+  margin-bottom: 0.3rem;
+}
+.work-card__title {
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  font-weight: 500;
+  line-height: 1.25;
+}
+.work-card.is-placeholder .work-card__media::after {
+  content: "Votre photo ici";
+  position: absolute;
+  left: 50%; bottom: 12%;
+  transform: translateX(-50%);
+  font-size: var(--fs-label);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #B9A88C;
+  white-space: nowrap;
+}
+
+.works-cta {
+  margin-top: clamp(3rem, 2rem + 4vw, 5rem);
+  text-align: center;
+}
+
+@media (min-width: 600px) {
+  .works-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1024px) {
+  .works-grid { grid-template-columns: repeat(3, 1fr); gap: 3rem 1.75rem; }
+}
+@media (min-width: 1280px) {
+  .works-grid { grid-template-columns: repeat(4, 1fr); }
 }
 
 /* ============================================================
