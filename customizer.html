@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Personnalisez Votre Tenue de Soutenance | ENMIIS</title>
-  <meta name="description" content="Configurateur ENMIIS : composez votre toge de soutenance sur mesure — couleurs, broderie personnalisée, accessoires — avec aperçu en direct.">
+  <meta name="description" content="Configurateur ENMIIS : composez votre tenue de soutenance pièce par pièce — robe, mortier, capuche, broderie — avec devis instantané et facture.">
   <meta name="theme-color" content="#FFFFFF">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -47,6 +47,7 @@
 
     <!-- ======================= PREVIEW ======================= -->
     <section class="cz-preview" aria-label="Aperçu du produit">
+      <p class="cz-preview__focus" id="czFocusLabel"></p>
       <div class="cz-stage" id="czStage">
         <svg id="czSvg" viewBox="0 0 400 540" role="img" aria-label="Aperçu en direct de votre tenue personnalisée">
           <defs>
@@ -59,33 +60,26 @@
 
           <!-- ============ VUE AVANT ============ -->
           <g id="czFront">
-            <!-- Toge -->
+            <!-- Robe -->
             <g id="czGownFront">
-              <!-- Manches -->
               <path class="cz-p-sleeve" d="M152 96 C 122 150 98 226 84 306 C 104 322 128 326 150 318 C 158 246 160 168 163 104 Z"/>
               <path class="cz-p-sleeve" d="M248 96 C 278 150 302 226 316 306 C 296 322 272 326 250 318 C 242 246 240 168 237 104 Z"/>
-              <!-- Poignets (accent) -->
               <path class="cz-p-accent" d="M86 294 C 104 310 128 314 148 307 L 150 318 C 128 326 104 322 84 306 Z"/>
               <path class="cz-p-accent" d="M314 294 C 296 310 272 314 252 307 L 250 318 C 272 326 296 322 316 306 Z"/>
-              <!-- Corps -->
               <path class="cz-p-main" d="M158 92 C 200 76 200 76 242 92 C 250 200 258 340 266 486 L 134 486 C 142 340 150 200 158 92 Z"/>
               <path d="M158 92 C 200 76 200 76 242 92 C 250 200 258 340 266 486 L 134 486 C 142 340 150 200 158 92 Z" fill="url(#czShade)"/>
-              <!-- Plis -->
               <path d="M170 130 C 168 240 164 360 160 470" class="cz-fold"/>
               <path d="M230 130 C 232 240 236 360 240 470" class="cz-fold"/>
-              <!-- Bandes avant (bordure) -->
               <path class="cz-p-trim" d="M182 88 L 174 486 L 190 486 L 195 90 Z"/>
               <path class="cz-p-trim" d="M218 88 L 226 486 L 210 486 L 205 90 Z"/>
-              <!-- Col -->
               <path class="cz-p-trim" d="M170 90 C 190 78 210 78 230 90 L 224 100 C 208 90 192 90 176 100 Z"/>
-              <!-- Chevrons de manche (accent) -->
               <path class="cz-p-accent" d="M104 210 C 118 218 134 220 150 216 L 150 228 C 134 232 116 230 101 222 Z"/>
               <path class="cz-p-accent" d="M96 248 C 112 256 130 258 149 254 L 149 266 C 129 270 109 268 92 260 Z"/>
               <path class="cz-p-accent" d="M296 210 C 282 218 266 220 250 216 L 250 228 C 266 232 284 230 299 222 Z"/>
               <path class="cz-p-accent" d="M304 248 C 288 256 270 258 251 254 L 251 266 C 271 270 291 268 308 260 Z"/>
             </g>
 
-            <!-- Capuche portée / seule -->
+            <!-- Capuche -->
             <g id="czHoodFront">
               <path class="cz-p-main" d="M158 96 C 176 130 224 130 242 96 C 252 122 258 160 252 196 C 236 230 164 230 148 196 C 142 160 148 122 158 96 Z"/>
               <path class="cz-p-trim" d="M166 108 C 182 136 218 136 234 108 C 242 130 246 160 241 190 C 228 218 172 218 159 190 C 154 160 158 130 166 108 Z"/>
@@ -118,10 +112,8 @@
               <path class="cz-p-accent" d="M314 294 C 296 310 272 314 252 307 L 250 318 C 272 326 296 322 316 306 Z"/>
               <path class="cz-p-main" d="M158 92 C 200 76 200 76 242 92 C 250 200 258 340 266 486 L 134 486 C 142 340 150 200 158 92 Z"/>
               <path d="M158 92 C 200 76 200 76 242 92 C 250 200 258 340 266 486 L 134 486 C 142 340 150 200 158 92 Z" fill="url(#czShade)"/>
-              <!-- Empiècement dos -->
               <path class="cz-p-main" d="M162 92 C 200 78 200 78 238 92 L 236 128 C 200 116 200 116 164 128 Z"/>
               <path d="M162 92 C 200 78 200 78 238 92 L 236 128 C 200 116 200 116 164 128 Z" fill="#000" opacity="0.05"/>
-              <!-- Plis dos -->
               <path d="M178 130 C 176 250 172 370 168 470" class="cz-fold"/>
               <path d="M200 126 C 200 250 200 370 200 470" class="cz-fold"/>
               <path d="M222 130 C 224 250 228 370 232 470" class="cz-fold"/>
@@ -155,227 +147,65 @@
       <header class="cz-panel__head">
         <p class="cz-panel__label">Le configurateur ENMIIS</p>
         <h1 class="cz-panel__title">Composez Votre Tenue</h1>
-        <p class="cz-panel__stepcount" id="czStepCount">Étape 1 sur 10</p>
+        <p class="cz-panel__stepcount" id="czStepCount"></p>
       </header>
 
-      <div class="cz-steps" id="czSteps">
-
-        <!-- 1. PRODUIT -->
-        <section class="cz-step" data-step="product">
-          <button class="cz-step__head" type="button" aria-expanded="true" aria-controls="czStepProduct">
-            <span class="cz-step__num">1</span>
-            <span class="cz-step__title">Produit<small class="cz-step__value" data-value></small></span>
-            <svg class="cz-step__chev" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
-          <div class="cz-step__body" id="czStepProduct">
-            <div class="cz-cards" id="czProductCards"></div>
-            <button class="btn btn--solid cz-next" type="button">Continuer</button>
-          </div>
-        </section>
-
-        <!-- 2. TAILLE -->
-        <section class="cz-step" data-step="size">
-          <button class="cz-step__head" type="button" aria-expanded="false" aria-controls="czStepSize">
-            <span class="cz-step__num">2</span>
-            <span class="cz-step__title">Taille<small class="cz-step__value" data-value></small></span>
-            <svg class="cz-step__chev" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
-          <div class="cz-step__body" id="czStepSize" hidden>
-            <div class="cz-sizes" id="czSizes" role="group" aria-label="Choisir la taille"></div>
-            <p class="cz-error" data-error hidden>Veuillez choisir votre taille.</p>
-            <button class="btn btn--solid cz-next" type="button">Continuer</button>
-          </div>
-        </section>
-
-        <!-- 3. COULEUR PRINCIPALE -->
-        <section class="cz-step" data-step="main">
-          <button class="cz-step__head" type="button" aria-expanded="false" aria-controls="czStepMain">
-            <span class="cz-step__num">3</span>
-            <span class="cz-step__title">Tissu principal<small class="cz-step__value" data-value></small></span>
-            <svg class="cz-step__chev" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
-          <div class="cz-step__body" id="czStepMain" hidden>
-            <div class="cz-swatches" id="czMainSwatches" role="group" aria-label="Couleur du tissu principal"></div>
-            <button class="btn btn--solid cz-next" type="button">Continuer</button>
-          </div>
-        </section>
-
-        <!-- 4. BORDURE -->
-        <section class="cz-step" data-step="trim">
-          <button class="cz-step__head" type="button" aria-expanded="false" aria-controls="czStepTrim">
-            <span class="cz-step__num">4</span>
-            <span class="cz-step__title">Bordure &amp; satin<small class="cz-step__value" data-value></small></span>
-            <svg class="cz-step__chev" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
-          <div class="cz-step__body" id="czStepTrim" hidden>
-            <div class="cz-swatches" id="czTrimSwatches" role="group" aria-label="Couleur de la bordure"></div>
-            <button class="btn btn--solid cz-next" type="button">Continuer</button>
-          </div>
-        </section>
-
-        <!-- 5. MANCHES -->
-        <section class="cz-step" data-step="sleeve">
-          <button class="cz-step__head" type="button" aria-expanded="false" aria-controls="czStepSleeve">
-            <span class="cz-step__num">5</span>
-            <span class="cz-step__title">Manches<small class="cz-step__value" data-value></small></span>
-            <svg class="cz-step__chev" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
-          <div class="cz-step__body" id="czStepSleeve" hidden>
-            <div class="cz-swatches" id="czSleeveSwatches" role="group" aria-label="Couleur des manches"></div>
-            <button class="btn btn--solid cz-next" type="button">Continuer</button>
-          </div>
-        </section>
-
-        <!-- 6. ACCENT -->
-        <section class="cz-step" data-step="accent">
-          <button class="cz-step__head" type="button" aria-expanded="false" aria-controls="czStepAccent">
-            <span class="cz-step__num">6</span>
-            <span class="cz-step__title">Détails &amp; accents<small class="cz-step__value" data-value></small></span>
-            <svg class="cz-step__chev" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
-          <div class="cz-step__body" id="czStepAccent" hidden>
-            <p class="cz-help">Chevrons de manches, poignets, bouton et gland.</p>
-            <div class="cz-swatches" id="czAccentSwatches" role="group" aria-label="Couleur des accents"></div>
-            <button class="btn btn--solid cz-next" type="button">Continuer</button>
-          </div>
-        </section>
-
-        <!-- 7. BRODERIE -->
-        <section class="cz-step" data-step="embroidery">
-          <button class="cz-step__head" type="button" aria-expanded="false" aria-controls="czStepEmb">
-            <span class="cz-step__num">7</span>
-            <span class="cz-step__title">Broderie<small class="cz-step__value" data-value></small></span>
-            <svg class="cz-step__chev" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
-          <div class="cz-step__body" id="czStepEmb" hidden>
-
-            <div class="cz-toggle" role="group" aria-label="Ajouter une broderie">
-              <button type="button" id="czEmbNo" class="is-active" aria-pressed="true">Sans broderie</button>
-              <button type="button" id="czEmbYes" aria-pressed="false">Avec broderie <span class="cz-plus">+25 TND</span></button>
-            </div>
-
-            <div class="cz-emb" id="czEmbOptions" hidden>
-
-              <div class="cz-field">
-                <label for="czEmbText">Texte à broder</label>
-                <input type="text" id="czEmbText" maxlength="26" placeholder="Ex : Dr Salhi Wafa" autocomplete="off">
-                <p class="cz-error" data-error hidden>Ajoutez un texte ou un logo pour la broderie.</p>
-              </div>
-
-              <div class="cz-field">
-                <span class="cz-field__label" id="czFontLabel">Police</span>
-                <div class="cz-fonts" role="group" aria-labelledby="czFontLabel" id="czFonts">
-                  <button type="button" data-font="serif" class="is-active" aria-pressed="true" style="font-family:'Cormorant Garamond',serif;">Élégante</button>
-                  <button type="button" data-font="script" aria-pressed="false" style="font-family:'Great Vibes',cursive;">Calligraphie</button>
-                  <button type="button" data-font="modern" aria-pressed="false" style="font-family:'Inter',sans-serif;">Moderne</button>
-                </div>
-              </div>
-
-              <div class="cz-field">
-                <span class="cz-field__label" id="czThreadLabel">Couleur du fil</span>
-                <div class="cz-swatches cz-swatches--small" id="czThreadSwatches" role="group" aria-labelledby="czThreadLabel"></div>
-              </div>
-
-              <div class="cz-field">
-                <span class="cz-field__label" id="czPosLabel">Position</span>
-                <div class="cz-positions" role="group" aria-labelledby="czPosLabel" id="czPositions">
-                  <button type="button" data-pos="chest-right" class="is-active" aria-pressed="true">Poitrine droite</button>
-                  <button type="button" data-pos="chest-left" aria-pressed="false">Poitrine gauche</button>
-                  <button type="button" data-pos="back" aria-pressed="false">Dos</button>
-                </div>
-              </div>
-
-              <div class="cz-field">
-                <span class="cz-field__label">Logo ou image <span class="cz-plus">+20 TND</span></span>
-                <label class="cz-upload" for="czLogoInput">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"/><polyline points="7 9 12 4 17 9"/><path d="M4 20h16"/></svg>
-                  <span id="czUploadLabel">Téléverser un logo (PNG, JPG)</span>
-                </label>
-                <input type="file" id="czLogoInput" accept="image/*" class="visually-hidden">
-                <button type="button" class="cz-upload__remove" id="czLogoRemove" hidden>Retirer le logo</button>
-              </div>
-
-            </div>
-
-            <button class="btn btn--solid cz-next" type="button">Continuer</button>
-          </div>
-        </section>
-
-        <!-- 8. ACCESSOIRES -->
-        <section class="cz-step" data-step="accessories">
-          <button class="cz-step__head" type="button" aria-expanded="false" aria-controls="czStepAcc">
-            <span class="cz-step__num">8</span>
-            <span class="cz-step__title">Accessoires<small class="cz-step__value" data-value></small></span>
-            <svg class="cz-step__chev" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
-          <div class="cz-step__body" id="czStepAcc" hidden>
-            <div class="cz-acc" id="czAccList"></div>
-            <button class="btn btn--solid cz-next" type="button">Continuer</button>
-          </div>
-        </section>
-
-        <!-- 9. QUANTITÉ -->
-        <section class="cz-step" data-step="quantity">
-          <button class="cz-step__head" type="button" aria-expanded="false" aria-controls="czStepQty">
-            <span class="cz-step__num">9</span>
-            <span class="cz-step__title">Quantité<small class="cz-step__value" data-value></small></span>
-            <svg class="cz-step__chev" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
-          <div class="cz-step__body" id="czStepQty" hidden>
-            <div class="cz-qty">
-              <button type="button" id="czQtyMinus" aria-label="Diminuer la quantité">−</button>
-              <span id="czQtyValue" aria-live="polite">1</span>
-              <button type="button" id="czQtyPlus" aria-label="Augmenter la quantité">+</button>
-            </div>
-            <p class="cz-help">Commande groupée pour votre promotion ? Contactez-nous pour un tarif de groupe.</p>
-            <button class="btn btn--solid cz-next" type="button">Continuer</button>
-          </div>
-        </section>
-
-        <!-- 10. RÉCAPITULATIF -->
-        <section class="cz-step" data-step="summary">
-          <button class="cz-step__head" type="button" aria-expanded="false" aria-controls="czStepSummary">
-            <span class="cz-step__num">10</span>
-            <span class="cz-step__title">Récapitulatif<small class="cz-step__value" data-value></small></span>
-            <svg class="cz-step__chev" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
-          <div class="cz-step__body" id="czStepSummary" hidden>
-            <dl class="cz-summary" id="czSummaryList"></dl>
-            <div class="cz-estimates">
-              <p><span>Confection estimée</span><strong id="czEstProd">5–7 jours ouvrés</strong></p>
-              <p><span>Livraison</span><strong id="czEstShip">2–4 jours, offerte</strong></p>
-            </div>
-          </div>
-        </section>
-
-      </div>
+      <div class="cz-steps" id="czSteps"><!-- généré par customizer.js --></div>
     </section>
   </main>
 
   <!-- ======================= BOTTOM BAR ======================= -->
   <div class="cz-bar">
     <div class="cz-bar__price">
-      <span class="cz-bar__label">Total</span>
+      <span class="cz-bar__label">Total estimé</span>
       <strong id="czTotal" aria-live="polite">170 TND</strong>
     </div>
-    <button class="btn btn--solid cz-bar__cta" id="czOrder" type="button" aria-disabled="true">Finaliser ma commande</button>
+    <button class="btn btn--solid cz-bar__cta" id="czOrder" type="button" aria-disabled="true">Obtenir ma facture</button>
   </div>
 
-  <!-- ======================= ORDER MODAL ======================= -->
+  <!-- ======================= FACTURE (modal) ======================= -->
   <div class="cz-modal" id="czModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="czModalTitle">
     <div class="cz-modal__backdrop" data-cz-modal-close></div>
-    <div class="cz-modal__panel">
+    <div class="cz-modal__panel cz-invoice" id="czInvoice">
       <button class="cz-modal__close" type="button" aria-label="Fermer" data-cz-modal-close>
         <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
       </button>
-      <p class="cz-modal__label">Votre création est prête</p>
-      <h2 class="cz-modal__title" id="czModalTitle">Récapitulatif de commande</h2>
-      <pre class="cz-modal__recap" id="czModalRecap"></pre>
-      <div class="cz-modal__actions">
-        <a class="btn btn--solid" id="czModalIg" href="https://www.instagram.com/enmiis_soutenance_tunisie/" target="_blank" rel="noopener">Commander sur Instagram</a>
-        <button class="btn btn--line" id="czModalCopy" type="button">Copier le récapitulatif</button>
+
+      <div class="cz-invoice__head">
+        <div>
+          <p class="cz-invoice__brand">ENMIIS</p>
+          <p class="cz-invoice__sub">Tenues de soutenance &amp; broderie — Tunisie</p>
+        </div>
+        <div class="cz-invoice__meta">
+          <p><span>Facture n°</span> <strong id="czInvNum"></strong></p>
+          <p><span>Date</span> <strong id="czInvDate"></strong></p>
+        </div>
       </div>
-      <p class="cz-modal__note">Envoyez-nous ce récapitulatif en message — nous confirmons votre commande sous 24 h.</p>
+
+      <h2 class="visually-hidden" id="czModalTitle">Facture</h2>
+
+      <div class="cz-invoice__client" id="czInvClient"></div>
+
+      <table class="cz-invoice__table">
+        <thead>
+          <tr><th>Désignation</th><th>Montant</th></tr>
+        </thead>
+        <tbody id="czInvLines"></tbody>
+        <tfoot id="czInvTotals"></tfoot>
+      </table>
+
+      <p class="cz-invoice__note">Devis approximatif généré par le configurateur — le prix final est confirmé
+        après prise de mesures et validation de la broderie. Valable 15 jours.</p>
+
+      <div class="cz-modal__actions">
+        <a class="btn btn--solid" id="czInvWhatsapp" href="#" target="_blank" rel="noopener" hidden>Envoyer sur WhatsApp</a>
+        <a class="btn btn--solid" id="czInvInstagram" href="https://www.instagram.com/enmiis_soutenance_tunisie/" target="_blank" rel="noopener">Commander sur Instagram</a>
+        <div class="cz-invoice__row">
+          <button class="btn btn--line" id="czInvPrint" type="button">Imprimer / PDF</button>
+          <button class="btn btn--line" id="czInvCopy" type="button">Copier</button>
+        </div>
+      </div>
+      <p class="cz-modal__note">Envoyez-nous cette facture en message — nous confirmons votre commande sous 24 h.</p>
     </div>
   </div>
 
