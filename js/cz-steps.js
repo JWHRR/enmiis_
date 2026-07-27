@@ -112,10 +112,32 @@
   /* ----------------------------------------------------------
      Illustrations des guides de mesure
      ---------------------------------------------------------- */
+
+  /* Tête de profil, ruban placé à la hauteur demandée (planche coiffe). */
+  function headProfile(tapeY, number) {
+    return '<svg viewBox="0 0 120 140" aria-hidden="true">' +
+      /* crâne et visage */
+      '<path class="fig-body" d="M62 22 C 38 22 26 40 26 62 C 26 74 30 84 34 90 L 34 106 C 34 112 40 116 48 116 L 76 116"/>' +
+      '<path class="fig-body" d="M26 58 C 20 58 18 66 20 72 C 22 77 27 78 30 77"/>' +
+      '<path class="fig-body" d="M62 22 C 82 22 92 38 92 60 C 92 82 80 100 62 106"/>' +
+      /* oreille */
+      '<path class="fig-body" d="M66 62 C 72 58 78 62 76 70 C 75 76 69 78 66 75"/>' +
+      /* ruban de mesure à la hauteur voulue */
+      '<path class="fig-tape" d="M26 ' + tapeY + ' C 40 ' + (tapeY - 7) + ' 78 ' + (tapeY - 7) + ' 92 ' + tapeY + '"/>' +
+      '<circle class="fig-dot" cx="60" cy="128" r="11"/>' +
+      '<text class="fig-num" x="60" y="132" text-anchor="middle">' + number + '</text>' +
+      '</svg>';
+  }
+
   const FIGURES = {
     height: '<svg viewBox="0 0 200 200" aria-hidden="true"><path class="fig-body" d="M100 42 C 92 42 88 48 88 56 C 88 64 92 70 100 70 C 108 70 112 64 112 56 C 112 48 108 42 100 42 Z"/><path class="fig-body" d="M86 72 L 114 72 L 120 118 L 114 118 L 112 170 L 88 170 L 86 118 L 80 118 Z"/><line class="fig-wall" x1="150" y1="24" x2="150" y2="184"/><line class="fig-mark" x1="60" y1="38" x2="160" y2="38"/><line class="fig-mark" x1="60" y1="180" x2="160" y2="180"/><line class="fig-arrow" x1="140" y1="38" x2="140" y2="180"/><text class="fig-num" x="132" y="112" text-anchor="end">1</text></svg>',
     weight: '<svg viewBox="0 0 200 200" aria-hidden="true"><path class="fig-body" d="M100 36 C 92 36 88 42 88 50 C 88 58 92 64 100 64 C 108 64 112 58 112 50 C 112 42 108 36 100 36 Z"/><path class="fig-body" d="M86 66 L 114 66 L 120 112 L 112 112 L 110 148 L 90 148 L 88 112 L 80 112 Z"/><rect class="fig-mark" x="62" y="150" width="76" height="24" rx="4"/><path class="fig-arrow" d="M84 162 A 16 16 0 0 1 116 162"/><line class="fig-arrow" x1="100" y1="162" x2="110" y2="155"/></svg>',
     head: '<svg viewBox="0 0 200 200" aria-hidden="true"><path class="fig-body" d="M100 30 C 72 30 56 52 56 82 C 56 112 72 136 100 140 C 128 136 144 112 144 82 C 144 52 128 30 100 30 Z"/><ellipse class="fig-tape" cx="100" cy="66" rx="46" ry="11"/><ellipse class="fig-mark" cx="100" cy="84" rx="47" ry="11"/><ellipse class="fig-mark" cx="100" cy="102" rx="45" ry="11"/><circle class="fig-dot" cx="152" cy="66" r="9"/><text class="fig-num" x="152" y="70" text-anchor="middle">1</text><circle class="fig-dot" cx="154" cy="84" r="9"/><text class="fig-num" x="154" y="88" text-anchor="middle">2</text><circle class="fig-dot" cx="152" cy="102" r="9"/><text class="fig-num" x="152" y="106" text-anchor="middle">3</text><path class="fig-body" d="M56 78 C 48 78 46 92 54 94"/><path class="fig-body" d="M144 78 C 152 78 154 92 146 94"/></svg>',
+    /* Trois têtes de profil reprenant les trois positions de la planche
+       coiffe : seul le niveau du ruban change d’une vignette à l’autre. */
+    head1: headProfile(62, 1),
+    head2: headProfile(80, 2),
+    head3: headProfile(98, 3),
     chest: '<svg viewBox="0 0 200 200" aria-hidden="true"><path class="fig-body" d="M100 26 C 92 26 88 32 88 40 C 88 48 92 54 100 54 C 108 54 112 48 112 40 C 112 32 108 26 100 26 Z"/><path class="fig-body" d="M84 58 L 116 58 L 128 84 L 124 130 L 76 130 L 72 84 Z"/><path class="fig-body" d="M84 58 L 60 78 L 56 130"/><path class="fig-body" d="M116 58 L 140 78 L 144 130"/><ellipse class="fig-tape" cx="100" cy="86" rx="32" ry="9"/><text class="fig-num" x="100" y="164" text-anchor="middle">6</text><line class="fig-arrow" x1="68" y1="152" x2="132" y2="152"/></svg>',
     waist: '<svg viewBox="0 0 200 200" aria-hidden="true"><path class="fig-body" d="M100 26 C 92 26 88 32 88 40 C 88 48 92 54 100 54 C 108 54 112 48 112 40 C 112 32 108 26 100 26 Z"/><path class="fig-body" d="M84 58 L 116 58 L 126 86 L 116 112 L 122 150 L 78 150 L 84 112 L 74 86 Z"/><ellipse class="fig-tape" cx="100" cy="112" rx="22" ry="8"/><line class="fig-arrow" x1="132" y1="112" x2="164" y2="112"/></svg>',
     hip: '<svg viewBox="0 0 200 200" aria-hidden="true"><path class="fig-body" d="M100 26 C 92 26 88 32 88 40 C 88 48 92 54 100 54 C 108 54 112 48 112 40 C 112 32 108 26 100 26 Z"/><path class="fig-body" d="M84 58 L 116 58 L 124 88 L 114 108 L 126 140 L 74 140 L 86 108 L 76 88 Z"/><path class="fig-body" d="M78 142 L 94 142 L 92 178 L 80 178 Z"/><path class="fig-body" d="M106 142 L 122 142 L 120 178 L 108 178 Z"/><ellipse class="fig-tape" cx="100" cy="134" rx="30" ry="9"/><text class="fig-num" x="100" y="192" text-anchor="middle">3</text></svg>',

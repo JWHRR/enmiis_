@@ -316,6 +316,39 @@
       '</section>';
   }
 
+  /* Visuels brodés joints à la configuration (hors fichiers de production). */
+  function artworkBlock(order) {
+    const s = order.config;
+    const items = [
+      { id: 'uni', src: s.robe.emb.uniLogo, name: s.robe.emb.uniLogoName, role: 'Logo université' },
+      { id: 'fac', src: s.robe.emb.facLogo, name: s.robe.emb.facLogoName, role: 'Logo faculté' },
+      { id: 'cap', src: s.cap.logo, name: s.cap.logoName, role: 'Logo mortier' },
+    ].filter((item) => item.src);
+
+    if (!items.length) return '';
+    return '<section class="ad-block"><h3 class="ad-block__title">Visuels à broder ' +
+      '<span class="ad-block__count">' + items.length + '</span></h3>' +
+      '<ul class="ad-art">' + items.map((item) =>
+        '<li class="ad-art__item">' +
+          '<button type="button" class="ad-art__thumb" data-art="' + item.id + '" ' +
+            'aria-label="Agrandir ' + esc(item.role) + '">' +
+            '<img src="' + esc(item.src) + '" alt="' + esc(item.role) + '">' +
+          '</button>' +
+          '<span class="ad-art__role">' + esc(item.role) + '</span>' +
+          '<span class="ad-art__name">' + esc(item.name || '—') + '</span>' +
+          '<a class="ad-file__btn" href="' + esc(item.src) + '" download="' +
+            esc(item.name || item.role) + '">Télécharger</a>' +
+        '</li>').join('') + '</ul></section>';
+  }
+
+  function artworkOf(order, id) {
+    const s = order.config;
+    if (id === 'uni') return { src: s.robe.emb.uniLogo, name: s.robe.emb.uniLogoName || 'Logo université' };
+    if (id === 'fac') return { src: s.robe.emb.facLogo, name: s.robe.emb.facLogoName || 'Logo faculté' };
+    if (id === 'cap') return { src: s.cap.logo, name: s.cap.logoName || 'Logo mortier' };
+    return null;
+  }
+
   function renderDetail() {
     const order = orders.find((o) => o.ref === selectedRef);
     const body = $('#adBody');
@@ -370,6 +403,7 @@
       '</section>' +
 
       filesBlock(order) +
+      artworkBlock(order) +
       specRows(order) +
       measureTable(order) +
 
@@ -629,6 +663,13 @@
       if (preview) {
         const file = (order.config.files || []).find((f) => f.id === preview.getAttribute('data-preview'));
         if (file) openModal(file.name, '<img src="' + esc(file.preview) + '" alt="' + esc(file.name) + '">');
+        return;
+      }
+
+      const art = event.target.closest('[data-art]');
+      if (art) {
+        const item = artworkOf(order, art.getAttribute('data-art'));
+        if (item) openModal(item.name, '<img src="' + esc(item.src) + '" alt="' + esc(item.name) + '">');
         return;
       }
 

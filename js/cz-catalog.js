@@ -200,13 +200,18 @@
       hint: 'Circonférence du mortier',
       guide: {
         figure: 'head',
-        steps: [
-          'Position 1 — placez le mètre à plat sur le front, juste au-dessus des sourcils.',
-          'Position 2 — faites-le passer au-dessus des oreilles, sans les écraser.',
-          'Position 3 — refermez sur la nuque, au point le plus large du crâne.',
-          'Le ruban doit être bien horizontal et poser sans serrer : relevez la valeur en cm.',
+        /* Les trois passages du ruban de la planche coiffe, présentés côte à
+           côte comme sur la planche plutôt qu’en liste verticale. */
+        row: [
+          { n: 1, figure: 'head1', title: 'Sur le front', text: 'Ruban à plat, juste au-dessus des sourcils.' },
+          { n: 2, figure: 'head2', title: 'Au-dessus des oreilles', text: 'Sans les écraser, ruban bien horizontal.' },
+          { n: 3, figure: 'head3', title: 'Sur la nuque', text: 'Au point le plus large de l’arrière du crâne.' },
         ],
-        tip: 'Les trois repères de la planche coiffe correspondent aux trois passages du ruban.',
+        steps: [
+          'Faites les trois passages ci-dessus et retenez la valeur la plus grande.',
+          'Le ruban doit poser sans serrer : glissez un doigt dessous pour vérifier.',
+        ],
+        tip: 'Cheveux détachés et sans accessoire : c’est cette mesure qui donne la taille du mortier.',
       },
     },
     {

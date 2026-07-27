@@ -135,150 +135,120 @@
 .cz-layout { display: grid; grid-template-columns: 1fr; }
 
 /* ============================================================
-   APERÇU
+   APERÇU PHOTOGRAPHIQUE
+   La photo produit est posée en « multiply » sur un cadre coloré :
+   son fond blanc laisse passer la couleur, ses plis la teintent.
    ============================================================ */
 .cz-preview {
   position: sticky;
   top: 106px;
   z-index: 110;
   background:
-    radial-gradient(120% 90% at 50% 8%, #FFFFFF 0%, #F4F1EC 46%, #E7E2D9 100%);
+    radial-gradient(120% 90% at 50% 6%, #FFFFFF 0%, #F5F2ED 48%, #E9E4DB 100%);
   border-bottom: 1px solid var(--line);
-  padding: 0.5rem 0 0.25rem;
+  padding: 1rem 0 1.1rem;
 }
 .cz-stage {
   position: relative;
-  height: min(40vh, 330px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  touch-action: pan-y;
-  cursor: grab;
-  outline: none;
-}
-.cz-stage.is-dragging { cursor: grabbing; }
-
-.cz-stage__scene {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  perspective: 1400px;
-  perspective-origin: 50% 42%;
-  transform: translateY(var(--cz-pan, 0%));
-  transition: transform 0.8s var(--ease-lux);
-}
-.cz-stage__float {
-  height: 100%;
-  transform-style: preserve-3d;
-  transition: transform 0.55s var(--ease-lux);
-  animation: cz-float 7s ease-in-out infinite;
-  will-change: transform;
-}
-.cz-stage.is-dragging .cz-stage__float { transition: none; animation-play-state: paused; }
-
-@keyframes cz-float {
-  0%, 100% { translate: 0 0; }
-  50%      { translate: 0 -9px; }
-}
-
-.cz-stage svg#czSvg {
-  height: 100%;
-  width: auto;
-  overflow: visible;
-  filter: drop-shadow(0 22px 34px rgba(17, 17, 17, 0.16));
-}
-/* Les enfants héritent de ces valeurs ; chaque classe reprend la main
-   sur son propre remplissage ou tracé (l’héritage cède devant toute
-   déclaration directe, y compris les attributs de présentation). */
-#czSvg { fill: none; stroke: none; }
-
-/* Pièces du vêtement */
-#czGown, #czHood, #czCap, #czTassel {
-  transition: opacity 0.5s var(--ease-lux);
-}
-.is-dimmed { opacity: 0.24; }
-
-.cz-sheen { opacity: var(--cz-sheen, 0.08); mix-blend-mode: screen; }
-.cz-folds path {
-  fill: none;
-  stroke: rgba(0, 0, 0, 0.22);
-  stroke-width: 1;
-  transition: opacity 0.5s var(--ease-lux);
-}
-#czSvg[data-trim="liseré"] #czTrim { transform: scaleX(0.4); transform-origin: 200px 0; }
-#czSvg[data-sleeve="droite"] .cz-p-sleeve { transform: scaleX(0.86); transform-origin: 200px 0; }
-#czSvg[data-sleeve="pointe"] .cz-cuff { opacity: 0.35; }
-#czCap[data-material="velours"] .cz-c-board { filter: brightness(0.9); }
-#czCap[data-material="satin"] .cz-c-board { filter: brightness(1.12) saturate(1.1); }
-
-.cz-c-seam { stroke: rgba(255, 255, 255, 0.22); stroke-width: 1; }
-/* Les franges sont de la couleur du gland : le mode « multiply » les
-   assombrit sur la jupe pour dessiner le tombé, quelle que soit la teinte. */
-.cz-t-strand { stroke-width: 1.4; stroke-linecap: round; mix-blend-mode: multiply; opacity: 0.55; }
-.cz-t-cord { stroke-width: 2.6; stroke-linecap: round; }
-.cz-t-knot { stroke-width: 1.6; stroke-linecap: round; }
-
-/* Balancement du gland — amplifié pendant la rotation */
-.cz-t-swing {
-  animation: cz-swing calc(3.4s / var(--cz-swing, 1)) ease-in-out infinite;
-  will-change: transform;
-}
-@keyframes cz-swing {
-  0%, 100% { transform: rotate(calc(-2.6deg * var(--cz-swing, 1))); }
-  50%      { transform: rotate(calc(2.6deg * var(--cz-swing, 1))); }
-}
-.cz-no-motion .cz-t-swing { animation: none; }
-
-.cz-stage__tools {
-  position: absolute;
-  right: 0.75rem;
-  top: 50%;
-  translate: 0 -50%;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  z-index: 4;
+  align-items: center;
+  gap: 0.75rem;
+  padding-inline: var(--gutter);
 }
-.cz-tool {
+
+.cz-shot { display: flex; flex-direction: column; align-items: center; gap: 0.6rem; }
+
+.cz-shot__frame {
+  position: relative;
+  width: min(46vw, 210px);
+  aspect-ratio: 680 / 911;
+  border-radius: 18px;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--ink);
+  box-shadow: 0 1px 2px rgba(17, 17, 17, 0.08), 0 22px 44px -22px rgba(17, 17, 17, 0.5);
+  transition: background-color 0.55s var(--ease-lux);
+}
+.cz-shot__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+  opacity: 0;
+  transition: opacity 0.5s var(--ease-lux);
+}
+.cz-shot__img.is-on { opacity: 1; }
+
+.cz-shot__caption { text-align: center; }
+.cz-shot__piece {
+  display: block;
+  font-family: var(--serif);
+  font-size: 1.05rem;
+  line-height: 1.2;
+}
+.cz-shot__style {
+  display: block;
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-top: 0.2rem;
+}
+
+.cz-shot__zoom {
+  position: absolute;
+  top: 0;
+  right: var(--gutter);
   width: 34px; height: 34px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
   color: var(--ink);
-  background: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.78);
   border: 1px solid rgba(17, 17, 17, 0.08);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   box-shadow: 0 4px 14px rgba(17, 17, 17, 0.08);
   transition: transform 0.3s var(--ease-lux), background 0.3s var(--ease-lux), color 0.3s var(--ease-lux);
 }
-.cz-tool svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.6; }
-.cz-tool:hover { background: var(--white); transform: translateY(-1px); color: var(--gold-deep); }
-.cz-tool:active { transform: scale(0.9); }
-.cz-tool.is-active { background: var(--ink); color: var(--white); border-color: var(--ink); }
+.cz-shot__zoom svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.6; }
+.cz-shot__zoom:hover { background: var(--white); color: var(--gold-deep); transform: translateY(-1px); }
+.cz-shot__zoom:active { transform: scale(0.9); }
 
-.cz-stage__hint,
-.cz-stage__angle {
-  position: absolute;
-  bottom: 0.5rem;
-  font-size: 0.625rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
-  pointer-events: none;
+/* Pastilles de finition — mises à jour à chaque choix */
+.cz-spec {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem;
+  max-width: 460px;
 }
-.cz-stage__hint { left: 0.9rem; transition: opacity 0.6s var(--ease-lux); }
-.cz-stage__hint.is-dim { opacity: 0; }
-/* Sur écran étroit — et sans souris — la mention de la molette est retirée. */
-.cz-stage__hint-long { display: none; }
-@media (min-width: 700px) and (pointer: fine) {
-  .cz-stage__hint-long { display: inline; }
+.cz-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.28rem 0.65rem;
+  font-size: 0.6875rem;
+  background: rgba(255, 255, 255, 0.76);
+  border: 1px solid rgba(17, 17, 17, 0.07);
+  border-radius: 999px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: cz-chip-in 0.4s var(--ease-lux) both;
 }
-.cz-stage__angle { right: 0.9rem; color: var(--gold-deep); font-weight: 500; }
+@keyframes cz-chip-in { from { opacity: 0; transform: translateY(4px); } }
+.cz-chip__dot {
+  width: 11px; height: 11px;
+  flex: none;
+  border-radius: 50%;
+  border: 1px solid rgba(17, 17, 17, 0.16);
+}
+.cz-chip__label { color: var(--ink-faint); }
+.cz-chip__value { font-weight: 500; color: var(--ink); }
 
 /* ============================================================
    PANNEAU
@@ -1101,11 +1071,58 @@ select.cz-input {
 }
 .cz-lightbox__body img { width: 100%; height: auto; border-radius: 12px; background: #F1EEE8; }
 
+/* Guide en plusieurs positions : les vignettes se rangent côte à côte. */
+.cz-guide__figure--row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  max-width: none;
+  aspect-ratio: auto;
+  padding: 1rem 0.75rem;
+}
+.cz-pos { text-align: center; min-width: 0; }
+.cz-pos__fig {
+  aspect-ratio: 120 / 140;
+  margin-bottom: 0.4rem;
+}
+.cz-pos__fig svg { width: 100%; height: 100%; }
+.cz-pos__title {
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--ink);
+}
+.cz-pos__text {
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  color: var(--ink-faint);
+  margin-top: 0.15rem;
+}
+
+.cz-lightbox__shot {
+  border-radius: 14px;
+  overflow: hidden;
+  isolation: isolate;
+  aspect-ratio: 680 / 911;
+  max-height: 62vh;
+  margin-inline: auto;
+  width: fit-content;
+}
+.cz-lightbox__shot img {
+  display: block;
+  height: 100%;
+  width: auto;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+  border-radius: 0;
+  background: none;
+}
+
 /* ============================================================
    RESPONSIVE
    ============================================================ */
 @media (min-width: 768px) {
-  .cz-stage { height: min(46vh, 400px); }
+  .cz-shot__frame { width: min(34vw, 250px); }
   .cz-measure { grid-template-columns: 104px 1fr; }
   .cz-measure__fig { width: 104px; height: 104px; }
   .cz-file { grid-template-columns: 56px 1fr auto; }
@@ -1132,7 +1149,8 @@ select.cz-input {
     align-items: center;
     padding: 0;
   }
-  .cz-stage { height: 76%; width: 100%; }
+  .cz-shot__frame { width: min(27vw, 372px); }
+  .cz-spec { max-width: 400px; }
   .cz-panel {
     padding-top: 2.5rem;
     max-width: none;
@@ -1151,8 +1169,8 @@ select.cz-input {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cz-stage__float { animation: none; }
-  .cz-t-swing { animation: none; }
+  .cz-shot__img { transition: none; }
+  .cz-chip { animation: none; }
   .cz-drop.is-loading .cz-drop__ring { animation: none; }
   .cz-guide__figure .fig-tape { animation: none; }
   .cz-screen { transition: none; opacity: 1; transform: none; }
@@ -1160,7 +1178,7 @@ select.cz-input {
 }
 
 @media print {
-  .cz-topbar, .cz-rail, .cz-progress, .cz-nav, .cz-stage__tools, .cz-modal { display: none !important; }
+  .cz-topbar, .cz-rail, .cz-progress, .cz-nav, .cz-shot__zoom, .cz-modal { display: none !important; }
   .cz-body { background: var(--white); }
   .cz-preview { position: static; height: auto; }
 }

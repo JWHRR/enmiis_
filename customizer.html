@@ -52,6 +52,36 @@
     <!-- ======================= APERÇU ======================= -->
     <section class="cz-preview" aria-label="Aperçu de votre tenue">
       <div class="cz-stage" id="czStage">
+
+        <figure class="cz-shot" id="czShot">
+          <div class="cz-shot__frame" id="czShotFrame">
+            <img class="cz-shot__img" id="czShotImg" src="img/robe.webp" alt="Aperçu de votre tenue" decoding="async">
+            <img class="cz-shot__img cz-shot__img--next" id="czShotNext" alt="" aria-hidden="true" decoding="async">
+          </div>
+          <figcaption class="cz-shot__caption">
+            <span class="cz-shot__piece" id="czShotPiece"></span>
+            <span class="cz-shot__style" id="czShotStyle"></span>
+          </figcaption>
+        </figure>
+
+        <div class="cz-spec" id="czSpec"><!-- pastilles générées par cz-preview.js --></div>
+
+        <button type="button" class="cz-shot__zoom" id="czShotZoom" aria-label="Agrandir la photo">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <!--
+      ============================================================
+      APERÇU 3D / SVG — DÉSACTIVÉ
+      Ancien aperçu vectoriel en couches (rotation à la souris, zoom,
+      ombre portée, flottement, balancement du gland). Remplacé par les
+      photographies produit ci-dessus. Conservé pour référence : le moteur
+      correspondant est commenté en fin de js/cz-preview.js.
+      ============================================================
+
+      <div class="cz-stage" id="czStage">
         <div class="cz-stage__scene" id="czScene">
           <div class="cz-stage__float" id="czFloat">
             <svg id="czSvg" viewBox="0 0 400 560" role="img" aria-label="Aperçu en direct de votre tenue personnalisée">
@@ -75,18 +105,18 @@
                 </clipPath>
               </defs>
 
-              <!-- ombre portée douce -->
+              / ombre portée douce /
               <ellipse id="czGround" cx="200" cy="512" rx="118" ry="17" fill="url(#czGroundGrad)"/>
 
-              <!-- ============ ROBE ============ -->
+              / ============ ROBE ============ /
               <g id="czGown">
-                <!-- manches -->
+                / manches /
                 <path class="cz-p-sleeve" id="czSleeveL" d="M154 88 C 120 150 96 232 82 314 C 102 332 128 336 152 326 C 158 250 160 172 166 100 Z"/>
                 <path class="cz-p-sleeve" id="czSleeveR" d="M246 88 C 280 150 304 232 318 314 C 298 332 272 336 248 326 C 242 250 240 172 234 100 Z"/>
                 <path class="cz-p-accent cz-cuff" d="M84 300 C 104 318 128 322 150 314 L 152 326 C 128 336 102 332 82 314 Z"/>
                 <path class="cz-p-accent cz-cuff" d="M316 300 C 296 318 272 322 250 314 L 248 326 C 272 336 298 332 318 314 Z"/>
 
-                <!-- corps -->
+                / corps /
                 <path class="cz-p-main" d="M150 92 C 200 70 200 70 250 92 C 254 208 260 354 268 500 L 132 500 C 140 354 146 208 150 92 Z"/>
                 <g clip-path="url(#czGownClip)">
                   <path d="M150 92 C 200 70 200 70 250 92 C 254 208 260 354 268 500 L 132 500 C 140 354 146 208 150 92 Z" fill="url(#czShade)"/>
@@ -99,7 +129,7 @@
                   </g>
                 </g>
 
-                <!-- chevrons de manches -->
+                / chevrons de manches /
                 <g id="czChevrons">
                   <path class="cz-p-accent" d="M102 214 C 118 224 136 226 152 222 L 152 234 C 134 238 114 236 99 227 Z"/>
                   <path class="cz-p-accent" d="M94 254 C 112 264 132 266 151 262 L 151 274 C 130 278 108 276 91 266 Z"/>
@@ -107,7 +137,7 @@
                   <path class="cz-p-accent" d="M306 254 C 288 264 268 266 249 262 L 249 274 C 270 278 292 276 309 266 Z"/>
                 </g>
 
-                <!-- bordure / parement -->
+                / bordure / parement /
                 <g id="czTrim">
                   <path class="cz-p-trim" d="M181 90 L 172 500 L 190 500 L 195 92 Z"/>
                   <path class="cz-p-trim" d="M219 90 L 228 500 L 210 500 L 205 92 Z"/>
@@ -115,16 +145,16 @@
                 <path class="cz-p-collar" id="czCollar" d="M168 92 C 190 78 210 78 232 92 L 225 104 C 208 92 192 92 175 104 Z"/>
               </g>
 
-              <!-- ============ CAPUCHE / ÉTOLE ============ -->
-              <g id="czHood"><!-- injecté par customizer.js --></g>
+              / ============ CAPUCHE / ÉTOLE ============ /
+              <g id="czHood">/ injecté par customizer.js /</g>
 
-              <!-- ============ MORTIER ============ -->
-              <g id="czCap"><!-- injecté par customizer.js --></g>
+              / ============ MORTIER ============ /
+              <g id="czCap">/ injecté par customizer.js /</g>
 
-              <!-- ============ GLAND ============ -->
-              <g id="czTassel"><!-- injecté par customizer.js --></g>
+              / ============ GLAND ============ /
+              <g id="czTassel">/ injecté par customizer.js /</g>
 
-              <!-- ============ BRODERIES ============ -->
+              / ============ BRODERIES ============ /
               <g id="czEmb">
                 <image id="czLogoUni" width="40" height="40" href="" preserveAspectRatio="xMidYMid meet" style="display:none"/>
                 <image id="czLogoFac" width="34" height="34" href="" preserveAspectRatio="xMidYMid meet" style="display:none"/>
@@ -152,7 +182,8 @@
         <p class="cz-stage__hint" id="czHint">Glissez pour tourner<span class="cz-stage__hint-long"> · molette pour zoomer</span></p>
         <p class="cz-stage__angle" id="czAngle" aria-live="off">Face</p>
       </div>
-    </section>
+      FIN DE L'APERÇU 3D DÉSACTIVÉ -->
+
 
     <!-- ======================= PANNEAU ======================= -->
     <section class="cz-panel" id="czPanel" aria-label="Configuration de la commande">

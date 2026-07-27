@@ -528,6 +528,43 @@
 .ad-file__btn.is-off { color: var(--ink-faint); cursor: default; }
 .ad-file__btn.is-off:hover { background: none; color: var(--ink-faint); border-color: var(--line); }
 
+/* Visuels à broder envoyés par le client */
+.ad-art { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.7rem; }
+.ad-art__item {
+  display: grid;
+  justify-items: center;
+  gap: 0.3rem;
+  padding: 0.7rem;
+  text-align: center;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.ad-art__thumb {
+  width: 100%;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  padding: 0.5rem;
+  border-radius: 10px;
+  background:
+    linear-gradient(45deg, #F1EEE8 25%, transparent 25%, transparent 75%, #F1EEE8 75%) 0 0 / 14px 14px,
+    linear-gradient(45deg, #F1EEE8 25%, transparent 25%, transparent 75%, #F1EEE8 75%) 7px 7px / 14px 14px,
+    var(--white);
+  border: 1px solid var(--line);
+  transition: border-color 0.3s var(--ease-lux), transform 0.3s var(--ease-lux);
+}
+.ad-art__thumb:hover { border-color: var(--gold); transform: translateY(-2px); }
+.ad-art__thumb img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.ad-art__role { font-size: var(--fs-small); font-weight: 500; }
+.ad-art__name {
+  font-size: 0.6875rem;
+  color: var(--ink-faint);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .ad-note { font-size: 0.75rem; color: var(--ink-faint); margin-top: 0.6rem; line-height: 1.6; }
 
 .ad-textarea {

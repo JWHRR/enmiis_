@@ -184,6 +184,39 @@
     });
   }
 
+  /* Une photo de téléphone pèse plusieurs mégaoctets : telle quelle, elle
+     saturerait le stockage du navigateur et n’arriverait jamais jusqu’à
+     l’espace atelier. On la réduit donc en WebP — format qui préserve la
+     transparence des logos — avant de la joindre à la commande. */
+  function downscale(dataUrl, maxSide) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+        const width = Math.max(1, Math.round(img.width * scale));
+        const height = Math.max(1, Math.round(img.height * scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, width, height);
+        const webp = canvas.toDataURL('image/webp', 0.82);
+        const out = webp.indexOf('data:image/webp') === 0 ? webp : canvas.toDataURL('image/png');
+        /* Si la conversion ne fait pas gagner de place, on garde l’original. */
+        resolve(out.length < dataUrl.length ? out : dataUrl);
+      };
+      img.onerror = () => resolve(dataUrl);
+      img.src = dataUrl;
+    });
+  }
+
+  /* Le SVG est déjà léger et vectoriel : il passe tel quel. */
+  const RASTER = ['png', 'jpg', 'jpeg'];
+  function compress(dataUrl, ext, maxSide) {
+    return RASTER.indexOf(ext) > -1 ? downscale(dataUrl, maxSide) : Promise.resolve(dataUrl);
+  }
+
   async function ingest(fileList) {
     const incoming = Array.from(fileList);
     if (!incoming.length) return;
@@ -203,7 +236,12 @@
         continue;
       }
       try {
-        const dataUrl = await readFile(raw);
+        const previewable = PREVIEWABLE.indexOf(type.ext) > -1;
+        /* Seuls les formats affichables par le navigateur sont conservés en
+           image ; PDF, AI, EPS et CDR ne sont référencés que par leur nom. */
+        const dataUrl = previewable
+          ? await compress(await readFile(raw), type.ext, 1400)
+          : '';
         fileSeq += 1;
         accepted.push({
           id: 'f' + Date.now() + fileSeq,
@@ -211,7 +249,7 @@
           size: raw.size,
           ext: type.ext,
           label: type.label,
-          previewable: PREVIEWABLE.indexOf(type.ext) > -1,
+          previewable,
           dataUrl,
         });
       } catch (err) {
@@ -358,11 +396,29 @@
   function openGuide(id) {
     const field = cat.MEASUREMENTS.find((m) => m.id === id);
     if (!field) return;
+    const guide = field.guide;
+    const figure = $('#czGuideFigure');
+
     $('#czGuideTitle').textContent = field.label;
-    $('#czGuideFigure').innerHTML = steps.FIGURES[field.guide.figure];
-    $('#czGuideSteps').innerHTML = field.guide.steps
+
+    /* Certaines mesures se prennent en plusieurs passages : ils s’affichent
+       côte à côte, comme sur la planche, au lieu d’empiler les vignettes. */
+    if (guide.row) {
+      figure.classList.add('cz-guide__figure--row');
+      figure.innerHTML = guide.row.map((pos) =>
+        '<div class="cz-pos">' +
+          '<div class="cz-pos__fig">' + steps.FIGURES[pos.figure] + '</div>' +
+          '<p class="cz-pos__title">' + esc(pos.title) + '</p>' +
+          '<p class="cz-pos__text">' + esc(pos.text) + '</p>' +
+        '</div>').join('');
+    } else {
+      figure.classList.remove('cz-guide__figure--row');
+      figure.innerHTML = steps.FIGURES[guide.figure];
+    }
+
+    $('#czGuideSteps').innerHTML = guide.steps
       .map((line) => '<li>' + esc(line) + '</li>').join('');
-    $('#czGuideTip').textContent = field.guide.tip;
+    $('#czGuideTip').textContent = guide.tip;
     openModal($('#czGuide'));
   }
 
@@ -456,7 +512,8 @@
         toast('Logo trop lourd (max ' + cat.MAX_FILE_MB + ' Mo).');
         return;
       }
-      const dataUrl = await readFile(file);
+      const ext = (file.name.split('.').pop() || '').toLowerCase();
+      const dataUrl = await compress(await readFile(file), ext, 420);
       store.commit((draft) => {
         const keys = input.getAttribute('data-logo-input').split('.');
         const last = keys.pop();
@@ -628,7 +685,6 @@
         store.reset();
         current = 0;
         renderScreen();
-        preview.recenter();
         toast('Nouvelle configuration.');
       });
     }
@@ -671,6 +727,14 @@
     $('#czPrev').addEventListener('click', () => goTo(current - 1, { force: true }));
     $('#czNext').addEventListener('click', () => goTo(current + 1));
 
+    /* La photo s’ouvre en grand, teintée de la couleur choisie. */
+    $('#czShotZoom').addEventListener('click', () => {
+      const shot = preview.current();
+      openLightbox(shot.title,
+        '<div class="cz-lightbox__shot" style="background:' + esc(shot.tint) + '">' +
+        '<img src="' + esc(shot.src) + '" alt="' + esc(shot.title) + '"></div>');
+    });
+
     $('#czUndo').addEventListener('click', () => {
       if (!store.undo()) return;
       renderScreen();
@@ -682,7 +746,6 @@
       store.reset();
       current = 0;
       renderScreen();
-      preview.recenter();
       toast('Configuration réinitialisée.');
     });
   }
