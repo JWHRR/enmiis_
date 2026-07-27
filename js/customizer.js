@@ -263,6 +263,8 @@
       if (replacing) store.replaceFile(replacing, accepted[0]);
       else store.addFiles(accepted);
       renderFiles(accepted.map((f) => f.id));
+      /* Le dernier design envoyé devient l’aperçu principal. */
+      preview.selectUpload(accepted[accepted.length - 1].id);
       toast(replacing
         ? 'Fichier remplacé.'
         : accepted.length + ' fichier' + (accepted.length > 1 ? 's ajoutés' : ' ajouté') + '.');
@@ -287,6 +289,7 @@
     const drop = $('#czDrop');
     if (drop) drop.classList.toggle('is-filled', files.length > 0);
     renderRail();
+    preview.render();
   }
 
   function bindUpload(screen) {
@@ -352,6 +355,7 @@
         setTimeout(() => {
           store.removeFile(id);
           renderFiles();
+          preview.render();
         }, 220);
         return;
       }
@@ -592,37 +596,27 @@
       '',
       '— ROBE —',
       'Tissu : ' + label(cat.FABRICS, s.robe.fabric),
-      'Couleur principale : ' + label(cat.MAIN_COLORS, s.robe.main),
-      'Couleur secondaire : ' + label(cat.TRIM_COLORS, s.robe.secondary),
-      'Manches : ' + (s.robe.sleeveColor === 'match' ? 'assorties' : label(cat.MAIN_COLORS, s.robe.sleeveColor)) +
-        ' · ' + label(cat.SLEEVES, s.robe.sleeve),
+      'Manches : ' + label(cat.SLEEVES, s.robe.sleeve),
       'Col : ' + label(cat.COLLARS, s.robe.collar),
-      'Bordure : ' + label(cat.TRIM_STYLES, s.robe.trim) + ' · ' + label(cat.TRIM_COLORS, s.robe.trimColor),
+      'Bordure : ' + label(cat.TRIM_STYLES, s.robe.trim),
       'Broderie : ' + (s.robe.emb.enabled
-        ? s.robe.emb.text + ' (' + cat.FONTS[s.robe.emb.font].label + ', ' +
-          label(cat.THREAD_COLORS, s.robe.emb.thread) + ')'
+        ? s.robe.emb.text + ' (' + cat.FONTS[s.robe.emb.font].label + ')'
         : 'aucune'),
       '',
       '— CAPUCHE —',
       'Modèle : ' + label(cat.HOOD_STYLES, s.hood.style),
-      'Extérieur : ' + label(cat.MAIN_COLORS, s.hood.outer),
-      'Doublure : ' + label(cat.TRIM_COLORS, s.hood.inner),
-      'Bordure : ' + label(cat.TRIM_COLORS, s.hood.border),
-      'Faculté : ' + label(cat.FACULTY_COLORS, s.hood.faculty),
       'Broderie : ' + (s.hood.emb || '—'),
       '',
       '— MORTIER —',
       'Forme : ' + label(cat.CAP_STYLES, s.cap.style),
       'Matière : ' + label(cat.CAP_MATERIALS, s.cap.material),
-      'Couleur : ' + label(cat.MAIN_COLORS, s.cap.color),
-      'Bouton : ' + label(cat.TRIM_COLORS, s.cap.button),
       'Broderie : ' + (s.cap.emb || '—'),
       '',
       '— GLAND —',
       'Style : ' + label(cat.TASSEL_STYLES, s.tassel.style),
-      'Couleur : ' + label(cat.TASSEL_COLORS, s.tassel.color),
-      'Année : ' + (s.tassel.year || '—') + ' · ' + label(cat.CHARM_FINISHES, s.tassel.yearCharm),
-      'Breloque faculté : ' + label(cat.CHARM_FINISHES, s.tassel.facultyCharm),
+      'Année : ' + (s.tassel.year || '—'),
+      '',
+      'Couleurs : à définir avec l’atelier à la confirmation.',
       '',
       '— MESURES —',
       cat.MEASUREMENTS.map((m) => m.label + ' : ' + s.measures[m.id] + ' ' + m.unit).join('\n'),
@@ -701,6 +695,10 @@
         syncPressed(setter);
         preview.render();
         renderRail();
+        /* La carte choisie s’affiche en vitrine sur l’aperçu. */
+        const artNode = setter.querySelector('.cz-option__art');
+        const nameNode = setter.querySelector('.cz-option__name');
+        if (artNode && nameNode) preview.spotlight(artNode.innerHTML, nameNode.textContent);
         return;
       }
       const toggle = event.target.closest('[data-toggle]');
@@ -727,12 +725,39 @@
     $('#czPrev').addEventListener('click', () => goTo(current - 1, { force: true }));
     $('#czNext').addEventListener('click', () => goTo(current + 1));
 
-    /* La photo s’ouvre en grand, teintée de la couleur choisie. */
+    /* Vue courante en plein écran. */
     $('#czShotZoom').addEventListener('click', () => {
       const shot = preview.current();
+      if (!shot.src) { toast('Ce format n’a pas d’aperçu navigateur.'); return; }
       openLightbox(shot.title,
-        '<div class="cz-lightbox__shot" style="background:' + esc(shot.tint) + '">' +
+        '<div class="cz-lightbox__shot">' +
         '<img src="' + esc(shot.src) + '" alt="' + esc(shot.title) + '"></div>');
+    });
+
+    /* Vignettes des designs téléversés : afficher, remplacer, supprimer.
+       Le conteneur vit hors des écrans, il n’est branché qu’une fois. */
+    $('#czThumbs').addEventListener('click', (event) => {
+      const pick = event.target.closest('[data-thumb-pick]');
+      if (pick) { preview.selectUpload(pick.getAttribute('data-thumb-pick')); return; }
+
+      const replace = event.target.closest('[data-thumb-replace]');
+      if (replace) {
+        const input = $('#czFileInput');
+        if (!input) return;
+        replacing = replace.getAttribute('data-thumb-replace');
+        input.multiple = false;
+        input.value = '';
+        input.click();
+        return;
+      }
+
+      const remove = event.target.closest('[data-thumb-remove]');
+      if (remove) {
+        store.removeFile(remove.getAttribute('data-thumb-remove'));
+        renderFiles();
+        preview.render();
+        toast('Fichier supprimé.');
+      }
     });
 
     $('#czUndo').addEventListener('click', () => {

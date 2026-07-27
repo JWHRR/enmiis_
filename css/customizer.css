@@ -123,6 +123,24 @@
   transition: background 0.35s var(--ease-lux), color 0.35s var(--ease-lux),
               border-color 0.35s var(--ease-lux), transform 0.35s var(--ease-lux);
 }
+/* Ligne de liaison animée entre les étapes du rail :
+   elle se remplit d'or quand l'étape précédente est acquise. */
+.cz-rail__item { display: inline-flex; align-items: center; }
+.cz-rail__item + .cz-rail__item::before {
+  content: "";
+  width: 16px;
+  height: 2px;
+  flex: none;
+  border-radius: 2px;
+  margin-right: 0.25rem;
+  background-color: var(--line);
+  background-image: linear-gradient(90deg, var(--gold), var(--gold));
+  background-repeat: no-repeat;
+  background-size: 0% 100%;
+  transition: background-size 0.3s ease-in-out;
+}
+.cz-rail__item.is-done + .cz-rail__item::before { background-size: 100% 100%; }
+
 .cz-rail__item button:hover { color: var(--ink); background: rgba(17, 17, 17, 0.04); }
 .cz-rail__item.is-done button { color: var(--gold-deep); }
 .cz-rail__item.is-done .cz-rail__dot { background: var(--gold); border-color: var(--gold); color: var(--white); }
@@ -135,9 +153,8 @@
 .cz-layout { display: grid; grid-template-columns: 1fr; }
 
 /* ============================================================
-   APERÇU PHOTOGRAPHIQUE
-   La photo produit est posée en « multiply » sur un cadre coloré :
-   son fond blanc laisse passer la couleur, ses plis la teintent.
+   APERÇU — photographie studio de la pièce en cours, ou design
+   téléversé par le client dès l'étape des fichiers.
    ============================================================ */
 .cz-preview {
   position: sticky;
@@ -166,10 +183,11 @@
   border-radius: 18px;
   overflow: hidden;
   isolation: isolate;
-  background: var(--ink);
+  background: linear-gradient(170deg, #FDFCFA, #EFEBE3);
   box-shadow: 0 1px 2px rgba(17, 17, 17, 0.08), 0 22px 44px -22px rgba(17, 17, 17, 0.5);
-  transition: background-color 0.55s var(--ease-lux);
+  transition: background-color 0.3s ease-in-out;
 }
+.cz-shot__frame.is-doc { background: var(--white); }
 .cz-shot__img {
   position: absolute;
   inset: 0;
@@ -178,9 +196,11 @@
   object-fit: contain;
   mix-blend-mode: multiply;
   opacity: 0;
-  transition: opacity 0.5s var(--ease-lux);
+  filter: blur(4px);
+  transform: scale(1.02);
+  transition: opacity 0.3s ease-in-out, filter 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
-.cz-shot__img.is-on { opacity: 1; }
+.cz-shot__img.is-on { opacity: 1; filter: blur(0); transform: none; }
 
 .cz-shot__caption { text-align: center; }
 .cz-shot__piece {
@@ -198,10 +218,16 @@
   margin-top: 0.2rem;
 }
 
-.cz-shot__zoom {
+/* Outils de la visionneuse (zoomer, dézoomer, plein écran) */
+.cz-shot__tools {
   position: absolute;
   top: 0;
   right: var(--gutter);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.cz-tool {
   width: 34px; height: 34px;
   display: inline-flex;
   align-items: center;
@@ -213,11 +239,111 @@
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   box-shadow: 0 4px 14px rgba(17, 17, 17, 0.08);
-  transition: transform 0.3s var(--ease-lux), background 0.3s var(--ease-lux), color 0.3s var(--ease-lux);
+  transition: transform 0.3s ease-in-out, background 0.3s ease-in-out, color 0.3s ease-in-out;
 }
-.cz-shot__zoom svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.6; }
-.cz-shot__zoom:hover { background: var(--white); color: var(--gold-deep); transform: translateY(-1px); }
-.cz-shot__zoom:active { transform: scale(0.9); }
+.cz-tool svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.6; }
+.cz-tool:hover { background: var(--white); color: var(--gold-deep); transform: translateY(-1px); }
+.cz-tool:active { transform: scale(0.9); }
+
+/* Caméra : zoom + déplacement à l'intérieur du cadre */
+.cz-shot__view {
+  position: absolute;
+  inset: 0;
+  transition: transform 0.3s ease-in-out;
+  will-change: transform;
+}
+.cz-shot__frame.is-zoomed { cursor: grab; }
+.cz-shot__frame.is-panning { cursor: grabbing; }
+.cz-shot__frame.is-panning .cz-shot__view { transition: none; }
+
+/* Tuile des formats sans aperçu navigateur (PDF, AI, EPS, CDR) */
+.cz-shot__doc {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: var(--gold-deep);
+  background:
+    linear-gradient(45deg, #F1EEE8 25%, transparent 25%, transparent 75%, #F1EEE8 75%) 0 0 / 22px 22px,
+    linear-gradient(45deg, #F1EEE8 25%, transparent 25%, transparent 75%, #F1EEE8 75%) 11px 11px / 22px 22px,
+    var(--white);
+}
+
+/* Vitrine du dernier modèle choisi */
+.cz-spot {
+  position: absolute;
+  left: 0.6rem;
+  bottom: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.75rem 0.45rem 0.45rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(200, 168, 107, 0.5);
+  box-shadow: 0 10px 26px -14px rgba(17, 17, 17, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity: 0;
+  transform: translateY(8px) scale(0.96);
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+  pointer-events: none;
+}
+.cz-spot.is-in { opacity: 1; transform: none; }
+.cz-spot__art { width: 44px; height: 50px; }
+.cz-spot__art svg { width: 100%; height: 100%; }
+.cz-spot__name { font-size: 0.75rem; font-weight: 500; max-width: 16ch; line-height: 1.25; }
+
+/* Vignettes des designs téléversés */
+.cz-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  max-width: 460px;
+}
+.cz-thumb {
+  position: relative;
+  animation: cz-chip-in 0.3s ease-in-out both;
+}
+.cz-thumb__pick {
+  display: grid;
+  place-items: center;
+  width: 56px; height: 56px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--white);
+  border: 2px solid var(--line);
+  transition: border-color 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+.cz-thumb__pick img { width: 100%; height: 100%; object-fit: cover; }
+.cz-thumb__ext { font-size: 0.5625rem; font-weight: 600; letter-spacing: 0.08em; color: var(--gold-deep); }
+.cz-thumb__pick:hover { transform: translateY(-2px); border-color: rgba(200, 168, 107, 0.6); }
+.cz-thumb.is-active .cz-thumb__pick { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(200, 168, 107, 0.25); }
+.cz-thumb__tools {
+  position: absolute;
+  top: -7px; right: -7px;
+  display: flex;
+  gap: 3px;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+.cz-thumb:hover .cz-thumb__tools,
+.cz-thumb:focus-within .cz-thumb__tools { opacity: 1; }
+.cz-thumb__tools button {
+  width: 20px; height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--white);
+  transition: background 0.3s ease-in-out;
+}
+.cz-thumb__tools button svg { width: 10px; height: 10px; fill: none; stroke: currentColor; stroke-width: 2; }
+.cz-thumb__tools button:hover { background: var(--gold-deep); }
 
 /* Pastilles de finition — mises à jour à chaque choix */
 .cz-spec {
@@ -241,12 +367,6 @@
   animation: cz-chip-in 0.4s var(--ease-lux) both;
 }
 @keyframes cz-chip-in { from { opacity: 0; transform: translateY(4px); } }
-.cz-chip__dot {
-  width: 11px; height: 11px;
-  flex: none;
-  border-radius: 50%;
-  border: 1px solid rgba(17, 17, 17, 0.16);
-}
 .cz-chip__label { color: var(--ink-faint); }
 .cz-chip__value { font-weight: 500; color: var(--ink); }
 
@@ -352,86 +472,64 @@ select.cz-input {
 .cz-form { display: grid; gap: 1rem; }
 .cz-form .cz-field { margin-bottom: 0; }
 
-/* ---------- Nuanciers ---------- */
-.cz-swatches { display: flex; flex-wrap: wrap; gap: 0.55rem; }
-.cz-swatch {
-  position: relative;
-  width: 42px; height: 42px;
-  border-radius: 50%;
-  background: var(--sw, var(--ink));
-  border: 1px solid rgba(17, 17, 17, 0.1);
-  box-shadow: inset 0 -4px 10px rgba(0, 0, 0, 0.18), 0 3px 10px rgba(17, 17, 17, 0.1);
-  transition: transform 0.35s var(--ease-lux), box-shadow 0.35s var(--ease-lux);
-}
-.cz-swatches--small .cz-swatch { width: 34px; height: 34px; }
-.cz-swatch::after {
-  content: "";
-  position: absolute;
-  inset: -5px;
-  border-radius: 50%;
-  border: 1px solid var(--gold);
-  opacity: 0;
-  transform: scale(0.82);
-  transition: opacity 0.35s var(--ease-lux), transform 0.35s var(--ease-lux);
-}
-.cz-swatch:hover { transform: translateY(-3px) scale(1.06); }
-.cz-swatch[aria-pressed="true"]::after { opacity: 1; transform: scale(1); }
-.cz-swatch--match {
-  background:
-    linear-gradient(135deg, transparent 45%, var(--gold) 45%, var(--gold) 55%, transparent 55%),
-    repeating-linear-gradient(45deg, #EDEAE4 0 5px, #DCD7CD 5px 10px);
-}
-.cz-swatch__tip {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  translate: -50% 0;
-  padding: 0.3rem 0.55rem;
-  font-size: 0.625rem;
-  letter-spacing: 0.08em;
-  white-space: nowrap;
-  color: var(--white);
-  background: var(--ink);
-  border-radius: 6px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.25s var(--ease-lux), translate 0.25s var(--ease-lux);
-  z-index: 5;
-}
-.cz-swatch:hover .cz-swatch__tip { opacity: 1; translate: -50% -3px; }
-
-/* ---------- Cartes d’option ---------- */
+/* ---------- Cartes d'option premium ----------
+   Grande illustration, nom, description. Survol : élévation + 103 %.
+   Sélection : bord or, coche, halo doré. */
 .cz-options {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
-  gap: 0.65rem;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.75rem;
 }
+.cz-options--wide { grid-template-columns: repeat(auto-fill, minmax(178px, 1fr)); }
 .cz-option {
   position: relative;
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
-  padding: 0.85rem 0.9rem;
+  padding: 0.85rem 0.9rem 1rem;
   text-align: left;
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  transition: border-color 0.35s var(--ease-lux), transform 0.35s var(--ease-lux),
-              box-shadow 0.35s var(--ease-lux), background 0.35s var(--ease-lux);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1.5px solid var(--line);
+  border-radius: 16px;
+  transition: border-color 0.3s ease-in-out, transform 0.3s ease-in-out,
+              box-shadow 0.3s ease-in-out, background 0.3s ease-in-out;
 }
 .cz-option:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px) scale(1.03);
   border-color: rgba(200, 168, 107, 0.6);
-  box-shadow: 0 12px 26px -16px rgba(17, 17, 17, 0.36);
+  box-shadow: 0 18px 34px -18px rgba(17, 17, 17, 0.4);
 }
 .cz-option.is-active {
-  border-color: var(--ink);
+  border-color: var(--gold);
   background: var(--white);
-  box-shadow: 0 0 0 1px var(--ink), 0 14px 30px -18px rgba(17, 17, 17, 0.4);
+  box-shadow: 0 0 0 1px var(--gold), 0 0 24px rgba(200, 168, 107, 0.35),
+              0 16px 32px -18px rgba(17, 17, 17, 0.35);
 }
-.cz-option__thumb { display: block; width: 44px; height: 44px; margin-bottom: 0.35rem; color: var(--ink); }
-.cz-option__thumb svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.4; }
-.cz-option__name { font-size: 0.875rem; font-weight: 500; line-height: 1.3; }
+
+/* Illustration : même échelle et même trait sur toutes les cartes */
+.cz-option__art {
+  display: block;
+  width: 100%;
+  aspect-ratio: 120 / 140;
+  max-height: 132px;
+  margin-bottom: 0.5rem;
+  border-radius: 10px;
+  background: linear-gradient(165deg, #FBFAF7, #F2EEE7);
+}
+.cz-option__art svg { width: 100%; height: 100%; }
+
+/* Traits des illustrations */
+.a-ink  { fill: none; stroke: var(--ink); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.a-inkf { fill: rgba(23, 23, 26, 0.08); stroke: var(--ink); stroke-width: 2.2; stroke-linejoin: round; }
+.a-dim  { fill: none; stroke: #C4BEB2; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.a-dimf { fill: #C4BEB2; stroke: none; }
+.a-gold { fill: none; stroke: var(--gold-deep); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.a-goldf { fill: rgba(200, 168, 107, 0.4); stroke: var(--gold-deep); stroke-width: 1.6; stroke-linejoin: round; }
+.a-goldc { fill: var(--gold-deep); stroke: none; }
+.a-soft { fill: #FBFAF7; stroke: var(--ink); stroke-width: 2; }
+.a-lens { fill: var(--white); stroke: var(--ink); stroke-width: 1.6; }
+
+.cz-option__name { font-size: 0.9rem; font-weight: 500; line-height: 1.3; }
 .cz-option__note { font-size: 0.75rem; color: var(--ink-soft); line-height: 1.45; }
 .cz-option__ref {
   font-size: 0.625rem;
@@ -440,20 +538,50 @@ select.cz-input {
   color: var(--gold-deep);
   margin-top: 0.25rem;
 }
+
+/* Petites vues techniques du mortier (face · dessus · profil) */
+.cz-views {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.3rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(234, 234, 234, 0.8);
+}
+.cz-view { display: grid; justify-items: center; gap: 0.1rem; }
+.cz-view svg { width: 100%; max-width: 44px; height: auto; }
+.cz-view svg .a-ink { stroke-width: 1.6; }
+.cz-view em {
+  font-style: normal;
+  font-size: 0.5625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
 .cz-option__check {
   position: absolute;
   top: 0.6rem; right: 0.6rem;
-  width: 18px; height: 18px;
+  width: 20px; height: 20px;
   border-radius: 50%;
-  background: var(--ink);
+  background: var(--gold);
   display: grid;
   place-items: center;
   opacity: 0;
   transform: scale(0.6);
-  transition: opacity 0.3s var(--ease-lux), transform 0.3s var(--ease-lux);
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
-.cz-option__check svg { width: 11px; height: 11px; fill: none; stroke: var(--white); stroke-width: 2.4; }
+.cz-option__check svg { width: 12px; height: 12px; fill: none; stroke: var(--white); stroke-width: 2.6; }
 .cz-option.is-active .cz-option__check { opacity: 1; transform: scale(1); }
+
+/* Note atelier : les couleurs seront définies à la confirmation */
+.cz-help--workshop {
+  padding: 0.8rem 1rem;
+  background: rgba(200, 168, 107, 0.1);
+  border-left: 2px solid var(--gold);
+  border-radius: 0 10px 10px 0;
+  color: var(--ink-soft);
+}
 
 /* ---------- Pilules & polices ---------- */
 .cz-pills, .cz-fonts { display: flex; flex-wrap: wrap; gap: 0.4rem; }
@@ -1134,7 +1262,7 @@ select.cz-input {
 
 @media (min-width: 1024px) {
   .cz-layout {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 0.92fr);
+    grid-template-columns: minmax(0, 45fr) minmax(0, 55fr);
     align-items: start;
     max-width: var(--container);
     margin-inline: auto;
@@ -1169,8 +1297,11 @@ select.cz-input {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cz-shot__img { transition: none; }
-  .cz-chip { animation: none; }
+  .cz-shot__img, .cz-shot__view { transition: none; filter: none; transform: none; }
+  .cz-chip, .cz-thumb { animation: none; }
+  .cz-option, .cz-option:hover, .cz-thumb__pick:hover, .cz-tool:hover { transform: none; }
+  .cz-spot { transition: none; }
+  .cz-rail__item + .cz-rail__item::before { transition: none; }
   .cz-drop.is-loading .cz-drop__ring { animation: none; }
   .cz-guide__figure .fig-tape { animation: none; }
   .cz-screen { transition: none; opacity: 1; transform: none; }
@@ -1178,7 +1309,7 @@ select.cz-input {
 }
 
 @media print {
-  .cz-topbar, .cz-rail, .cz-progress, .cz-nav, .cz-shot__zoom, .cz-modal { display: none !important; }
+  .cz-topbar, .cz-rail, .cz-progress, .cz-nav, .cz-shot__tools, .cz-thumbs, .cz-modal { display: none !important; }
   .cz-body { background: var(--white); }
   .cz-preview { position: static; height: auto; }
 }

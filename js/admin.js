@@ -108,10 +108,6 @@
     const found = list.find((item) => item.id === id);
     return found ? found.label : '—';
   };
-  const hexOf = (list, id) => {
-    const found = list.find((item) => item.id === id);
-    return found && found.hex ? found.hex : '';
-  };
   const statusOf = (id) => STATUSES.find((s) => s.id === id) || STATUSES[0];
 
   function formatDate(iso) {
@@ -248,29 +244,23 @@
   }
 
   /* ---------- Rendu : détail ---------- */
+  /* Les couleurs ne font plus partie de la configuration client :
+     elles sont arrêtées par l'atelier et notées en note d'atelier. */
   function specRows(order) {
     const s = order.config;
-    const row = (label, value, hex) =>
-      '<div class="ad-row"><dt>' + esc(label) + '</dt><dd>' +
-      (hex ? '<i class="ad-dot" style="background:' + hex + '"></i>' : '') +
-      esc(value) + '</dd></div>';
+    const row = (label, value) =>
+      '<div class="ad-row"><dt>' + esc(label) + '</dt><dd>' + esc(value) + '</dd></div>';
 
     const groups = [
       {
         title: 'Robe',
         rows:
           row('Tissu', labelOf(cat.FABRICS, s.robe.fabric)) +
-          row('Couleur principale', labelOf(cat.MAIN_COLORS, s.robe.main), hexOf(cat.MAIN_COLORS, s.robe.main)) +
-          row('Couleur secondaire', labelOf(cat.TRIM_COLORS, s.robe.secondary), hexOf(cat.TRIM_COLORS, s.robe.secondary)) +
-          row('Manches', (s.robe.sleeveColor === 'match'
-            ? 'Assorties'
-            : labelOf(cat.MAIN_COLORS, s.robe.sleeveColor)) + ' · ' + labelOf(cat.SLEEVES, s.robe.sleeve)) +
+          row('Coupe des manches', labelOf(cat.SLEEVES, s.robe.sleeve)) +
           row('Col', labelOf(cat.COLLARS, s.robe.collar)) +
-          row('Bordure', labelOf(cat.TRIM_STYLES, s.robe.trim) + ' · ' + labelOf(cat.TRIM_COLORS, s.robe.trimColor),
-            hexOf(cat.TRIM_COLORS, s.robe.trimColor)) +
+          row('Bordure', labelOf(cat.TRIM_STYLES, s.robe.trim)) +
           row('Broderie', s.robe.emb.enabled
-            ? (s.robe.emb.text || '—') + ' · ' + (cat.FONTS[s.robe.emb.font] || {}).label +
-              ' · ' + labelOf(cat.THREAD_COLORS, s.robe.emb.thread)
+            ? (s.robe.emb.text || '—') + ' · ' + ((cat.FONTS[s.robe.emb.font] || {}).label || '—')
             : 'Aucune') +
           row('Emplacement broderie', s.robe.emb.enabled
             ? (cat.EMB_POSITIONS.find((p) => p.id === s.robe.emb.position) || {}).label || '—'
@@ -281,10 +271,6 @@
         title: 'Capuche',
         rows:
           row('Modèle', labelOf(cat.HOOD_STYLES, s.hood.style)) +
-          row('Extérieur', labelOf(cat.MAIN_COLORS, s.hood.outer), hexOf(cat.MAIN_COLORS, s.hood.outer)) +
-          row('Doublure', labelOf(cat.TRIM_COLORS, s.hood.inner), hexOf(cat.TRIM_COLORS, s.hood.inner)) +
-          row('Bordure', labelOf(cat.TRIM_COLORS, s.hood.border), hexOf(cat.TRIM_COLORS, s.hood.border)) +
-          row('Faculté', labelOf(cat.FACULTY_COLORS, s.hood.faculty), hexOf(cat.FACULTY_COLORS, s.hood.faculty)) +
           row('Broderie', s.hood.emb || 'Aucune'),
       },
       {
@@ -292,8 +278,6 @@
         rows:
           row('Forme', labelOf(cat.CAP_STYLES, s.cap.style)) +
           row('Matière', labelOf(cat.CAP_MATERIALS, s.cap.material)) +
-          row('Couleur', labelOf(cat.MAIN_COLORS, s.cap.color), hexOf(cat.MAIN_COLORS, s.cap.color)) +
-          row('Bouton', labelOf(cat.TRIM_COLORS, s.cap.button), hexOf(cat.TRIM_COLORS, s.cap.button)) +
           row('Broderie', s.cap.emb || 'Aucune') +
           row('Logo', s.cap.logoName || 'Aucun'),
       },
@@ -301,10 +285,11 @@
         title: 'Gland',
         rows:
           row('Style', labelOf(cat.TASSEL_STYLES, s.tassel.style)) +
-          row('Couleur', labelOf(cat.TASSEL_COLORS, s.tassel.color), hexOf(cat.TASSEL_COLORS, s.tassel.color)) +
-          row('Année', s.tassel.year || 'Aucune') +
-          row('Breloque année', labelOf(cat.CHARM_FINISHES, s.tassel.yearCharm)) +
-          row('Breloque faculté', labelOf(cat.CHARM_FINISHES, s.tassel.facultyCharm)),
+          row('Année de promotion', s.tassel.year || 'Aucune'),
+      },
+      {
+        title: 'Couleurs',
+        rows: row('Palette', 'À définir avec le client — voir note d’atelier'),
       },
     ];
 
@@ -487,31 +472,26 @@
       '',
       '— ROBE —',
       'Tissu : ' + labelOf(cat.FABRICS, s.robe.fabric),
-      'Couleur principale : ' + labelOf(cat.MAIN_COLORS, s.robe.main),
-      'Couleur secondaire : ' + labelOf(cat.TRIM_COLORS, s.robe.secondary),
-      'Manches : ' + (s.robe.sleeveColor === 'match' ? 'assorties' : labelOf(cat.MAIN_COLORS, s.robe.sleeveColor)) +
-        ' · ' + labelOf(cat.SLEEVES, s.robe.sleeve),
+      'Manches : ' + labelOf(cat.SLEEVES, s.robe.sleeve),
       'Col : ' + labelOf(cat.COLLARS, s.robe.collar),
-      'Bordure : ' + labelOf(cat.TRIM_STYLES, s.robe.trim) + ' · ' + labelOf(cat.TRIM_COLORS, s.robe.trimColor),
+      'Bordure : ' + labelOf(cat.TRIM_STYLES, s.robe.trim),
       'Broderie : ' + (s.robe.emb.enabled ? s.robe.emb.text : 'aucune'),
       '',
       '— CAPUCHE —',
       'Modèle : ' + labelOf(cat.HOOD_STYLES, s.hood.style),
-      'Extérieur : ' + labelOf(cat.MAIN_COLORS, s.hood.outer),
-      'Doublure : ' + labelOf(cat.TRIM_COLORS, s.hood.inner),
-      'Bordure : ' + labelOf(cat.TRIM_COLORS, s.hood.border),
-      'Faculté : ' + labelOf(cat.FACULTY_COLORS, s.hood.faculty),
+      'Broderie : ' + (s.hood.emb || '—'),
       '',
       '— MORTIER —',
       'Forme : ' + labelOf(cat.CAP_STYLES, s.cap.style),
       'Matière : ' + labelOf(cat.CAP_MATERIALS, s.cap.material),
-      'Couleur : ' + labelOf(cat.MAIN_COLORS, s.cap.color),
-      'Bouton : ' + labelOf(cat.TRIM_COLORS, s.cap.button),
+      'Broderie : ' + (s.cap.emb || '—'),
       '',
       '— GLAND —',
       'Style : ' + labelOf(cat.TASSEL_STYLES, s.tassel.style),
-      'Couleur : ' + labelOf(cat.TASSEL_COLORS, s.tassel.color),
       'Année : ' + (s.tassel.year || '—'),
+      '',
+      '— COULEURS —',
+      'À définir avec le client (voir note d’atelier).',
       '',
       '— MESURES —',
       cat.MEASUREMENTS.map((m) => m.label + ' : ' + (s.measures[m.id] || '—') + ' ' + m.unit).join('\n'),
@@ -577,10 +557,10 @@
         s.client.region,
         s.client.university,
         s.client.date,
-        labelOf(cat.MAIN_COLORS, s.robe.main) + ' / ' + labelOf(cat.FABRICS, s.robe.fabric),
-        labelOf(cat.HOOD_STYLES, s.hood.style) + ' / ' + labelOf(cat.FACULTY_COLORS, s.hood.faculty),
-        labelOf(cat.CAP_STYLES, s.cap.style) + ' / ' + labelOf(cat.MAIN_COLORS, s.cap.color),
-        labelOf(cat.TASSEL_STYLES, s.tassel.style) + ' / ' + labelOf(cat.TASSEL_COLORS, s.tassel.color),
+        labelOf(cat.FABRICS, s.robe.fabric) + ' / ' + labelOf(cat.SLEEVES, s.robe.sleeve),
+        labelOf(cat.HOOD_STYLES, s.hood.style),
+        labelOf(cat.CAP_STYLES, s.cap.style) + ' / ' + labelOf(cat.CAP_MATERIALS, s.cap.material),
+        labelOf(cat.TASSEL_STYLES, s.tassel.style) + (s.tassel.year ? ' / ' + s.tassel.year : ''),
         (s.files || []).map((f) => f.name).join(' | '),
         order.adminNote,
       ].map(cell).join(';');

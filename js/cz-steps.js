@@ -1,6 +1,12 @@
 /* ============================================================
    ENMIIS — Configurateur : écrans de l’assistant.
-   Un module par étape : gabarit (html) + branchements (bind).
+   Un module par étape : gabarit (html) + illustrations (ART).
+
+   Chaque option est illustrée : même silhouette, même échelle,
+   même trait sur toutes les cartes — la partie qui change d’un
+   modèle à l’autre est soulignée à l’or. Le client comprend la
+   différence d’un coup d’œil, sans lire.
+
    Expose window.CZ.steps
    ============================================================ */
 (function (global) {
@@ -18,38 +24,240 @@
     ? Math.max(1, Math.round(bytes / 1024)) + ' Ko'
     : (bytes / (1024 * 1024)).toFixed(1).replace('.', ',') + ' Mo');
 
-  /* ----------------------------------------------------------
-     Briques d’interface
-     ---------------------------------------------------------- */
+  /* ==========================================================
+     ART — bibliothèque d’illustrations produit.
+     Classes : a-ink trait principal · a-dim trait estompé ·
+     a-gold soulignage or · a-goldf aplat or · a-soft fond tissu.
+     ========================================================== */
+  const art = (inner, vb) =>
+    '<svg viewBox="0 0 ' + (vb || '120 140') + '" aria-hidden="true" focusable="false">' + inner + '</svg>';
 
-  function swatches(path, colors, options) {
-    const opts = options || {};
-    const current = store.at(path);
-    const extra = opts.matchLabel
-      ? '<button type="button" class="cz-swatch cz-swatch--match" data-set="' + path + '" data-value="match"' +
-        ' aria-pressed="' + (current === 'match') + '" aria-label="' + esc(opts.matchLabel) + '">' +
-        '<span class="cz-swatch__tip">' + esc(opts.matchLabel) + '</span></button>'
-      : '';
-    return '<div class="cz-swatches' + (opts.small ? ' cz-swatches--small' : '') + '">' + extra +
-      colors.map((color) =>
-        '<button type="button" class="cz-swatch" data-set="' + path + '" data-value="' + color.id + '"' +
-        ' style="--sw:' + color.hex + '" aria-pressed="' + (current === color.id) + '"' +
-        ' aria-label="' + esc(color.label) + '">' +
-        '<span class="cz-swatch__tip">' + esc(color.label) + '</span></button>').join('') +
-      '</div>';
+  /* --- Robe : silhouette commune, détail mis en avant --- */
+  const SLEEVE_PATHS = {
+    cloche: [
+      'M46 34 C 38 38 33 47 31 57 L 20 104 C 30 112 44 110 49 103 L 47 58',
+      'M74 34 C 82 38 87 47 89 57 L 100 104 C 90 112 76 110 71 103 L 73 58',
+    ],
+    pointe: [
+      'M46 34 C 38 38 33 47 31 57 L 25 92 L 38 120 L 47 94 L 47 58',
+      'M74 34 C 82 38 87 47 89 57 L 95 92 L 82 120 L 73 94 L 73 58',
+    ],
+    droite: [
+      'M46 34 C 39 37 35 44 33 52 L 30 102 C 34 106 42 106 45 102 L 47 58',
+      'M74 34 C 81 37 85 44 87 52 L 90 102 C 86 106 78 106 75 102 L 73 58',
+    ],
+  };
+
+  const COLLAR_PATHS = {
+    v:     '<path class="a-gold" d="M49 32 L 60 56 L 71 32"/>',
+    chale: '<path class="a-goldf" d="M48 31 C 52 46 68 46 72 31 L 69 29 C 66 41 54 41 51 29 Z"/>',
+    droit: '<path class="a-goldf" d="M50 27 C 54 23 66 23 70 27 L 70 33 C 66 29 54 29 50 33 Z"/>',
+    sans:  '<path class="a-ink" d="M51 31 C 55 35 65 35 69 31"/>',
+  };
+
+  const TRIM_PATHS = {
+    double: '<path class="a-gold" stroke-width="4" d="M53 36 L 51 124"/>' +
+            '<path class="a-gold" stroke-width="4" d="M67 36 L 69 124"/>',
+    simple: '<path class="a-gold" stroke-width="5" d="M60 38 L 60 124"/>',
+    'liseré': '<path class="a-gold" stroke-width="1.5" d="M54 36 L 52 124"/>' +
+              '<path class="a-gold" stroke-width="1.5" d="M66 36 L 68 124"/>',
+    aucun: '',
+  };
+
+  /* Silhouette de robe ; `focus` désigne la partie soulignée à l’or. */
+  function gownArt(options) {
+    const o = options || {};
+    const sleeve = SLEEVE_PATHS[o.sleeve || 'cloche'];
+    const sleeveClass = o.focus === 'sleeve' ? 'a-goldf' : 'a-ink';
+    const collar = o.focus === 'collar'
+      ? COLLAR_PATHS[o.collar || 'v']
+      : (o.collar ? COLLAR_PATHS[o.collar].replace(/a-gold[f]?/g, 'a-dim') : '');
+    const trim = o.focus === 'trim'
+      ? TRIM_PATHS[o.trim || 'double']
+      : (o.trim ? TRIM_PATHS[o.trim].replace(/a-gold/g, 'a-dim') : '');
+    return art(
+      '<path class="' + sleeveClass + '" d="' + sleeve[0] + '"/>' +
+      '<path class="' + sleeveClass + '" d="' + sleeve[1] + '"/>' +
+      '<path class="a-ink" d="M46 34 C 52 26 68 26 74 34 L 80 126 L 40 126 Z"/>' +
+      '<path class="a-ink" d="M52 30 C 56 34 64 34 68 30"/>' +
+      trim + collar,
+    );
   }
 
-  function optionCards(path, items, thumb) {
+  /* --- Échantillons de matière (tissus robe & mortier) --- */
+  const WEAVES = {
+    gabardine:
+      '<path class="a-dim" d="M32 104 L 88 42 M32 88 L 80 36 M40 110 L 88 58 M52 112 L 88 74"/>' +
+      '<path class="a-gold" stroke-width="2" d="M32 72 L 66 36"/>',
+    crepe:
+      '<path class="a-dim" d="M32 52 q 8 -7 16 0 t 16 0 t 16 0 M32 70 q 8 -7 16 0 t 16 0 t 16 0 ' +
+      'M32 88 q 8 -7 16 0 t 16 0 t 16 0"/>' +
+      '<path class="a-gold" stroke-width="2" d="M32 106 q 8 -7 16 0 t 16 0 t 16 0"/>',
+    satin:
+      '<path class="a-gold" stroke-width="7" opacity="0.35" d="M30 96 L 90 44"/>' +
+      '<path class="a-gold" stroke-width="3" d="M30 82 L 90 30"/>' +
+      '<path class="a-dim" d="M34 112 L 90 62"/>',
+    velours:
+      Array.from({ length: 5 }, (_, r) => Array.from({ length: 5 }, (_, c) =>
+        '<circle class="a-dimf" cx="' + (36 + c * 12 + (r % 2) * 6) + '" cy="' + (44 + r * 14) + '" r="2"/>',
+      ).join('')).join('') +
+      '<circle class="a-goldc" cx="60" cy="72" r="2.6"/>',
+    taffetas:
+      '<path class="a-dim" d="M32 100 L 88 44 M32 76 L 76 32 M48 112 L 88 72"/>' +
+      '<path class="a-dim" d="M32 44 L 88 100 M32 68 L 72 108 M44 32 L 88 76"/>' +
+      '<path class="a-gold" stroke-width="2" d="M32 56 L 82 106"/>',
+  };
+
+  function fabricArt(id) {
+    return art('<rect class="a-soft" x="24" y="24" width="72" height="94" rx="12"/>' +
+      '<g clip-path="inset(0 round 12px)">' + (WEAVES[id] || WEAVES.gabardine) + '</g>');
+  }
+
+  /* --- Capuche / étole : les cinq modèles de la planche --- */
+  const HOOD_ART = {
+    'etole-droite':
+      '<path class="a-ink" d="M36 18 C 50 34 70 34 84 18 L 89 32 C 70 52 50 52 31 32 Z"/>' +
+      '<path class="a-ink" d="M39 32 L 35 114 L 56 114 L 56 42 Z"/>' +
+      '<path class="a-ink" d="M81 32 L 85 114 L 64 114 L 64 42 Z"/>' +
+      '<path class="a-goldf" d="M43 40 L 40 107 L 51 107 L 51 45 Z"/>' +
+      '<path class="a-goldf" d="M77 40 L 80 107 L 69 107 L 69 45 Z"/>' +
+      '<path class="a-gold" d="M45 114 L 45 124 M75 114 L 75 124"/>',
+    'etole-v':
+      '<path class="a-ink" d="M36 18 C 50 34 70 34 84 18 L 89 32 C 70 52 50 52 31 32 Z"/>' +
+      '<path class="a-ink" d="M39 32 L 36 100 L 46 120 L 56 100 L 56 42 Z"/>' +
+      '<path class="a-ink" d="M81 32 L 84 100 L 74 120 L 64 100 L 64 42 Z"/>' +
+      '<path class="a-goldf" d="M43 40 L 41 97 L 46 108 L 51 97 L 51 45 Z"/>' +
+      '<path class="a-goldf" d="M77 40 L 79 97 L 74 108 L 69 97 L 69 45 Z"/>',
+    'etole-arrondie':
+      '<path class="a-ink" d="M36 18 C 50 34 70 34 84 18 L 89 32 C 70 52 50 52 31 32 Z"/>' +
+      '<path class="a-ink" d="M39 32 L 36 102 C 36 118 56 118 56 102 L 56 42 Z"/>' +
+      '<path class="a-ink" d="M81 32 L 84 102 C 84 118 64 118 64 102 L 64 42 Z"/>' +
+      '<path class="a-goldf" d="M43 40 L 41 100 C 41 110 51 110 51 100 L 51 45 Z"/>' +
+      '<path class="a-goldf" d="M77 40 L 79 100 C 79 110 69 110 69 100 L 69 45 Z"/>',
+    'capuche-am':
+      '<path class="a-ink" d="M32 20 C 48 40 72 40 88 20 C 96 44 96 66 88 86 L 60 120 L 32 86 C 24 66 24 44 32 20 Z"/>' +
+      '<path class="a-goldf" d="M42 32 C 52 44 68 44 78 32 C 84 48 84 64 78 80 L 60 102 L 42 80 C 36 64 36 48 42 32 Z"/>' +
+      '<path class="a-ink" d="M60 44 C 66 56 66 72 60 84 C 54 72 54 56 60 44 Z"/>',
+    'capuche-eu':
+      '<path class="a-ink" d="M30 20 C 48 42 72 42 90 20 C 100 50 100 82 90 106 C 76 122 44 122 30 106 C 20 82 20 50 30 20 Z"/>' +
+      '<path class="a-goldf" d="M40 34 C 52 48 68 48 80 34 C 88 54 88 80 80 98 C 70 110 50 110 40 98 C 32 80 32 54 40 34 Z"/>' +
+      '<path class="a-ink" d="M30 106 C 44 122 76 122 90 106 L 87 114 C 74 128 46 128 33 114 Z"/>',
+  };
+
+  /* --- Mortier : perspective + trois petites vues (face·dessus·profil) --- */
+  const CAP_GEOM = {
+    classique: { board: 'M60 18 L 106 36 L 60 54 L 14 36 Z', crown: 'M34 46 C 34 68 86 68 86 46 L 86 60 C 86 80 34 80 34 60 Z', bx: 60, by: 36, tiltFront: 0, tiltSide: 0 },
+    incline:   { board: 'M52 14 L 108 38 L 66 56 L 12 32 Z',  crown: 'M36 46 C 38 68 88 66 86 44 L 88 58 C 90 80 38 82 36 60 Z', bx: 63, by: 35, tiltFront: 4, tiltSide: 5 },
+    plat:      { board: 'M60 24 L 102 38 L 60 52 L 18 38 Z',  crown: 'M38 44 C 38 62 82 62 82 44 L 82 54 C 82 72 38 72 38 54 Z', bx: 60, by: 38, tiltFront: 0, tiltSide: -2 },
+  };
+
+  function capArt(id) {
+    const g = CAP_GEOM[id] || CAP_GEOM.classique;
+    return art(
+      '<path class="a-ink" d="' + g.crown + '"/>' +
+      '<path class="a-inkf" d="' + g.board + '"/>' +
+      '<circle class="a-goldc" cx="' + g.bx + '" cy="' + g.by + '" r="3.5"/>' +
+      '<path class="a-gold" stroke-width="2" d="M' + g.bx + ' ' + g.by + ' C ' + (g.bx + 20) + ' ' + (g.by + 6) + ' ' + (g.bx + 28) + ' ' + (g.by + 18) + ' ' + (g.bx + 30) + ' ' + (g.by + 32) + '"/>' +
+      '<path class="a-goldf" d="M' + (g.bx + 26) + ' ' + (g.by + 32) + ' L ' + (g.bx + 34) + ' ' + (g.by + 32) + ' L ' + (g.bx + 33) + ' ' + (g.by + 50) + ' L ' + (g.bx + 27) + ' ' + (g.by + 50) + ' Z"/>',
+    );
+  }
+
+  /* Petites vues techniques du mortier, alignées sous la carte. */
+  function capViews(id) {
+    const g = CAP_GEOM[id] || CAP_GEOM.classique;
+    const f = g.tiltFront;
+    const s = g.tiltSide;
+    const view = (label, inner) =>
+      '<span class="cz-view"><svg viewBox="0 0 36 30" aria-hidden="true" focusable="false">' + inner + '</svg>' +
+      '<em>' + label + '</em></span>';
+    return '<span class="cz-views">' +
+      view('Face',
+        '<path class="a-ink" d="M4 ' + (13 + f) + ' L 32 ' + (13 - f) + ' L 29 ' + (7 - f) + ' L 7 ' + (7 + f) + ' Z"/>' +
+        '<path class="a-ink" d="M10 ' + (13 + f * 0.6) + ' L 26 ' + (13 - f * 0.6) + ' L 26 20 L 10 20 Z"/>') +
+      view('Dessus',
+        '<path class="a-ink" d="M18 3 L 33 15 L 18 27 L 3 15 Z"/>' +
+        '<circle class="a-goldc" cx="18" cy="15" r="2"/>') +
+      view('Profil',
+        '<path class="a-ink" stroke-width="3" d="M4 ' + (11 - s) + ' L 32 ' + (11 + s) + '"/>' +
+        '<path class="a-ink" d="M11 ' + (13 - s * 0.5) + ' C 11 21 25 21 25 ' + (13 + s * 0.5) + '"/>') +
+      '</span>';
+  }
+
+  /* --- Gland : modèle en grand + pastille de détail de la tête --- */
+  const TASSEL_HEADS = {
+    noeud:
+      '<ellipse class="a-goldf" cx="60" cy="34" rx="13" ry="11"/>' +
+      '<path class="a-gold" d="M50 30 C 56 40 64 40 70 30 M50 38 C 56 28 64 28 70 38"/>',
+    cannele:
+      '<path class="a-goldf" d="M48 24 L 72 24 L 75 48 L 45 48 Z"/>' +
+      '<path class="a-gold" d="M46 32 L 74 32 M45 40 L 75 40"/>',
+    lisse:
+      '<path class="a-goldf" d="M48 26 C 52 18 68 18 72 26 L 74 46 L 46 46 Z"/>',
+    fin:
+      '<path class="a-goldf" d="M52 26 C 55 20 65 20 68 26 L 70 42 L 50 42 Z"/>',
+  };
+
+  const TASSEL_DETAILS = {
+    noeud:  '<path class="a-gold" d="M88 22 C 92 28 100 28 104 22 M88 30 C 92 24 100 24 104 30 M88 26 h16"/>',
+    cannele:'<path class="a-gold" d="M88 20 h16 M88 25 h16 M88 30 h16"/>',
+    lisse:  '<path class="a-gold" d="M89 28 C 92 20 100 20 103 28"/>',
+    fin:    '<path class="a-gold" d="M92 20 v12 M96 19 v14 M100 20 v12"/>',
+  };
+
+  function tasselArt(id) {
+    const slim = id === 'fin';
+    const half = slim ? 11 : 16;
+    const top = slim ? 42 : (id === 'noeud' ? 45 : 48);
+    const bottom = slim ? 106 : 118;
+    let strands = '';
+    const count = slim ? 5 : 8;
+    for (let i = 0; i < count; i += 1) {
+      const x = 60 - half + 3 + (i * (half * 2 - 6)) / (count - 1);
+      strands += '<path class="a-gold" stroke-width="1.2" d="M' + x.toFixed(1) + ' ' + (top + 2) +
+        ' L ' + (x + (x - 60) * 0.14).toFixed(1) + ' ' + (bottom - 2) + '"/>';
+    }
+    return art(
+      '<path class="a-ink" d="M60 8 L 60 ' + (id === 'noeud' ? 24 : 22) + '"/>' +
+      TASSEL_HEADS[id] +
+      '<path class="a-goldf" opacity="0.5" d="M' + (60 - half) + ' ' + top + ' L ' + (60 + half) + ' ' + top +
+        ' L ' + (60 + half + 3) + ' ' + bottom + ' L ' + (60 - half - 3) + ' ' + bottom + ' Z"/>' +
+      strands +
+      /* pastille loupe : détail de la tête */
+      '<circle class="a-lens" cx="96" cy="25" r="15"/>' +
+      TASSEL_DETAILS[id] +
+      '<path class="a-ink" d="M85 36 L 78 44"/>',
+    );
+  }
+
+  const ART = {
+    'robe.fabric': (id) => fabricArt(id),
+    'robe.sleeve': (id) => gownArt({ sleeve: id, focus: 'sleeve' }),
+    'robe.collar': (id) => gownArt({ collar: id, focus: 'collar' }),
+    'robe.trim':   (id) => gownArt({ trim: id, focus: 'trim' }),
+    'hood.style':  (id) => art(HOOD_ART[id]),
+    'cap.style':   (id) => capArt(id),
+    'cap.material': (id) => fabricArt(id),
+    'tassel.style': (id) => tasselArt(id),
+  };
+
+  /* ==========================================================
+     Briques d’interface
+     ========================================================== */
+  function optionCards(path, items, options) {
+    const opts = options || {};
     const current = store.at(path);
-    return '<div class="cz-options">' + items.map((item) =>
-      '<button type="button" class="cz-option' + (current === item.id ? ' is-active' : '') + '"' +
-      ' data-set="' + path + '" data-value="' + item.id + '" aria-pressed="' + (current === item.id) + '">' +
-      (thumb ? '<span class="cz-option__thumb">' + thumb(item.id) + '</span>' : '') +
-      '<span class="cz-option__name">' + esc(item.label) + '</span>' +
-      (item.note ? '<span class="cz-option__note">' + esc(item.note) + '</span>' : '') +
-      (item.ref ? '<span class="cz-option__ref">' + esc(item.ref) + '</span>' : '') +
-      '<span class="cz-option__check"><svg viewBox="0 0 24 24"><polyline points="5 13 10 18 19 7"/></svg></span>' +
-      '</button>').join('') + '</div>';
+    const artFn = ART[path];
+    return '<div class="cz-options' + (opts.wide ? ' cz-options--wide' : '') + '" role="group">' +
+      items.map((item) =>
+        '<button type="button" class="cz-option' + (current === item.id ? ' is-active' : '') + '"' +
+        ' data-set="' + path + '" data-value="' + item.id + '" aria-pressed="' + (current === item.id) + '">' +
+        (artFn ? '<span class="cz-option__art">' + artFn(item.id) + '</span>' : '') +
+        '<span class="cz-option__name">' + esc(item.label) + '</span>' +
+        (item.note ? '<span class="cz-option__note">' + esc(item.note) + '</span>' : '') +
+        (path === 'cap.style' ? capViews(item.id) : '') +
+        (item.ref ? '<span class="cz-option__ref">' + esc(item.ref) + '</span>' : '') +
+        '<span class="cz-option__check"><svg viewBox="0 0 24 24"><polyline points="5 13 10 18 19 7"/></svg></span>' +
+        '</button>').join('') + '</div>';
   }
 
   function field(label, inner, help) {
@@ -63,8 +271,6 @@
       ' value="' + esc(store.at(path)) + '"' +
       (a.maxlength ? ' maxlength="' + a.maxlength + '"' : '') +
       (a.placeholder ? ' placeholder="' + esc(a.placeholder) + '"' : '') +
-      (a.inputmode ? ' inputmode="' + a.inputmode + '"' : '') +
-      (a.autocomplete ? ' autocomplete="' + a.autocomplete + '"' : '') +
       ' spellcheck="false">';
   }
 
@@ -73,8 +279,8 @@
     const name = store.at(pathName);
     return '<div class="cz-logo' + (value ? ' is-filled' : '') + '" data-logo="' + pathData + '">' +
       (value
-        ? '<img class="cz-logo__img" src="' + esc(value) + '" alt="' + esc(name) + '">'
-        : '<svg class="cz-logo__icon" viewBox="0 0 24 24"><path d="M12 16V4"/><polyline points="7 9 12 4 17 9"/><path d="M4 20h16"/></svg>') +
+        ? '<img class="cz-logo__img" src="' + esc(value) + '" alt="' + esc(name) + '" decoding="async">'
+        : '<svg class="cz-logo__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"/><polyline points="7 9 12 4 17 9"/><path d="M4 20h16"/></svg>') +
       '<span class="cz-logo__text">' + esc(value ? name : label) + '</span>' +
       '<span class="cz-logo__hint">' + esc(hintText) + '</span>' +
       '<input type="file" accept="image/png,image/jpeg,image/svg+xml" class="visually-hidden"' +
@@ -84,45 +290,15 @@
       '</div>';
   }
 
-  /* ---------- Vignettes de style ---------- */
-
-  const HOOD_THUMBS = {
-    'etole-droite': '<path d="M14 6 C 20 12 28 12 34 6 L 36 12 L 30 40 L 22 40 L 22 14 L 26 14 L 26 40 L 18 40 L 12 12 Z"/>',
-    'etole-v': '<path d="M14 6 C 20 12 28 12 34 6 L 36 12 L 31 36 L 26 42 L 22 36 L 22 14 L 26 14"/><path d="M12 12 L 17 36 L 22 42"/>',
-    'etole-arrondie': '<path d="M14 6 C 20 12 28 12 34 6 L 36 12 L 31 34 C 31 41 22 41 22 34 L 22 14"/><path d="M12 12 L 17 34 C 17 41 26 41 26 34"/>',
-    'capuche-am': '<path d="M12 6 C 19 14 29 14 36 6 C 39 16 39 26 36 32 L 24 44 L 12 32 C 9 26 9 16 12 6 Z"/><path d="M17 12 C 21 17 27 17 31 12"/>',
-    'capuche-eu': '<path d="M11 6 C 19 15 29 15 37 6 C 41 18 41 30 37 38 C 32 44 16 44 11 38 C 7 30 7 18 11 6 Z"/><path d="M16 13 C 21 19 27 19 32 13"/>',
-  };
-
-  const CAP_THUMBS = {
-    classique: '<path d="M24 8 L 42 16 L 24 24 L 6 16 Z"/><path d="M14 20 C 14 28 34 28 34 20"/><circle cx="24" cy="16" r="2"/><path d="M24 16 C 34 18 38 24 38 32"/><path d="M36 32 L 40 32 L 39 40 L 37 40 Z"/>',
-    incline: '<path d="M20 6 L 43 17 L 27 25 L 5 14 Z"/><path d="M15 21 C 16 29 36 28 35 20"/><circle cx="26" cy="17" r="2"/><path d="M26 17 C 22 22 20 28 20 34"/><path d="M18 34 L 22 34 L 21 41 L 19 41 Z"/>',
-    plat: '<path d="M24 11 L 40 16 L 24 21 L 8 16 Z"/><path d="M15 19 C 15 25 33 25 33 19"/><circle cx="24" cy="16" r="2"/><path d="M24 16 L 24 30"/><path d="M22 30 L 26 30 L 25 40 L 23 40 Z"/>',
-  };
-
-  const TASSEL_THUMBS = {
-    noeud: '<path d="M24 4 L 24 12"/><ellipse cx="24" cy="16" rx="5" ry="4"/><circle cx="24" cy="22" r="4"/><path d="M18 25 L 30 25 L 32 44 L 16 44 Z"/><path d="M21 26 L 20 43 M24 26 L 24 43 M27 26 L 28 43"/>',
-    cannele: '<path d="M24 4 L 24 12"/><path d="M19 12 L 29 12 L 30 24 L 18 24 Z"/><path d="M18 16 L 30 16 M18 20 L 30 20"/><path d="M18 25 L 30 25 L 32 44 L 16 44 Z"/><path d="M21 26 L 20 43 M24 26 L 24 43 M27 26 L 28 43"/>',
-    lisse: '<path d="M24 4 L 24 12"/><path d="M20 13 C 22 10 26 10 28 13 L 29 24 L 19 24 Z"/><path d="M19 25 L 29 25 L 31 44 L 17 44 Z"/><path d="M22 26 L 21 43 M24 26 L 24 43 M26 26 L 27 43"/>',
-    fin: '<path d="M24 4 L 24 14"/><path d="M21 15 C 22 12 26 12 27 15 L 28 23 L 20 23 Z"/><path d="M21 24 L 27 24 L 28 42 L 20 42 Z"/><path d="M23 25 L 22 41 M25 25 L 26 41"/>',
-  };
-
-  const thumbWrap = (paths) => '<svg viewBox="0 0 48 48" aria-hidden="true">' + paths + '</svg>';
-
-  /* ----------------------------------------------------------
+  /* ==========================================================
      Illustrations des guides de mesure
-     ---------------------------------------------------------- */
-
-  /* Tête de profil, ruban placé à la hauteur demandée (planche coiffe). */
+     ========================================================== */
   function headProfile(tapeY, number) {
     return '<svg viewBox="0 0 120 140" aria-hidden="true">' +
-      /* crâne et visage */
       '<path class="fig-body" d="M62 22 C 38 22 26 40 26 62 C 26 74 30 84 34 90 L 34 106 C 34 112 40 116 48 116 L 76 116"/>' +
       '<path class="fig-body" d="M26 58 C 20 58 18 66 20 72 C 22 77 27 78 30 77"/>' +
       '<path class="fig-body" d="M62 22 C 82 22 92 38 92 60 C 92 82 80 100 62 106"/>' +
-      /* oreille */
       '<path class="fig-body" d="M66 62 C 72 58 78 62 76 70 C 75 76 69 78 66 75"/>' +
-      /* ruban de mesure à la hauteur voulue */
       '<path class="fig-tape" d="M26 ' + tapeY + ' C 40 ' + (tapeY - 7) + ' 78 ' + (tapeY - 7) + ' 92 ' + tapeY + '"/>' +
       '<circle class="fig-dot" cx="60" cy="128" r="11"/>' +
       '<text class="fig-num" x="60" y="132" text-anchor="middle">' + number + '</text>' +
@@ -133,8 +309,6 @@
     height: '<svg viewBox="0 0 200 200" aria-hidden="true"><path class="fig-body" d="M100 42 C 92 42 88 48 88 56 C 88 64 92 70 100 70 C 108 70 112 64 112 56 C 112 48 108 42 100 42 Z"/><path class="fig-body" d="M86 72 L 114 72 L 120 118 L 114 118 L 112 170 L 88 170 L 86 118 L 80 118 Z"/><line class="fig-wall" x1="150" y1="24" x2="150" y2="184"/><line class="fig-mark" x1="60" y1="38" x2="160" y2="38"/><line class="fig-mark" x1="60" y1="180" x2="160" y2="180"/><line class="fig-arrow" x1="140" y1="38" x2="140" y2="180"/><text class="fig-num" x="132" y="112" text-anchor="end">1</text></svg>',
     weight: '<svg viewBox="0 0 200 200" aria-hidden="true"><path class="fig-body" d="M100 36 C 92 36 88 42 88 50 C 88 58 92 64 100 64 C 108 64 112 58 112 50 C 112 42 108 36 100 36 Z"/><path class="fig-body" d="M86 66 L 114 66 L 120 112 L 112 112 L 110 148 L 90 148 L 88 112 L 80 112 Z"/><rect class="fig-mark" x="62" y="150" width="76" height="24" rx="4"/><path class="fig-arrow" d="M84 162 A 16 16 0 0 1 116 162"/><line class="fig-arrow" x1="100" y1="162" x2="110" y2="155"/></svg>',
     head: '<svg viewBox="0 0 200 200" aria-hidden="true"><path class="fig-body" d="M100 30 C 72 30 56 52 56 82 C 56 112 72 136 100 140 C 128 136 144 112 144 82 C 144 52 128 30 100 30 Z"/><ellipse class="fig-tape" cx="100" cy="66" rx="46" ry="11"/><ellipse class="fig-mark" cx="100" cy="84" rx="47" ry="11"/><ellipse class="fig-mark" cx="100" cy="102" rx="45" ry="11"/><circle class="fig-dot" cx="152" cy="66" r="9"/><text class="fig-num" x="152" y="70" text-anchor="middle">1</text><circle class="fig-dot" cx="154" cy="84" r="9"/><text class="fig-num" x="154" y="88" text-anchor="middle">2</text><circle class="fig-dot" cx="152" cy="102" r="9"/><text class="fig-num" x="152" y="106" text-anchor="middle">3</text><path class="fig-body" d="M56 78 C 48 78 46 92 54 94"/><path class="fig-body" d="M144 78 C 152 78 154 92 146 94"/></svg>',
-    /* Trois têtes de profil reprenant les trois positions de la planche
-       coiffe : seul le niveau du ruban change d’une vignette à l’autre. */
     head1: headProfile(62, 1),
     head2: headProfile(80, 2),
     head3: headProfile(98, 3),
@@ -146,16 +320,16 @@
     gown: '<svg viewBox="0 0 200 200" aria-hidden="true"><path class="fig-body" d="M100 24 C 92 24 88 30 88 38 C 88 46 92 52 100 52 C 108 52 112 46 112 38 C 112 30 108 24 100 24 Z"/><path class="fig-body" d="M84 56 C 100 48 100 48 116 56 C 122 96 128 148 134 178 L 66 178 C 72 148 78 96 84 56 Z"/><line class="fig-tape" x1="152" y1="56" x2="152" y2="178"/><line class="fig-mark" x1="140" y1="56" x2="162" y2="56"/><line class="fig-mark" x1="140" y1="178" x2="162" y2="178"/><text class="fig-num" x="172" y="122" text-anchor="middle">1</text><line class="fig-arrow" x1="66" y1="190" x2="134" y2="190"/></svg>',
   };
 
-  /* ----------------------------------------------------------
+  /* ==========================================================
      Étape 1 — Fichiers
-     ---------------------------------------------------------- */
+     ========================================================== */
   const upload = {
     html() {
       const accept = cat.FILE_TYPES.map((t) => '.' + t.ext).join(',');
       const badges = ['PDF', 'PNG', 'JPG', 'SVG', 'AI', 'EPS', 'CDR']
         .map((label) => '<span class="cz-badge">' + label + '</span>').join('');
-      return '<div class="cz-screen__intro"><p>Ces fichiers partent directement à l’atelier : logos d’université, ' +
-        'planches de broderie, gabarits vectoriels ou visuels de référence.</p></div>' +
+      return '<div class="cz-screen__intro"><p>Ces fichiers partent directement à l’atelier — et vos images ' +
+        's’affichent aussitôt dans l’aperçu.</p></div>' +
         '<div class="cz-drop" id="czDrop" tabindex="0" role="button"' +
         ' aria-label="Déposer ou choisir des fichiers de production">' +
           '<div class="cz-drop__ring"></div>' +
@@ -170,10 +344,9 @@
         '<p class="cz-error" id="czFileError" hidden></p>';
     },
 
-    /* Vignette d’un fichier : aperçu réel si le navigateur sait l’afficher. */
     item(file) {
       const preview = file.previewable
-        ? '<img src="' + esc(file.dataUrl) + '" alt="">'
+        ? '<img src="' + esc(file.dataUrl) + '" alt="" loading="lazy" decoding="async">'
         : '<span class="cz-file__ext">' + esc(file.label) + '</span>';
       return '<li class="cz-file" data-file="' + file.id + '">' +
         '<span class="cz-file__thumb">' + preview + '</span>' +
@@ -193,23 +366,18 @@
     },
   };
 
-  /* ----------------------------------------------------------
+  /* ==========================================================
      Étape 2 — Robe
-     ---------------------------------------------------------- */
+     ========================================================== */
   const robe = {
     html() {
       const emb = store.at('robe.emb');
       return '<div class="cz-group">' +
         field('Tissu', optionCards('robe.fabric', cat.FABRICS)) +
-        field('Couleur principale', swatches('robe.main', cat.MAIN_COLORS)) +
-        field('Couleur secondaire', swatches('robe.secondary', cat.TRIM_COLORS),
-          'Chevrons de manches, poignets et liserés.') +
-        field('Couleur des manches', swatches('robe.sleeveColor', cat.MAIN_COLORS,
-          { matchLabel: 'Assorties au tissu' })) +
-        field('Coupe des manches', optionCards('robe.sleeve', cat.SLEEVES)) +
+        field('Coupe des manches', optionCards('robe.sleeve', cat.SLEEVES),
+          'La partie dorée montre la manche du modèle.') +
         field('Col', optionCards('robe.collar', cat.COLLARS)) +
         field('Bordure (contour)', optionCards('robe.trim', cat.TRIM_STYLES)) +
-        field('Couleur de bordure', swatches('robe.trimColor', cat.TRIM_COLORS)) +
       '</div>' +
       '<div class="cz-group">' +
         '<div class="cz-switch">' +
@@ -227,7 +395,6 @@
             ' data-set="robe.emb.font" data-value="' + id + '" aria-pressed="' + (emb.font === id) + '"' +
             ' style="font-family:' + cat.FONTS[id].stack + '">' + esc(cat.FONTS[id].label) + '</button>').join('') +
             '</div>') +
-          field('Couleur du fil', swatches('robe.emb.thread', cat.THREAD_COLORS, { small: true })) +
           field('Emplacement', '<div class="cz-pills">' + cat.EMB_POSITIONS.map((p) =>
             '<button type="button" class="cz-pill' + (emb.position === p.id ? ' is-active' : '') + '"' +
             ' data-set="robe.emb.position" data-value="' + p.id + '"' +
@@ -238,44 +405,37 @@
             uploadSlot('robe.emb.facLogo', 'robe.emb.facLogoName', 'Logo de faculté', 'PNG · JPG · SVG') +
           '</div>' +
         '</div>' +
-      '</div>';
+      '</div>' +
+      '<p class="cz-help cz-help--workshop">Les couleurs (tissu, bordure, fils) sont définies avec vous par ' +
+      'l’atelier à la confirmation de la commande.</p>';
     },
   };
 
-  /* ----------------------------------------------------------
+  /* ==========================================================
      Étape 3 — Capuche
-     ---------------------------------------------------------- */
+     ========================================================== */
   const hood = {
     html() {
-      return '<div class="cz-screen__intro"><p>Modèles relevés sur la planche « Cape » : étoles droite, ' +
-        'en V et arrondie, puis les capuchons américain et européen.</p></div>' +
+      return '<div class="cz-screen__intro"><p>Les cinq modèles de la planche « Cape », illustrés à la même ' +
+        'échelle : la doublure apparaît en doré.</p></div>' +
         '<div class="cz-group">' +
-        field('Modèle', optionCards('hood.style', cat.HOOD_STYLES,
-          (id) => thumbWrap(HOOD_THUMBS[id]))) +
-        field('Couleur extérieure', swatches('hood.outer', cat.MAIN_COLORS)) +
-        field('Doublure intérieure', swatches('hood.inner', cat.TRIM_COLORS)) +
-        field('Couleur de bordure', swatches('hood.border', cat.TRIM_COLORS)) +
-        field('Couleurs de faculté', swatches('hood.faculty', cat.FACULTY_COLORS),
-          'La faculté choisie détermine le satin visible à l’intérieur.') +
+        field('Modèle', optionCards('hood.style', cat.HOOD_STYLES, { wide: true })) +
         field('Broderie de capuche',
           textInput('hood.emb', { maxlength: 40, placeholder: 'Ex : Faculté de Médecine de Tunis' })) +
         '</div>';
     },
   };
 
-  /* ----------------------------------------------------------
+  /* ==========================================================
      Étape 4 — Mortier
-     ---------------------------------------------------------- */
+     ========================================================== */
   const cap = {
     html() {
-      return '<div class="cz-screen__intro"><p>Les trois formes de plateau de la planche coiffe : ' +
-        'le repère 1 désigne le plateau, le repère 2 la calotte.</p></div>' +
+      return '<div class="cz-screen__intro"><p>Chaque forme est montrée en perspective, avec ses vues ' +
+        'de face, de dessus et de profil.</p></div>' +
         '<div class="cz-group">' +
-        field('Forme du mortier', optionCards('cap.style', cat.CAP_STYLES,
-          (id) => thumbWrap(CAP_THUMBS[id]))) +
+        field('Forme du mortier', optionCards('cap.style', cat.CAP_STYLES, { wide: true })) +
         field('Matière', optionCards('cap.material', cat.CAP_MATERIALS)) +
-        field('Couleur', swatches('cap.color', cat.MAIN_COLORS)) +
-        field('Couleur du bouton', swatches('cap.button', cat.TRIM_COLORS, { small: true })) +
         field('Broderie du plateau',
           textInput('cap.emb', { maxlength: 24, placeholder: 'Ex : Promotion 2026' })) +
         field('Logo brodé sur le mortier',
@@ -284,37 +444,33 @@
     },
   };
 
-  /* ----------------------------------------------------------
+  /* ==========================================================
      Étape 5 — Gland
-     ---------------------------------------------------------- */
+     ========================================================== */
   const tassel = {
     html() {
       const years = [];
       const thisYear = new Date().getFullYear();
       for (let y = thisYear; y <= thisYear + 3; y += 1) years.push(String(y));
       const current = store.at('tassel.year');
-      return '<div class="cz-screen__intro"><p>Quatre têtes de gland relevées sur la planche : ' +
-        'nœud, torsade cannelée, tête lisse et version fine.</p></div>' +
+      return '<div class="cz-screen__intro"><p>Les quatre têtes de gland de la planche, chacune avec sa ' +
+        'pastille de détail en gros plan.</p></div>' +
         '<div class="cz-group">' +
-        field('Style du gland', optionCards('tassel.style', cat.TASSEL_STYLES,
-          (id) => thumbWrap(TASSEL_THUMBS[id]))) +
-        field('Couleur du gland', swatches('tassel.color', cat.TASSEL_COLORS)) +
-        field('Breloque année', '<div class="cz-pills">' +
+        field('Style du gland', optionCards('tassel.style', cat.TASSEL_STYLES, { wide: true })) +
+        field('Année de promotion (breloque)', '<div class="cz-pills">' +
           '<button type="button" class="cz-pill' + (!current ? ' is-active' : '') + '"' +
           ' data-set="tassel.year" data-value="" aria-pressed="' + (!current) + '">Aucune</button>' +
           years.map((y) => '<button type="button" class="cz-pill' + (current === y ? ' is-active' : '') + '"' +
             ' data-set="tassel.year" data-value="' + y + '" aria-pressed="' + (current === y) + '">' + y +
-            '</button>').join('') + '</div>') +
-        field('Finition de la breloque année', optionCards('tassel.yearCharm', cat.CHARM_FINISHES)) +
-        field('Breloque de faculté', optionCards('tassel.facultyCharm', cat.CHARM_FINISHES),
-          'La breloque reprend la couleur de faculté choisie à l’étape capuche.') +
+            '</button>').join('') + '</div>',
+          'La finition de la breloque est choisie avec l’atelier.') +
         '</div>';
     },
   };
 
-  /* ----------------------------------------------------------
+  /* ==========================================================
      Étape 6 — Mesures
-     ---------------------------------------------------------- */
+     ========================================================== */
   const measure = {
     html() {
       return '<div class="cz-screen__intro"><p>Chaque mesure dispose de son illustration et de son guide. ' +
@@ -347,35 +503,22 @@
     },
   };
 
-  /* ----------------------------------------------------------
+  /* ==========================================================
      Étape 7 — Récapitulatif
-     ---------------------------------------------------------- */
+     ========================================================== */
   const review = {
     lines() {
       const s = store.get();
       const labelOf = (list, id) => (cat.find(list, id) || {}).label || '—';
-      const colorRow = (label, list, id) => ({
-        label,
-        value: labelOf(list, id),
-        hex: cat.hexOf(list, id, ''),
-      });
-
       return [
         {
           step: 'robe', title: 'La Robe', rows: [
             { label: 'Tissu', value: labelOf(cat.FABRICS, s.robe.fabric) },
-            colorRow('Couleur principale', cat.MAIN_COLORS, s.robe.main),
-            colorRow('Couleur secondaire', cat.TRIM_COLORS, s.robe.secondary),
-            s.robe.sleeveColor === 'match'
-              ? { label: 'Manches', value: 'Assorties au tissu' }
-              : colorRow('Manches', cat.MAIN_COLORS, s.robe.sleeveColor),
             { label: 'Coupe des manches', value: labelOf(cat.SLEEVES, s.robe.sleeve) },
             { label: 'Col', value: labelOf(cat.COLLARS, s.robe.collar) },
             { label: 'Bordure', value: labelOf(cat.TRIM_STYLES, s.robe.trim) },
-            colorRow('Couleur de bordure', cat.TRIM_COLORS, s.robe.trimColor),
             { label: 'Broderie', value: s.robe.emb.enabled
               ? (s.robe.emb.text.trim() || '— sans texte —') + ' · ' + cat.FONTS[s.robe.emb.font].label +
-                ' · ' + labelOf(cat.THREAD_COLORS, s.robe.emb.thread) +
                 ' · ' + ((cat.EMB_POSITIONS.find((p) => p.id === s.robe.emb.position) || {}).label || '')
               : 'Aucune' },
             { label: 'Logos brodés', value: [s.robe.emb.uniLogoName, s.robe.emb.facLogoName]
@@ -385,10 +528,6 @@
         {
           step: 'hood', title: 'La Capuche', rows: [
             { label: 'Modèle', value: labelOf(cat.HOOD_STYLES, s.hood.style) },
-            colorRow('Extérieur', cat.MAIN_COLORS, s.hood.outer),
-            colorRow('Doublure', cat.TRIM_COLORS, s.hood.inner),
-            colorRow('Bordure', cat.TRIM_COLORS, s.hood.border),
-            colorRow('Faculté', cat.FACULTY_COLORS, s.hood.faculty),
             { label: 'Broderie', value: s.hood.emb.trim() || 'Aucune' },
           ],
         },
@@ -396,8 +535,6 @@
           step: 'cap', title: 'Le Mortier', rows: [
             { label: 'Forme', value: labelOf(cat.CAP_STYLES, s.cap.style) },
             { label: 'Matière', value: labelOf(cat.CAP_MATERIALS, s.cap.material) },
-            colorRow('Couleur', cat.MAIN_COLORS, s.cap.color),
-            colorRow('Bouton', cat.TRIM_COLORS, s.cap.button),
             { label: 'Broderie', value: s.cap.emb.trim() || 'Aucune' },
             { label: 'Logo', value: s.cap.logoName || 'Aucun' },
           ],
@@ -405,10 +542,7 @@
         {
           step: 'tassel', title: 'Le Gland', rows: [
             { label: 'Style', value: labelOf(cat.TASSEL_STYLES, s.tassel.style) },
-            colorRow('Couleur', cat.TASSEL_COLORS, s.tassel.color),
-            { label: 'Année', value: s.tassel.year || 'Aucune' },
-            { label: 'Breloque année', value: labelOf(cat.CHARM_FINISHES, s.tassel.yearCharm) },
-            { label: 'Breloque faculté', value: labelOf(cat.CHARM_FINISHES, s.tassel.facultyCharm) },
+            { label: 'Année de promotion', value: s.tassel.year || 'Aucune' },
           ],
         },
         {
@@ -424,12 +558,10 @@
 
     html() {
       const s = store.get();
-      /* Les erreurs de coordonnées restent muettes à l’arrivée sur l’écran :
-         elles n’apparaissent qu’à la saisie ou au blocage de l’envoi. */
       const filesBlock = s.files.length
         ? '<ul class="cz-recap__files">' + s.files.map((f) =>
             '<li>' + (f.previewable
-              ? '<img src="' + esc(f.dataUrl) + '" alt="">'
+              ? '<img src="' + esc(f.dataUrl) + '" alt="" loading="lazy" decoding="async">'
               : '<span class="cz-file__ext">' + esc(f.label) + '</span>') +
             '<span>' + esc(f.name) + '<small>' + kb(f.size) + '</small></span></li>').join('') + '</ul>'
         : '<p class="cz-recap__empty">Aucun fichier — revenez à l’étape « Vos fichiers ».</p>';
@@ -442,8 +574,7 @@
           '<dl class="cz-recap__list">' + section.rows.map((row) =>
             '<div class="cz-recap__row' + (row.warn ? ' is-warn' : '') + '">' +
             '<dt>' + esc(row.label) + '</dt>' +
-            '<dd>' + (row.hex ? '<i class="cz-recap__dot" style="background:' + row.hex + '"></i>' : '') +
-            esc(row.value) + '</dd></div>').join('') +
+            '<dd>' + esc(row.value) + '</dd></div>').join('') +
           '</dl>' +
         '</section>').join('');
 
@@ -464,6 +595,8 @@
           '<button type="button" class="btn btn--line cz-recap__edit" data-goto="upload">Modifier</button>' +
           '</header>' + filesBlock +
         '</section>' + sections +
+        '<p class="cz-help cz-help--workshop">Les couleurs de chaque pièce sont arrêtées avec vous par ' +
+        'l’atelier avant la mise en fabrication.</p>' +
         '<section class="cz-recap">' +
           '<header class="cz-recap__head"><h3>Vos coordonnées</h3></header>' +
           '<div class="cz-form">' +
@@ -480,16 +613,16 @@
             inputRow('date', 'Date de soutenance *', { type: 'date', min: new Date().toISOString().slice(0, 10) }) +
             '<div class="cz-field cz-field--wide"><label class="cz-field__label" for="cz_notes">Remarques</label>' +
               '<textarea class="cz-input" id="cz_notes" data-client="notes" rows="3"' +
-              ' placeholder="Contraintes de délai, précisions de broderie, couleurs imposées…">' +
+              ' placeholder="Couleurs souhaitées, contraintes de délai, précisions de broderie…">' +
               esc(store.at('client.notes')) + '</textarea></div>' +
           '</div>' +
         '</section>';
     },
   };
 
-  /* ----------------------------------------------------------
+  /* ==========================================================
      Étape 8 — Envoi
-     ---------------------------------------------------------- */
+     ========================================================== */
   const submit = {
     html() {
       const done = store.at('submitted');
@@ -519,7 +652,7 @@
         '<h3 class="cz-done__title">Merci — votre commande est entre nos mains</h3>' +
         '<p class="cz-done__ref">Référence <strong>' + esc(done.ref) + '</strong></p>' +
         '<p class="cz-done__text">Conservez cette référence : elle identifie votre dossier auprès de l’atelier. ' +
-        'Notre équipe confirme les mesures et la broderie avant lancement de la fabrication.</p>' +
+        'Notre équipe confirme les mesures, la broderie et les couleurs avant lancement de la fabrication.</p>' +
         '<div class="cz-done__actions">' +
           '<button type="button" class="btn btn--solid" id="czPdf">Télécharger le récapitulatif</button>' +
           '<button type="button" class="btn btn--line" id="czRestart">Configurer une autre tenue</button>' +

@@ -22,49 +22,8 @@
   ];
   const MAX_FILE_MB = 12;
 
-  /* ---------- Palettes ---------- */
-  const MAIN_COLORS = [
-    { id: 'noir',       label: 'Noir Classique',  hex: '#17171A' },
-    { id: 'marine',     label: 'Bleu Marine',     hex: '#1F2A44' },
-    { id: 'bordeaux',   label: 'Bordeaux',        hex: '#5C1F2B' },
-    { id: 'anthracite', label: 'Gris Anthracite', hex: '#3C3F45' },
-    { id: 'ivoire',     label: 'Blanc Ivoire',    hex: '#F1EDE4' },
-    { id: 'emeraude',   label: 'Vert Émeraude',   hex: '#14544A' },
-    { id: 'pourpre',    label: 'Pourpre Royal',   hex: '#46244C' },
-    { id: 'nuit',       label: 'Bleu Nuit',       hex: '#141B33' },
-  ];
-
-  const TRIM_COLORS = [
-    { id: 'or',       label: 'Or',           hex: '#C8A86B' },
-    { id: 'argent',   label: 'Argent',       hex: '#C9CCD4' },
-    { id: 'blanc',    label: 'Blanc Satin',  hex: '#F5F2EA' },
-    { id: 'noir',     label: 'Noir',         hex: '#17171A' },
-    { id: 'grenat',   label: 'Rouge Grenat', hex: '#8E2A35' },
-    { id: 'roi',      label: 'Bleu Roi',     hex: '#24427C' },
-    { id: 'emeraude', label: 'Émeraude',     hex: '#14544A' },
-    { id: 'rose',     label: 'Rose Poudré',  hex: '#E3B5BE' },
-  ];
-
-  const THREAD_COLORS = [
-    { id: 'or',     label: 'Fil Or',     hex: '#C8A86B' },
-    { id: 'argent', label: 'Fil Argent', hex: '#C9CCD4' },
-    { id: 'blanc',  label: 'Fil Blanc',  hex: '#FFFFFF' },
-    { id: 'noir',   label: 'Fil Noir',   hex: '#17171A' },
-    { id: 'grenat', label: 'Fil Grenat', hex: '#8E2A35' },
-    { id: 'roi',    label: 'Fil Bleu',   hex: '#24427C' },
-  ];
-
-  /* Couleurs facultaires normalisées (satin intérieur de la capuche) */
-  const FACULTY_COLORS = [
-    { id: 'medecine',    label: 'Médecine',            hex: '#14544A' },
-    { id: 'droit',       label: 'Droit',               hex: '#46244C' },
-    { id: 'sciences',    label: 'Sciences',            hex: '#24427C' },
-    { id: 'ingenierie',  label: 'Ingénierie',          hex: '#8E2A35' },
-    { id: 'lettres',     label: 'Lettres & Langues',   hex: '#F1EDE4' },
-    { id: 'economie',    label: 'Économie & Gestion',  hex: '#C8A86B' },
-    { id: 'pharmacie',   label: 'Pharmacie',           hex: '#0E7C6B' },
-    { id: 'informatique',label: 'Informatique',        hex: '#1F2A44' },
-  ];
+  /* Les couleurs ne sont plus proposées au client : leur choix est
+     arrêté par l'atelier avec le client à la confirmation. */
 
   /* ---------- Tissus ---------- */
   const FABRICS = [
@@ -149,23 +108,6 @@
     { id: 'cannele',  label: 'Gland cannelé',    note: 'Tête à torsade bouillonnée',      ref: 'Planche gland — modèle 2' },
     { id: 'lisse',    label: 'Gland lisse',      note: 'Tête nette, franges longues',     ref: 'Planche gland — modèle 3' },
     { id: 'fin',      label: 'Gland fin',        note: 'Version fine et légère',          ref: 'Planche gland — modèle 4' },
-  ];
-
-  const TASSEL_COLORS = [
-    { id: 'or',       label: 'Or',        hex: '#D8A93F' },
-    { id: 'argent',   label: 'Argent',    hex: '#C9CCD4' },
-    { id: 'noir',     label: 'Noir',      hex: '#17171A' },
-    { id: 'blanc',    label: 'Blanc',     hex: '#F5F2EA' },
-    { id: 'grenat',   label: 'Grenat',    hex: '#8E2A35' },
-    { id: 'roi',      label: 'Bleu Roi',  hex: '#24427C' },
-    { id: 'rose',     label: 'Rose',      hex: '#E3B5BE' },
-    { id: 'emeraude', label: 'Émeraude',  hex: '#14544A' },
-  ];
-
-  const CHARM_FINISHES = [
-    { id: 'aucun',  label: 'Sans breloque' },
-    { id: 'or',     label: 'Breloque or',    hex: '#C8A86B' },
-    { id: 'argent', label: 'Breloque argent',hex: '#C9CCD4' },
   ];
 
   /* ---------- Mesures (repères 1 à 6 de la planche « ROBE ») ---------- */
@@ -296,10 +238,10 @@
   /* Ordre des étapes de l’assistant */
   const STEPS = [
     { id: 'upload',  title: 'Vos fichiers',   phase: 'Production', sub: 'Téléversez les designs à broder ou imprimer.' },
-    { id: 'robe',    title: 'La Robe',        phase: 'Tenue',      sub: 'Tissus, couleurs, col, bordure et broderies.' },
-    { id: 'hood',    title: 'La Capuche',     phase: 'Tenue',      sub: 'Modèle, doublure et couleurs de votre faculté.' },
-    { id: 'cap',     title: 'Le Mortier',     phase: 'Tenue',      sub: 'Forme du plateau, matière, bouton et logo.' },
-    { id: 'tassel',  title: 'Le Gland',       phase: 'Tenue',      sub: 'Style, couleur et breloques du gland.' },
+    { id: 'robe',    title: 'La Robe',        phase: 'Tenue',      sub: 'Tissu, coupe des manches, col, bordure et broderies.' },
+    { id: 'hood',    title: 'La Capuche',     phase: 'Tenue',      sub: 'Choisissez le modèle : chaque forme est illustrée.' },
+    { id: 'cap',     title: 'Le Mortier',     phase: 'Tenue',      sub: 'Forme du plateau, matière, broderie et logo.' },
+    { id: 'tassel',  title: 'Le Gland',       phase: 'Tenue',      sub: 'Style du gland et année de promotion.' },
     { id: 'measure', title: 'Vos Mesures',    phase: 'Atelier',    sub: 'Chaque mesure est accompagnée de son guide.' },
     { id: 'review',  title: 'Récapitulatif',  phase: 'Validation', sub: 'Vérifiez et corrigez avant l’envoi.' },
     { id: 'submit',  title: 'Envoi',          phase: 'Validation', sub: 'Votre dossier de fabrication est prêt.' },
@@ -327,18 +269,11 @@
     return list.find((item) => item.id === id) || list[0];
   }
 
-  /* Couleur hexadécimale d’un identifiant, quelle que soit la palette. */
-  function hexOf(list, id, fallback) {
-    const found = list.find((item) => item.id === id);
-    return found && found.hex ? found.hex : (fallback || '#17171A');
-  }
-
   CZ.catalog = {
     FILE_TYPES, MAX_FILE_MB,
-    MAIN_COLORS, TRIM_COLORS, THREAD_COLORS, FACULTY_COLORS, TASSEL_COLORS, CHARM_FINISHES,
     FABRICS, COLLARS, TRIM_STYLES, SLEEVES,
     HOOD_STYLES, CAP_STYLES, CAP_MATERIALS, TASSEL_STYLES,
     MEASUREMENTS, STEPS, REGIONS, FONTS, EMB_POSITIONS,
-    find, hexOf,
+    find,
   };
 })(window);

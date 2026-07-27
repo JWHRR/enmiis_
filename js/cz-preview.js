@@ -1,11 +1,15 @@
 /* ============================================================
-   ENMIIS — Configurateur : aperçu photographique.
+   ENMIIS — Configurateur : visionneuse d’aperçu.
 
-   Chaque pièce est photographiée en studio sur fond blanc, en tissu
-   neutre très clair. La photo est posée en « multiply » sur un cadre
-   coloré : le fond blanc laisse passer la couleur choisie, les plis et
-   les ombres du tissu la teintent. La tenue prend donc réellement la
-   couleur sélectionnée, en direct, sans recharger d’image.
+   Deux modes :
+   · « photo »  — la photographie studio de la pièce en cours
+     (robe, capuche, mortier, gland), avec pastilles de résumé
+     et vitrine du dernier modèle choisi ;
+   · « design » — dès l’étape des fichiers, les images envoyées
+     par le client deviennent l’aperçu principal, avec vignettes,
+     zoom, déplacement et plein écran.
+
+   Toutes les transitions durent 300 ms (fondu + légère échelle).
 
    Expose window.CZ.preview
    ============================================================ */
@@ -18,93 +22,78 @@
   const el = {};
   let layers = [];
   let front = 0;
-  let shotId = 'robe';
   let currentStep = 'upload';
+  let selectedUpload = null;
 
+  /* Caméra : zoom 1–3, déplacement quand zoomé. */
+  let zoom = 1;
+  let panX = 0;
+  let panY = 0;
+
+  const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
   const label = (list, id) => (cat.find(list, id) || {}).label || '—';
 
-  /* Une photo par pièce, avec la couleur qui la teinte et les pastilles
-     de finition affichées sous le cadre. */
-  const SHOTS = {
-    robe: {
-      src: 'img/robe.webp',
-      piece: 'La robe',
-      tint: (s) => cat.hexOf(cat.MAIN_COLORS, s.robe.main),
-      style: (s) => label(cat.FABRICS, s.robe.fabric) + ' · ' + label(cat.SLEEVES, s.robe.sleeve),
-      chips: (s) => {
-        const list = [
-          { label: 'Principale', hex: cat.hexOf(cat.MAIN_COLORS, s.robe.main), name: label(cat.MAIN_COLORS, s.robe.main) },
-          { label: 'Secondaire', hex: cat.hexOf(cat.TRIM_COLORS, s.robe.secondary), name: label(cat.TRIM_COLORS, s.robe.secondary) },
-        ];
-        if (s.robe.trim !== 'aucun') {
-          list.push({ label: 'Bordure', hex: cat.hexOf(cat.TRIM_COLORS, s.robe.trimColor), name: label(cat.TRIM_COLORS, s.robe.trimColor) });
-        }
-        if (s.robe.sleeveColor !== 'match') {
-          list.push({ label: 'Manches', hex: cat.hexOf(cat.MAIN_COLORS, s.robe.sleeveColor), name: label(cat.MAIN_COLORS, s.robe.sleeveColor) });
-        }
-        if (s.robe.emb.enabled) {
-          list.push({ label: 'Fil', hex: cat.hexOf(cat.THREAD_COLORS, s.robe.emb.thread), name: label(cat.THREAD_COLORS, s.robe.emb.thread) });
-        }
-        return list;
-      },
-    },
-    hood: {
-      src: 'img/hood.webp',
-      piece: 'La capuche',
-      tint: (s) => cat.hexOf(cat.MAIN_COLORS, s.hood.outer),
-      style: (s) => label(cat.HOOD_STYLES, s.hood.style),
-      chips: (s) => [
-        { label: 'Extérieur', hex: cat.hexOf(cat.MAIN_COLORS, s.hood.outer), name: label(cat.MAIN_COLORS, s.hood.outer) },
-        { label: 'Doublure', hex: cat.hexOf(cat.TRIM_COLORS, s.hood.inner), name: label(cat.TRIM_COLORS, s.hood.inner) },
-        { label: 'Bordure', hex: cat.hexOf(cat.TRIM_COLORS, s.hood.border), name: label(cat.TRIM_COLORS, s.hood.border) },
-        { label: 'Faculté', hex: cat.hexOf(cat.FACULTY_COLORS, s.hood.faculty), name: label(cat.FACULTY_COLORS, s.hood.faculty) },
-      ],
-    },
-    cap: {
-      src: 'img/cap.webp',
-      piece: 'Le mortier',
-      tint: (s) => cat.hexOf(cat.MAIN_COLORS, s.cap.color),
-      style: (s) => label(cat.CAP_STYLES, s.cap.style) + ' · ' + label(cat.CAP_MATERIALS, s.cap.material),
-      chips: (s) => [
-        { label: 'Mortier', hex: cat.hexOf(cat.MAIN_COLORS, s.cap.color), name: label(cat.MAIN_COLORS, s.cap.color) },
-        { label: 'Bouton', hex: cat.hexOf(cat.TRIM_COLORS, s.cap.button), name: label(cat.TRIM_COLORS, s.cap.button) },
-      ],
-    },
-    tassel: {
-      src: 'img/tassel.webp',
-      piece: 'Le gland',
-      tint: (s) => cat.hexOf(cat.TASSEL_COLORS, s.tassel.color),
-      style: (s) => label(cat.TASSEL_STYLES, s.tassel.style) + (s.tassel.year ? ' · ' + s.tassel.year : ''),
-      chips: (s) => {
-        const list = [{ label: 'Gland', hex: cat.hexOf(cat.TASSEL_COLORS, s.tassel.color), name: label(cat.TASSEL_COLORS, s.tassel.color) }];
-        if (s.tassel.yearCharm !== 'aucun') {
-          list.push({ label: 'Breloque année', hex: cat.hexOf(cat.CHARM_FINISHES, s.tassel.yearCharm), name: label(cat.CHARM_FINISHES, s.tassel.yearCharm) });
-        }
-        if (s.tassel.facultyCharm !== 'aucun') {
-          list.push({ label: 'Breloque faculté', hex: cat.hexOf(cat.CHARM_FINISHES, s.tassel.facultyCharm), name: label(cat.CHARM_FINISHES, s.tassel.facultyCharm) });
-        }
-        return list;
-      },
-    },
+  /* ---------- Contenu par étape ---------- */
+  const PHOTOS = {
+    robe:   { src: 'img/robe.webp',   piece: 'La robe' },
+    hood:   { src: 'img/hood.webp',   piece: 'La capuche' },
+    cap:    { src: 'img/cap.webp',    piece: 'Le mortier' },
+    tassel: { src: 'img/tassel.webp', piece: 'Le gland' },
   };
-
-  /* Hors des étapes de tenue, la robe sert de visuel et les pastilles
-     résument les quatre pièces. */
-  const OVERVIEW = {
-    piece: 'Votre tenue',
-    style: (s) => label(cat.MAIN_COLORS, s.robe.main) + ' · ' + label(cat.FABRICS, s.robe.fabric),
-    chips: (s) => [
-      { label: 'Robe', hex: cat.hexOf(cat.MAIN_COLORS, s.robe.main), name: label(cat.MAIN_COLORS, s.robe.main) },
-      { label: 'Capuche', hex: cat.hexOf(cat.MAIN_COLORS, s.hood.outer), name: label(cat.HOOD_STYLES, s.hood.style) },
-      { label: 'Mortier', hex: cat.hexOf(cat.MAIN_COLORS, s.cap.color), name: label(cat.CAP_STYLES, s.cap.style) },
-      { label: 'Gland', hex: cat.hexOf(cat.TASSEL_COLORS, s.tassel.color), name: label(cat.TASSEL_STYLES, s.tassel.style) },
-    ],
-  };
-
   const STEP_SHOT = { robe: 'robe', hood: 'hood', cap: 'cap', tassel: 'tassel' };
 
-  /* Fait glisser la nouvelle photo par-dessus l’ancienne. */
-  function setPhoto(src) {
+  function chipList(state) {
+    if (currentStep === 'robe') {
+      const chips = [
+        { label: 'Tissu', value: label(cat.FABRICS, state.robe.fabric) },
+        { label: 'Manches', value: label(cat.SLEEVES, state.robe.sleeve) },
+        { label: 'Col', value: label(cat.COLLARS, state.robe.collar) },
+        { label: 'Bordure', value: label(cat.TRIM_STYLES, state.robe.trim) },
+      ];
+      if (state.robe.emb.enabled) chips.push({ label: 'Broderie', value: state.robe.emb.text.trim() || 'Oui' });
+      return chips;
+    }
+    if (currentStep === 'hood') {
+      const chips = [{ label: 'Modèle', value: label(cat.HOOD_STYLES, state.hood.style) }];
+      if (state.hood.emb.trim()) chips.push({ label: 'Broderie', value: state.hood.emb.trim() });
+      return chips;
+    }
+    if (currentStep === 'cap') {
+      const chips = [
+        { label: 'Forme', value: label(cat.CAP_STYLES, state.cap.style) },
+        { label: 'Matière', value: label(cat.CAP_MATERIALS, state.cap.material) },
+      ];
+      if (state.cap.logoName) chips.push({ label: 'Logo', value: state.cap.logoName });
+      return chips;
+    }
+    if (currentStep === 'tassel') {
+      const chips = [{ label: 'Style', value: label(cat.TASSEL_STYLES, state.tassel.style) }];
+      if (state.tassel.year) chips.push({ label: 'Année', value: state.tassel.year });
+      return chips;
+    }
+    /* Vue d’ensemble (fichiers, mesures, récapitulatif, envoi) */
+    return [
+      { label: 'Robe', value: label(cat.FABRICS, state.robe.fabric) },
+      { label: 'Manches', value: label(cat.SLEEVES, state.robe.sleeve) },
+      { label: 'Capuche', value: label(cat.HOOD_STYLES, state.hood.style) },
+      { label: 'Mortier', value: label(cat.CAP_STYLES, state.cap.style) },
+      { label: 'Gland', value: label(cat.TASSEL_STYLES, state.tassel.style) },
+    ];
+  }
+
+  /* ---------- Mode courant ---------- */
+  function uploadsMode() {
+    return currentStep === 'upload' && CZ.store.get().files.length > 0;
+  }
+
+  function selectedFile() {
+    const files = CZ.store.get().files;
+    if (!files.length) return null;
+    return files.find((f) => f.id === selectedUpload) || files[files.length - 1];
+  }
+
+  /* ---------- Couches d’image (fondu croisé 300 ms) ---------- */
+  function setImage(src) {
     const visible = layers[front];
     const hidden = layers[1 - front];
     if (visible.getAttribute('src') === src) return;
@@ -116,54 +105,223 @@
     hidden.setAttribute('src', src);
   }
 
+  /* ---------- Caméra ---------- */
+  function applyCamera() {
+    /* Le déplacement est borné pour que l’image ne quitte jamais le cadre. */
+    const bound = (zoom - 1) * 50;
+    panX = clamp(panX, -bound, bound);
+    panY = clamp(panY, -bound, bound);
+    el.view.style.transform =
+      'translate(' + panX.toFixed(1) + '%, ' + panY.toFixed(1) + '%) scale(' + zoom.toFixed(3) + ')';
+    el.frame.classList.toggle('is-zoomed', zoom > 1.02);
+  }
+
+  function setZoom(value, keepPan) {
+    zoom = clamp(value, 1, 3);
+    if (!keepPan && zoom <= 1.02) { panX = 0; panY = 0; }
+    applyCamera();
+  }
+
+  function resetCamera() {
+    zoom = 1; panX = 0; panY = 0;
+    applyCamera();
+  }
+
+  /* ---------- Rendu ---------- */
   function render() {
     const state = CZ.store.get();
-    const shot = SHOTS[shotId];
-    const overview = !STEP_SHOT[currentStep];
-    const source = overview ? OVERVIEW : shot;
 
-    el.frame.style.backgroundColor = shot.tint(state);
-    el.piece.textContent = source.piece || shot.piece;
-    el.style.textContent = source.style(state);
+    if (uploadsMode()) {
+      const file = selectedFile();
+      el.frame.classList.add('is-doc');
+      if (file.previewable) {
+        el.doc.hidden = true;
+        setImage(file.dataUrl);
+      } else {
+        /* Formats sans rendu navigateur : tuile d’extension à la place. */
+        el.doc.hidden = false;
+        el.doc.textContent = file.label;
+      }
+      el.piece.textContent = 'Votre design';
+      el.style.textContent = file.name;
+    } else {
+      const shot = PHOTOS[STEP_SHOT[currentStep] || 'robe'];
+      el.frame.classList.remove('is-doc');
+      el.doc.hidden = true;
+      setImage(shot.src);
+      el.piece.textContent = STEP_SHOT[currentStep] ? shot.piece : 'Votre tenue';
+      el.style.textContent = STEP_SHOT[currentStep]
+        ? ''
+        : label(cat.FABRICS, state.robe.fabric) + ' · ' + label(cat.SLEEVES, state.robe.sleeve);
+    }
 
-    el.spec.innerHTML = source.chips(state).map((chip) =>
-      '<span class="cz-chip" title="' + chip.label + ' : ' + chip.name + '">' +
-        '<i class="cz-chip__dot" style="background:' + chip.hex + '"></i>' +
+    el.spec.innerHTML = chipList(state).map((chip) =>
+      '<span class="cz-chip">' +
         '<span class="cz-chip__label">' + chip.label + '</span>' +
-        '<span class="cz-chip__value">' + chip.name + '</span>' +
+        '<span class="cz-chip__value">' + chip.value + '</span>' +
+      '</span>').join('');
+
+    renderThumbs();
+  }
+
+  function renderThumbs() {
+    if (!uploadsMode()) {
+      el.thumbs.innerHTML = '';
+      el.thumbs.hidden = true;
+      return;
+    }
+    const files = CZ.store.get().files;
+    const active = selectedFile();
+    el.thumbs.hidden = false;
+    el.thumbs.innerHTML = files.map((file) =>
+      '<span class="cz-thumb' + (file.id === active.id ? ' is-active' : '') + '" data-thumb="' + file.id + '">' +
+        '<button type="button" class="cz-thumb__pick" data-thumb-pick="' + file.id + '"' +
+        ' aria-label="Afficher ' + file.name.replace(/"/g, '&quot;') + '"' +
+        ' aria-pressed="' + (file.id === active.id) + '">' +
+        (file.previewable
+          ? '<img src="' + file.dataUrl + '" alt="" loading="lazy" decoding="async">'
+          : '<span class="cz-thumb__ext">' + file.label + '</span>') +
+        '</button>' +
+        '<span class="cz-thumb__tools">' +
+          '<button type="button" data-thumb-replace="' + file.id + '" aria-label="Remplacer ce fichier">' +
+            '<svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><polyline points="20 3 20 8 15 8"/></svg>' +
+          '</button>' +
+          '<button type="button" data-thumb-remove="' + file.id + '" aria-label="Supprimer ce fichier">' +
+            '<svg viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>' +
+          '</button>' +
+        '</span>' +
       '</span>').join('');
   }
 
+  /* ---------- Vitrine du dernier modèle choisi ---------- */
+  let spotTimer = null;
+  function spotlight(svgHtml, name) {
+    if (!svgHtml) return;
+    el.spot.innerHTML = '<span class="cz-spot__art">' + svgHtml + '</span>' +
+      '<span class="cz-spot__name">' + name + '</span>';
+    el.spot.classList.remove('is-in');
+    /* réamorce la transition d’apparition */
+    void el.spot.offsetWidth;
+    el.spot.classList.add('is-in');
+    el.spot.hidden = false;
+    clearTimeout(spotTimer);
+    spotTimer = setTimeout(() => { el.spot.classList.remove('is-in'); }, 2600);
+  }
+
+  /* ---------- Navigation d’étape ---------- */
   function focus(stepId) {
     currentStep = stepId;
-    shotId = STEP_SHOT[stepId] || 'robe';
-    setPhoto(SHOTS[shotId].src);
+    resetCamera();
+    el.spot.hidden = true;
+    render();
+    preloadNext(stepId);
+  }
+
+  /* Précharge la photo de l’étape suivante pour une bascule sans attente. */
+  const preloaded = {};
+  function preloadNext(stepId) {
+    const order = cat.STEPS.map((s) => s.id);
+    const next = order[order.indexOf(stepId) + 1];
+    const shot = PHOTOS[STEP_SHOT[next]];
+    if (shot && !preloaded[shot.src]) {
+      preloaded[shot.src] = true;
+      const img = new Image();
+      img.decoding = 'async';
+      img.src = shot.src;
+    }
+  }
+
+  function selectUpload(id) {
+    selectedUpload = id;
+    resetCamera();
     render();
   }
 
-  /* Données de la vue courante, pour la visionneuse plein écran. */
+  /* Vue courante, pour le plein écran. */
   function current() {
-    const state = CZ.store.get();
-    const shot = SHOTS[shotId];
-    const overview = !STEP_SHOT[currentStep];
-    return {
-      src: shot.src,
-      tint: shot.tint(state),
-      title: (overview ? OVERVIEW.piece : shot.piece) + ' — ' + (overview ? OVERVIEW : shot).style(state),
+    if (uploadsMode()) {
+      const file = selectedFile();
+      return file.previewable
+        ? { src: file.dataUrl, title: file.name }
+        : { src: '', title: file.name };
+    }
+    const shot = PHOTOS[STEP_SHOT[currentStep] || 'robe'];
+    return { src: shot.src, title: shot.piece };
+  }
+
+  /* ---------- Interactions de la visionneuse ---------- */
+  function bindViewer() {
+    el.frame.addEventListener('wheel', (event) => {
+      event.preventDefault();
+      setZoom(zoom * (event.deltaY > 0 ? 0.9 : 1.1), true);
+    }, { passive: false });
+
+    let dragging = false;
+    let sx = 0; let sy = 0; let px = 0; let py = 0;
+    el.frame.addEventListener('pointerdown', (event) => {
+      if (zoom <= 1.02) return;
+      dragging = true;
+      sx = event.clientX; sy = event.clientY; px = panX; py = panY;
+      el.frame.setPointerCapture(event.pointerId);
+      el.frame.classList.add('is-panning');
+    });
+    el.frame.addEventListener('pointermove', (event) => {
+      if (!dragging) return;
+      const rect = el.frame.getBoundingClientRect();
+      panX = px + ((event.clientX - sx) / rect.width) * 100;
+      panY = py + ((event.clientY - sy) / rect.height) * 100;
+      applyCamera();
+    });
+    const stop = (event) => {
+      if (!dragging) return;
+      dragging = false;
+      el.frame.classList.remove('is-panning');
+      if (el.frame.hasPointerCapture(event.pointerId)) el.frame.releasePointerCapture(event.pointerId);
     };
+    el.frame.addEventListener('pointerup', stop);
+    el.frame.addEventListener('pointercancel', stop);
+    el.frame.addEventListener('dblclick', resetCamera);
+
+    /* Accessible au clavier : flèches pour se déplacer, +/− pour zoomer. */
+    el.frame.setAttribute('tabindex', '0');
+    el.frame.setAttribute('role', 'img');
+    el.frame.setAttribute('aria-label', 'Aperçu — molette ou boutons pour zoomer, double-clic pour réinitialiser');
+    el.frame.addEventListener('keydown', (event) => {
+      const keys = {
+        '+': () => setZoom(zoom * 1.2),
+        '=': () => setZoom(zoom * 1.2),
+        '-': () => setZoom(zoom * 0.85),
+        ArrowLeft: () => { panX += 8; applyCamera(); },
+        ArrowRight: () => { panX -= 8; applyCamera(); },
+        ArrowUp: () => { panY += 8; applyCamera(); },
+        ArrowDown: () => { panY -= 8; applyCamera(); },
+        Home: resetCamera,
+      };
+      if (keys[event.key]) { event.preventDefault(); keys[event.key](); }
+    });
+
+    el.zoomIn.addEventListener('click', () => setZoom(zoom * 1.25));
+    el.zoomOut.addEventListener('click', () => setZoom(zoom * 0.8));
   }
 
   function init() {
     el.frame = document.getElementById('czShotFrame');
+    el.view = document.getElementById('czShotView');
+    el.doc = document.getElementById('czShotDoc');
     el.spec = document.getElementById('czSpec');
+    el.spot = document.getElementById('czSpot');
     el.piece = document.getElementById('czShotPiece');
     el.style = document.getElementById('czShotStyle');
+    el.thumbs = document.getElementById('czThumbs');
+    el.zoomIn = document.getElementById('czZoomIn');
+    el.zoomOut = document.getElementById('czZoomOut');
     layers = [document.getElementById('czShotImg'), document.getElementById('czShotNext')];
     layers[0].classList.add('is-on');
+    bindViewer();
     render();
   }
 
-  CZ.preview = { init, render, focus, current };
+  CZ.preview = { init, render, focus, current, selectUpload, spotlight };
 })(window);
 
 

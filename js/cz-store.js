@@ -11,20 +11,22 @@
   const ORDERS_KEY = 'enmiis-orders-v1';
   const MAX_HISTORY = 80;
 
+  /* Les couleurs ne se choisissent plus dans le configurateur : elles sont
+     définies par l'atelier lors de la confirmation. Le client ne choisit
+     que les modèles, illustrés un à un. */
   const DEFAULTS = {
     step: 0,
     files: [],
     robe: {
-      main: 'noir', secondary: 'or', sleeveColor: 'match', sleeve: 'cloche',
-      collar: 'v', trim: 'double', trimColor: 'or', fabric: 'gabardine',
+      fabric: 'gabardine', sleeve: 'cloche', collar: 'v', trim: 'double',
       emb: {
-        enabled: false, text: '', font: 'serif', thread: 'or', position: 'chest-right',
+        enabled: false, text: '', font: 'serif', position: 'chest-right',
         uniLogo: null, uniLogoName: '', facLogo: null, facLogoName: '',
       },
     },
-    hood: { style: 'etole-droite', outer: 'noir', inner: 'blanc', border: 'or', faculty: 'sciences', emb: '' },
-    cap: { style: 'classique', color: 'noir', material: 'gabardine', button: 'or', emb: '', logo: null, logoName: '' },
-    tassel: { style: 'noeud', color: 'or', year: '', yearCharm: 'or', facultyCharm: 'aucun' },
+    hood: { style: 'etole-droite', emb: '' },
+    cap: { style: 'classique', material: 'gabardine', emb: '', logo: null, logoName: '' },
+    tassel: { style: 'noeud', year: '' },
     measures: {
       height: '', weight: '', head: '', chest: '', waist: '',
       hip: '', shoulder: '', sleeve: '', gown: '',
