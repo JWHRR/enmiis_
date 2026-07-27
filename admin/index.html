@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Espace Atelier — ENMIIS</title>
+
+  <!-- L'espace atelier vit à la racine (admin.html) ; ce dossier n'existe que
+       pour que l'adresse « /admin » — sans extension — y mène aussi, quel que
+       soit l'hébergement (GitHub Pages, Netlify, serveur local…). -->
+  <meta http-equiv="refresh" content="0; url=../admin.html">
+  <link rel="canonical" href="../admin.html">
+
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #111111;
+      color: #FFFFFF;
+      font-family: "Inter", Arial, sans-serif;
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    a { color: #C8A86B; }
+  </style>
+</head>
+<body>
+  <p>Ouverture de l’espace atelier… <a href="../admin.html">Continuer</a></p>
+  <script>
+    /* Redirection immédiate, sans polluer l'historique du navigateur. */
+    location.replace('../admin.html');
+  </script>
+</body>
+</html>

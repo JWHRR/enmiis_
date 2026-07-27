@@ -11,7 +11,9 @@
 (function (global) {
   'use strict';
 
-  const cat = global.CZ.catalog;
+  /* Le catalogue est chargé par js/cz-catalog.js ; s'il manque, init()
+     l'annonce à l'écran au lieu de laisser une page blanche. */
+  const cat = (global.CZ && global.CZ.catalog) || null;
   const PASSWORD = 'enmiis987';
   const SESSION_KEY = 'enmiis-admin-session';
   const ORDERS_KEY = 'enmiis-orders-v1';
@@ -26,6 +28,39 @@
   ];
 
   const $ = (selector) => document.querySelector(selector);
+
+  /* Selon le navigateur et le mode de navigation, l'accès au stockage peut
+     lever une exception (fichier local, navigation privée, cookies bloqués).
+     Une session en mémoire prend alors le relais : l'espace reste utilisable
+     le temps de l'onglet au lieu de rester bloqué sur l'écran de connexion. */
+  let memorySession = false;
+
+  function sessionActive() {
+    if (memorySession) return true;
+    try {
+      return sessionStorage.getItem(SESSION_KEY) === '1';
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function rememberSession() {
+    memorySession = true;
+    try {
+      sessionStorage.setItem(SESSION_KEY, '1');
+    } catch (err) {
+      /* session limitée à cet onglet */
+    }
+  }
+
+  function forgetSession() {
+    memorySession = false;
+    try {
+      sessionStorage.removeItem(SESSION_KEY);
+    } catch (err) {
+      /* rien à effacer */
+    }
+  }
 
   const esc = (value) => String(value == null ? '' : value)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -718,7 +753,7 @@
     });
 
     $('#adLogout').addEventListener('click', () => {
-      sessionStorage.removeItem(SESSION_KEY);
+      forgetSession();
       global.location.reload();
     });
 
@@ -755,7 +790,7 @@
       event.preventDefault();
       const value = $('#adPass').value;
       if (value === PASSWORD) {
-        sessionStorage.setItem(SESSION_KEY, '1');
+        rememberSession();
         openApp();
         return;
       }
@@ -770,9 +805,39 @@
     });
   }
 
+  /* Un écran vide ne dit rien : si le démarrage échoue, on affiche la cause
+     plutôt que de laisser la page blanche. */
+  function fail(message, detail) {
+    const gate = $('#adGate');
+    const app = $('#adApp');
+    if (app) app.hidden = true;
+    if (!gate) {
+      document.body.textContent = message + (detail ? ' — ' + detail : '');
+      return;
+    }
+    gate.hidden = false;
+    gate.innerHTML = '<div class="ad-gate__card">' +
+      '<p class="ad-gate__label">Espace Atelier</p>' +
+      '<h1 class="ad-gate__title">Chargement impossible</h1>' +
+      '<p class="ad-gate__text">' + esc(message) + '</p>' +
+      (detail ? '<p class="ad-error">' + esc(detail) + '</p>' : '') +
+      '<a class="ad-gate__back" href="index.html">← Retour au site</a>' +
+      '</div>';
+  }
+
   function init() {
-    if (sessionStorage.getItem(SESSION_KEY) === '1') openApp();
-    else bindGate();
+    /* admin.js dépend du catalogue produit pour libeller les commandes. */
+    if (!cat || !cat.MEASUREMENTS) {
+      fail('Le catalogue produit n’a pas pu être chargé. Vérifiez que le fichier '
+        + 'js/cz-catalog.js est bien présent à côté de js/admin.js.');
+      return;
+    }
+    try {
+      if (sessionActive()) openApp();
+      else bindGate();
+    } catch (err) {
+      fail('Une erreur a interrompu l’ouverture de l’espace atelier.', err && err.message);
+    }
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
