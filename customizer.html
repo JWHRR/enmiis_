@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Personnalisez Votre Tenue de Soutenance | ENMIIS</title>
-  <meta name="description" content="Configurateur ENMIIS : composez votre tenue de soutenance pièce par pièce — robe, mortier, capuche, broderie — avec devis instantané et facture.">
+  <title>Configurateur de Tenue de Soutenance | ENMIIS</title>
+  <meta name="description" content="Configurateur ENMIIS : téléversez vos designs, composez robe, capuche, mortier et gland, saisissez vos mesures et envoyez votre demande de fabrication.">
   <meta name="theme-color" content="#FFFFFF">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,7 +19,7 @@
 
   <a class="skip-link" href="#czPanel">Aller à la configuration</a>
 
-  <!-- ======================= TOPBAR ======================= -->
+  <!-- ======================= TOPBAR (inchangée) ======================= -->
   <header class="cz-topbar">
     <a class="cz-topbar__back" href="soutenance.html">
       <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 5 8 12 15 19"/></svg>
@@ -38,174 +38,164 @@
     </div>
   </header>
 
-  <!-- ======================= PROGRESS ======================= -->
-  <div class="cz-progress" aria-hidden="true">
+  <!-- ======================= PROGRESSION ======================= -->
+  <div class="cz-progress">
     <div class="cz-progress__bar" id="czProgressBar"></div>
   </div>
 
+  <nav class="cz-rail" aria-label="Étapes de la configuration">
+    <ol class="cz-rail__track" id="czRail"><!-- généré par customizer.js --></ol>
+  </nav>
+
   <main class="cz-layout" id="main">
 
-    <!-- ======================= PREVIEW ======================= -->
-    <section class="cz-preview" aria-label="Aperçu du produit">
-      <p class="cz-preview__focus" id="czFocusLabel"></p>
+    <!-- ======================= APERÇU ======================= -->
+    <section class="cz-preview" aria-label="Aperçu de votre tenue">
       <div class="cz-stage" id="czStage">
-        <svg id="czSvg" viewBox="0 0 400 540" role="img" aria-label="Aperçu en direct de votre tenue personnalisée">
-          <defs>
-            <linearGradient id="czShade" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0" stop-color="#000" stop-opacity="0.10"/>
-              <stop offset="0.5" stop-color="#000" stop-opacity="0"/>
-              <stop offset="1" stop-color="#000" stop-opacity="0.10"/>
-            </linearGradient>
-          </defs>
+        <div class="cz-stage__scene" id="czScene">
+          <div class="cz-stage__float" id="czFloat">
+            <svg id="czSvg" viewBox="0 0 400 560" role="img" aria-label="Aperçu en direct de votre tenue personnalisée">
+              <defs>
+                <linearGradient id="czShade" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0" stop-color="#000" stop-opacity="0.14"/>
+                  <stop offset="0.45" stop-color="#000" stop-opacity="0"/>
+                  <stop offset="1" stop-color="#000" stop-opacity="0.16"/>
+                </linearGradient>
+                <linearGradient id="czSheen" x1="0" y1="0" x2="1" y2="0.3">
+                  <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+                  <stop offset="0.42" stop-color="#fff" stop-opacity="0.18"/>
+                  <stop offset="0.6" stop-color="#fff" stop-opacity="0"/>
+                </linearGradient>
+                <radialGradient id="czGroundGrad" cx="0.5" cy="0.5" r="0.5">
+                  <stop offset="0" stop-color="#000" stop-opacity="0.28"/>
+                  <stop offset="1" stop-color="#000" stop-opacity="0"/>
+                </radialGradient>
+                <clipPath id="czGownClip">
+                  <path d="M150 92 C 200 70 200 70 250 92 C 254 208 260 354 268 500 L 132 500 C 140 354 146 208 150 92 Z"/>
+                </clipPath>
+              </defs>
 
-          <!-- ============ VUE AVANT ============ -->
-          <g id="czFront">
-            <!-- Robe -->
-            <g id="czGownFront">
-              <path class="cz-p-sleeve" d="M152 96 C 122 150 98 226 84 306 C 104 322 128 326 150 318 C 158 246 160 168 163 104 Z"/>
-              <path class="cz-p-sleeve" d="M248 96 C 278 150 302 226 316 306 C 296 322 272 326 250 318 C 242 246 240 168 237 104 Z"/>
-              <path class="cz-p-accent" d="M86 294 C 104 310 128 314 148 307 L 150 318 C 128 326 104 322 84 306 Z"/>
-              <path class="cz-p-accent" d="M314 294 C 296 310 272 314 252 307 L 250 318 C 272 326 296 322 316 306 Z"/>
-              <path class="cz-p-main" d="M158 92 C 200 76 200 76 242 92 C 250 200 258 340 266 486 L 134 486 C 142 340 150 200 158 92 Z"/>
-              <path d="M158 92 C 200 76 200 76 242 92 C 250 200 258 340 266 486 L 134 486 C 142 340 150 200 158 92 Z" fill="url(#czShade)"/>
-              <path d="M170 130 C 168 240 164 360 160 470" class="cz-fold"/>
-              <path d="M230 130 C 232 240 236 360 240 470" class="cz-fold"/>
-              <path class="cz-p-trim" d="M182 88 L 174 486 L 190 486 L 195 90 Z"/>
-              <path class="cz-p-trim" d="M218 88 L 226 486 L 210 486 L 205 90 Z"/>
-              <path class="cz-p-trim" d="M170 90 C 190 78 210 78 230 90 L 224 100 C 208 90 192 90 176 100 Z"/>
-              <path class="cz-p-accent" d="M104 210 C 118 218 134 220 150 216 L 150 228 C 134 232 116 230 101 222 Z"/>
-              <path class="cz-p-accent" d="M96 248 C 112 256 130 258 149 254 L 149 266 C 129 270 109 268 92 260 Z"/>
-              <path class="cz-p-accent" d="M296 210 C 282 218 266 220 250 216 L 250 228 C 266 232 284 230 299 222 Z"/>
-              <path class="cz-p-accent" d="M304 248 C 288 256 270 258 251 254 L 251 266 C 271 270 291 268 308 260 Z"/>
-            </g>
+              <!-- ombre portée douce -->
+              <ellipse id="czGround" cx="200" cy="512" rx="118" ry="17" fill="url(#czGroundGrad)"/>
 
-            <!-- Capuche -->
-            <g id="czHoodFront">
-              <path class="cz-p-main" d="M158 96 C 176 130 224 130 242 96 C 252 122 258 160 252 196 C 236 230 164 230 148 196 C 142 160 148 122 158 96 Z"/>
-              <path class="cz-p-trim" d="M166 108 C 182 136 218 136 234 108 C 242 130 246 160 241 190 C 228 218 172 218 159 190 C 154 160 158 130 166 108 Z"/>
-              <path class="cz-p-main" d="M176 120 C 188 140 212 140 224 120 C 230 138 233 160 229 182 C 219 202 181 202 171 182 C 167 160 170 138 176 120 Z"/>
-            </g>
+              <!-- ============ ROBE ============ -->
+              <g id="czGown">
+                <!-- manches -->
+                <path class="cz-p-sleeve" id="czSleeveL" d="M154 88 C 120 150 96 232 82 314 C 102 332 128 336 152 326 C 158 250 160 172 166 100 Z"/>
+                <path class="cz-p-sleeve" id="czSleeveR" d="M246 88 C 280 150 304 232 318 314 C 298 332 272 336 248 326 C 242 250 240 172 234 100 Z"/>
+                <path class="cz-p-accent cz-cuff" d="M84 300 C 104 318 128 322 150 314 L 152 326 C 128 336 102 332 82 314 Z"/>
+                <path class="cz-p-accent cz-cuff" d="M316 300 C 296 318 272 322 250 314 L 248 326 C 272 336 298 332 318 314 Z"/>
 
-            <!-- Mortier -->
-            <g id="czCap">
-              <path class="cz-p-main" d="M200 14 L 322 58 L 200 102 L 78 58 Z"/>
-              <path d="M200 14 L 322 58 L 200 102 L 78 58 Z" fill="#000" opacity="0.07"/>
-              <path class="cz-p-main" d="M148 78 C 148 110 252 110 252 78 L 252 96 C 252 124 148 124 148 96 Z"/>
-              <circle class="cz-p-accent" cx="200" cy="58" r="6"/>
-              <path class="cz-p-accent cz-tassel" d="M200 58 C 240 64 262 84 266 112" fill="none"/>
-              <path class="cz-p-accent" d="M260 112 L 272 112 L 270 138 L 262 138 Z"/>
-            </g>
+                <!-- corps -->
+                <path class="cz-p-main" d="M150 92 C 200 70 200 70 250 92 C 254 208 260 354 268 500 L 132 500 C 140 354 146 208 150 92 Z"/>
+                <g clip-path="url(#czGownClip)">
+                  <path d="M150 92 C 200 70 200 70 250 92 C 254 208 260 354 268 500 L 132 500 C 140 354 146 208 150 92 Z" fill="url(#czShade)"/>
+                  <rect class="cz-sheen" x="120" y="70" width="160" height="440" fill="url(#czSheen)"/>
+                  <g class="cz-folds" id="czFolds">
+                    <path d="M170 130 C 168 250 164 380 160 490"/>
+                    <path d="M186 128 C 185 250 183 380 181 490"/>
+                    <path d="M214 128 C 215 250 217 380 219 490"/>
+                    <path d="M230 130 C 232 250 236 380 240 490"/>
+                  </g>
+                </g>
 
-            <!-- Broderie -->
-            <g id="czEmbFront">
-              <image id="czLogoFront" x="0" y="0" width="34" height="34" href="" preserveAspectRatio="xMidYMid meet" style="display:none"/>
-              <text id="czEmbTextFront" x="0" y="0" text-anchor="middle" font-size="13"></text>
-            </g>
-          </g>
+                <!-- chevrons de manches -->
+                <g id="czChevrons">
+                  <path class="cz-p-accent" d="M102 214 C 118 224 136 226 152 222 L 152 234 C 134 238 114 236 99 227 Z"/>
+                  <path class="cz-p-accent" d="M94 254 C 112 264 132 266 151 262 L 151 274 C 130 278 108 276 91 266 Z"/>
+                  <path class="cz-p-accent" d="M298 214 C 282 224 264 226 248 222 L 248 234 C 266 238 286 236 301 227 Z"/>
+                  <path class="cz-p-accent" d="M306 254 C 288 264 268 266 249 262 L 249 274 C 270 278 292 276 309 266 Z"/>
+                </g>
 
-          <!-- ============ VUE ARRIÈRE ============ -->
-          <g id="czBack">
-            <g id="czGownBack">
-              <path class="cz-p-sleeve" d="M152 96 C 122 150 98 226 84 306 C 104 322 128 326 150 318 C 158 246 160 168 163 104 Z"/>
-              <path class="cz-p-sleeve" d="M248 96 C 278 150 302 226 316 306 C 296 322 272 326 250 318 C 242 246 240 168 237 104 Z"/>
-              <path class="cz-p-accent" d="M86 294 C 104 310 128 314 148 307 L 150 318 C 128 326 104 322 84 306 Z"/>
-              <path class="cz-p-accent" d="M314 294 C 296 310 272 314 252 307 L 250 318 C 272 326 296 322 316 306 Z"/>
-              <path class="cz-p-main" d="M158 92 C 200 76 200 76 242 92 C 250 200 258 340 266 486 L 134 486 C 142 340 150 200 158 92 Z"/>
-              <path d="M158 92 C 200 76 200 76 242 92 C 250 200 258 340 266 486 L 134 486 C 142 340 150 200 158 92 Z" fill="url(#czShade)"/>
-              <path class="cz-p-main" d="M162 92 C 200 78 200 78 238 92 L 236 128 C 200 116 200 116 164 128 Z"/>
-              <path d="M162 92 C 200 78 200 78 238 92 L 236 128 C 200 116 200 116 164 128 Z" fill="#000" opacity="0.05"/>
-              <path d="M178 130 C 176 250 172 370 168 470" class="cz-fold"/>
-              <path d="M200 126 C 200 250 200 370 200 470" class="cz-fold"/>
-              <path d="M222 130 C 224 250 228 370 232 470" class="cz-fold"/>
-            </g>
+                <!-- bordure / parement -->
+                <g id="czTrim">
+                  <path class="cz-p-trim" d="M181 90 L 172 500 L 190 500 L 195 92 Z"/>
+                  <path class="cz-p-trim" d="M219 90 L 228 500 L 210 500 L 205 92 Z"/>
+                </g>
+                <path class="cz-p-collar" id="czCollar" d="M168 92 C 190 78 210 78 232 92 L 225 104 C 208 92 192 92 175 104 Z"/>
+              </g>
 
-            <g id="czHoodBack">
-              <path class="cz-p-main" d="M164 92 C 184 116 216 116 236 92 C 250 130 254 200 244 292 C 236 330 164 330 156 292 C 146 200 150 130 164 92 Z"/>
-              <path class="cz-p-trim" d="M172 116 C 190 134 210 134 228 116 C 238 150 241 210 233 284 C 227 312 173 312 167 284 C 159 210 162 150 172 116 Z"/>
-              <path class="cz-p-main" d="M181 140 C 194 152 206 152 219 140 C 226 168 228 214 222 272 C 218 292 182 292 178 272 C 172 214 174 168 181 140 Z"/>
-            </g>
+              <!-- ============ CAPUCHE / ÉTOLE ============ -->
+              <g id="czHood"><!-- injecté par customizer.js --></g>
 
-            <g id="czEmbBack">
-              <image id="czLogoBack" x="0" y="0" width="38" height="38" href="" preserveAspectRatio="xMidYMid meet" style="display:none"/>
-              <text id="czEmbTextBack" x="0" y="0" text-anchor="middle" font-size="14"></text>
-            </g>
-          </g>
-        </svg>
+              <!-- ============ MORTIER ============ -->
+              <g id="czCap"><!-- injecté par customizer.js --></g>
 
-        <p class="cz-stage__hint" id="czZoomHint">Survolez pour zoomer</p>
-      </div>
+              <!-- ============ GLAND ============ -->
+              <g id="czTassel"><!-- injecté par customizer.js --></g>
 
-      <div class="cz-viewtoggle" role="group" aria-label="Choisir la vue">
-        <button type="button" id="czViewFront" class="is-active" aria-pressed="true">Avant</button>
-        <button type="button" id="czViewBack" aria-pressed="false">Arrière</button>
+              <!-- ============ BRODERIES ============ -->
+              <g id="czEmb">
+                <image id="czLogoUni" width="40" height="40" href="" preserveAspectRatio="xMidYMid meet" style="display:none"/>
+                <image id="czLogoFac" width="34" height="34" href="" preserveAspectRatio="xMidYMid meet" style="display:none"/>
+                <text id="czEmbText" text-anchor="middle" font-size="13"></text>
+              </g>
+            </svg>
+          </div>
+        </div>
+
+        <div class="cz-stage__tools">
+          <button type="button" class="cz-tool" id="czZoomOut" aria-label="Dézoomer">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="6" y1="12" x2="18" y2="12"/></svg>
+          </button>
+          <button type="button" class="cz-tool" id="czZoomIn" aria-label="Zoomer">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="6" x2="12" y2="18"/><line x1="6" y1="12" x2="18" y2="12"/></svg>
+          </button>
+          <button type="button" class="cz-tool" id="czSpin" aria-label="Rotation automatique" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><polyline points="20 3 20 8 15 8"/></svg>
+          </button>
+          <button type="button" class="cz-tool" id="czRecenter" aria-label="Recentrer la vue">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg>
+          </button>
+        </div>
+
+        <p class="cz-stage__hint" id="czHint">Glissez pour tourner<span class="cz-stage__hint-long"> · molette pour zoomer</span></p>
+        <p class="cz-stage__angle" id="czAngle" aria-live="off">Face</p>
       </div>
     </section>
 
-    <!-- ======================= PANEL ======================= -->
-    <section class="cz-panel" id="czPanel" aria-label="Options de personnalisation">
-
+    <!-- ======================= PANNEAU ======================= -->
+    <section class="cz-panel" id="czPanel" aria-label="Configuration de la commande">
       <header class="cz-panel__head">
-        <p class="cz-panel__label">Le configurateur ENMIIS</p>
-        <h1 class="cz-panel__title">Composez Votre Tenue</h1>
-        <p class="cz-panel__stepcount" id="czStepCount"></p>
+        <p class="cz-panel__label" id="czPhase">Le configurateur ENMIIS</p>
+        <h1 class="cz-panel__title" id="czStepTitle">Composez Votre Tenue</h1>
+        <p class="cz-panel__sub" id="czStepSub"></p>
       </header>
 
-      <div class="cz-steps" id="czSteps"><!-- généré par customizer.js --></div>
+      <div class="cz-screens" id="czScreens"><!-- généré par customizer.js --></div>
+
+      <footer class="cz-nav">
+        <button class="btn btn--line cz-nav__prev" id="czPrev" type="button">Retour</button>
+        <p class="cz-nav__count" id="czStepCount"></p>
+        <button class="btn btn--solid cz-nav__next" id="czNext" type="button">Continuer</button>
+      </footer>
     </section>
   </main>
 
-  <!-- ======================= BOTTOM BAR ======================= -->
-  <div class="cz-bar">
-    <div class="cz-bar__price">
-      <span class="cz-bar__label">Total estimé</span>
-      <strong id="czTotal" aria-live="polite">170 TND</strong>
-    </div>
-    <button class="btn btn--solid cz-bar__cta" id="czOrder" type="button" aria-disabled="true">Obtenir ma facture</button>
-  </div>
-
-  <!-- ======================= FACTURE (modal) ======================= -->
-  <div class="cz-modal" id="czModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="czModalTitle">
-    <div class="cz-modal__backdrop" data-cz-modal-close></div>
-    <div class="cz-modal__panel cz-invoice" id="czInvoice">
-      <button class="cz-modal__close" type="button" aria-label="Fermer" data-cz-modal-close>
+  <!-- ======================= MODALE « COMMENT MESURER » ======================= -->
+  <div class="cz-modal" id="czGuide" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="czGuideTitle">
+    <div class="cz-modal__backdrop" data-cz-close></div>
+    <div class="cz-modal__panel cz-guide">
+      <button class="cz-modal__close" type="button" aria-label="Fermer" data-cz-close>
         <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
       </button>
+      <p class="cz-guide__label">Comment mesurer</p>
+      <h2 class="cz-guide__title" id="czGuideTitle"></h2>
+      <div class="cz-guide__figure" id="czGuideFigure"></div>
+      <ol class="cz-guide__steps" id="czGuideSteps"></ol>
+      <p class="cz-guide__tip" id="czGuideTip"></p>
+    </div>
+  </div>
 
-      <div class="cz-invoice__head">
-        <div>
-          <p class="cz-invoice__brand">ENMIIS</p>
-          <p class="cz-invoice__sub">Tenues de soutenance &amp; broderie — Tunisie</p>
-        </div>
-        <div class="cz-invoice__meta">
-          <p><span>Facture n°</span> <strong id="czInvNum"></strong></p>
-          <p><span>Date</span> <strong id="czInvDate"></strong></p>
-        </div>
-      </div>
-
-      <h2 class="visually-hidden" id="czModalTitle">Facture</h2>
-
-      <div class="cz-invoice__client" id="czInvClient"></div>
-
-      <table class="cz-invoice__table">
-        <thead>
-          <tr><th>Désignation</th><th>Montant</th></tr>
-        </thead>
-        <tbody id="czInvLines"></tbody>
-        <tfoot id="czInvTotals"></tfoot>
-      </table>
-
-      <p class="cz-invoice__note">Devis approximatif généré par le configurateur — le prix final est confirmé
-        après prise de mesures et validation de la broderie. Valable 15 jours.</p>
-
-      <div class="cz-modal__actions">
-        <a class="btn btn--solid" id="czInvWhatsapp" href="#" target="_blank" rel="noopener" hidden>Envoyer sur WhatsApp</a>
-        <a class="btn btn--solid" id="czInvInstagram" href="https://www.instagram.com/enmiis_soutenance_tunisie/" target="_blank" rel="noopener">Commander sur Instagram</a>
-        <div class="cz-invoice__row">
-          <button class="btn btn--line" id="czInvPrint" type="button">Imprimer / PDF</button>
-          <button class="btn btn--line" id="czInvCopy" type="button">Copier</button>
-        </div>
-      </div>
-      <p class="cz-modal__note">Envoyez-nous cette facture en message — nous confirmons votre commande sous 24 h.</p>
+  <!-- ======================= MODALE APERÇU FICHIER ======================= -->
+  <div class="cz-modal" id="czLightbox" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="czLightboxTitle">
+    <div class="cz-modal__backdrop" data-cz-close></div>
+    <div class="cz-modal__panel cz-lightbox">
+      <button class="cz-modal__close" type="button" aria-label="Fermer" data-cz-close>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
+      </button>
+      <h2 class="cz-lightbox__title" id="czLightboxTitle"></h2>
+      <div class="cz-lightbox__body" id="czLightboxBody"></div>
     </div>
   </div>
 
@@ -213,6 +203,10 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="js/main.js" defer></script>
+  <script src="js/cz-catalog.js" defer></script>
+  <script src="js/cz-store.js" defer></script>
+  <script src="js/cz-preview.js" defer></script>
+  <script src="js/cz-steps.js" defer></script>
   <script src="js/customizer.js" defer></script>
 </body>
 </html>

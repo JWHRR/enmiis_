@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Espace Atelier — Gestion des Commandes | ENMIIS</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#111111">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23111111'/%3E%3Ctext x='16' y='22' font-family='Georgia' font-size='18' fill='%23C8A86B' text-anchor='middle'%3EE%3C/text%3E%3C/svg%3E">
+</head>
+<body class="ad-body">
+
+  <!-- ======================= CONNEXION ======================= -->
+  <section class="ad-gate" id="adGate">
+    <form class="ad-gate__card" id="adLogin" autocomplete="off">
+      <img class="ad-gate__logo" src="img/logo-enmiis.png" alt="ENMIIS">
+      <p class="ad-gate__label">Espace Atelier</p>
+      <h1 class="ad-gate__title">Gestion des Commandes</h1>
+      <p class="ad-gate__text">Accès réservé à l’équipe de production ENMIIS.</p>
+
+      <div class="ad-gate__field">
+        <label for="adPass">Mot de passe</label>
+        <input type="password" id="adPass" autocomplete="current-password" required
+               placeholder="••••••••" aria-describedby="adGateError">
+      </div>
+      <p class="ad-error" id="adGateError" hidden></p>
+      <button class="btn btn--solid ad-gate__cta" type="submit">Ouvrir l’espace</button>
+      <a class="ad-gate__back" href="index.html">← Retour au site</a>
+    </form>
+  </section>
+
+  <!-- ======================= APPLICATION ======================= -->
+  <div class="ad-app" id="adApp" hidden>
+
+    <header class="ad-topbar">
+      <div class="ad-topbar__brand">
+        <img src="img/logo-enmiis.png" alt="ENMIIS">
+        <span class="ad-topbar__tag">Atelier</span>
+      </div>
+      <div class="ad-topbar__actions">
+        <button class="btn btn--line ad-topbar__btn" id="adImport" type="button">Importer</button>
+        <button class="btn btn--line ad-topbar__btn" id="adExport" type="button">Exporter</button>
+        <button class="btn btn--line ad-topbar__btn" id="adCsv" type="button">CSV</button>
+        <button class="btn btn--line ad-topbar__btn ad-topbar__btn--out" id="adLogout" type="button">Quitter</button>
+        <input type="file" id="adImportInput" accept="application/json,.json" class="visually-hidden">
+      </div>
+    </header>
+
+    <!-- Indicateurs -->
+    <section class="ad-stats" id="adStats" aria-label="Indicateurs"></section>
+
+    <!-- Filtres -->
+    <section class="ad-filters" aria-label="Filtres">
+      <div class="ad-search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+        <input type="search" id="adSearch" placeholder="Rechercher : référence, nom, région, université…"
+               aria-label="Rechercher une commande">
+      </div>
+      <div class="ad-chips" id="adStatusFilter" role="group" aria-label="Filtrer par statut"></div>
+      <label class="ad-sort">
+        <span class="visually-hidden">Trier</span>
+        <select id="adSort">
+          <option value="recent">Plus récentes</option>
+          <option value="old">Plus anciennes</option>
+          <option value="date">Date de soutenance</option>
+          <option value="name">Nom du client</option>
+        </select>
+      </label>
+    </section>
+
+    <main class="ad-main">
+      <!-- Liste -->
+      <section class="ad-list" aria-label="Commandes">
+        <p class="ad-list__count" id="adCount"></p>
+        <ul id="adOrders"></ul>
+        <div class="ad-empty" id="adEmpty" hidden>
+          <p class="ad-empty__title">Aucune commande</p>
+          <p class="ad-empty__text">Les demandes envoyées depuis le configurateur apparaissent ici.
+            Utilisez « Importer » pour charger un fichier de commandes.</p>
+        </div>
+      </section>
+
+      <!-- Détail -->
+      <section class="ad-detail" id="adDetail" aria-label="Détail de la commande" aria-live="polite">
+        <div class="ad-detail__placeholder" id="adPlaceholder">
+          <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="8" y="6" width="32" height="36" rx="3"/><line x1="15" y1="16" x2="33" y2="16"/><line x1="15" y1="24" x2="33" y2="24"/><line x1="15" y1="32" x2="26" y2="32"/></svg>
+          <p>Sélectionnez une commande pour afficher son dossier de fabrication.</p>
+        </div>
+        <div class="ad-detail__body" id="adBody" hidden></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Aperçu fichier -->
+  <div class="ad-modal" id="adModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="adModalTitle">
+    <div class="ad-modal__backdrop" data-ad-close></div>
+    <div class="ad-modal__panel">
+      <button class="ad-modal__close" type="button" aria-label="Fermer" data-ad-close>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
+      </button>
+      <h2 class="ad-modal__title" id="adModalTitle"></h2>
+      <div class="ad-modal__body" id="adModalBody"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/cz-catalog.js" defer></script>
+  <script src="js/admin.js" defer></script>
+</body>
+</html>
