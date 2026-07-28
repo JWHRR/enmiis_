@@ -132,6 +132,42 @@
 .ad-topbar__btn--out:hover { color: #B4342F; }
 
 /* ============================================================
+   SYNCHRONISATION — masqué quand tout va bien, visible pour
+   expliquer un mode hors-ligne ou un stockage cloud non activé.
+   ============================================================ */
+.ad-sync {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem var(--gutter);
+  font-size: var(--fs-small);
+  color: #7A4A12;
+  background: rgba(200, 122, 26, 0.1);
+  border-bottom: 1px solid rgba(200, 122, 26, 0.25);
+}
+.ad-sync__dot {
+  width: 8px; height: 8px;
+  flex: none;
+  border-radius: 50%;
+  background: currentColor;
+  animation: ad-sync-pulse 1.6s ease-in-out infinite;
+}
+@keyframes ad-sync-pulse { 50% { opacity: 0.35; } }
+.ad-sync__text { flex: 1; min-width: 0; }
+.ad-sync__retry {
+  flex: none;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: inherit;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  transition: background 0.3s var(--ease-lux), color 0.3s var(--ease-lux);
+}
+.ad-sync__retry:hover { background: currentColor; color: #FFF8EE; }
+
+/* ============================================================
    INDICATEURS
    ============================================================ */
 .ad-stats {

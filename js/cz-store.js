@@ -11,6 +11,17 @@
   const ORDERS_KEY = 'enmiis-orders-v1';
   const MAX_HISTORY = 80;
 
+  /* API partagée (voir api/orders.js) : chemin relatif, car le
+     configurateur et l'espace atelier vivent sur le même domaine
+     Vercel. Sans elle, la commande reste valable en local — voir
+     pushOrder() plus bas. */
+  const API_BASE = '/api/orders';
+
+  /* Ouvert en fichier local (double-clic sur customizer.html, tests),
+     `/api/orders` ne peut exister : on ne tente même pas l'appel plutôt
+     que d'échouer prévisiblement à chaque envoi. */
+  const CLOUD_ENABLED = global.location && global.location.protocol !== 'file:';
+
   /* Les couleurs ne se choisissent plus dans le configurateur : elles sont
      définies par l'atelier lors de la confirmation. Le client ne choisit
      que les modèles, illustrés un à un. */
@@ -276,9 +287,30 @@
     localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
   }
 
-  /* Enregistre la commande dans la file consultée par admin.html.
-     Retourne l’objet commande, ou lève une erreur si le stockage est plein. */
-  function submit() {
+  /* Envoie la commande à l'API partagée (Vercel KV) pour qu'elle
+     atteigne l'espace atelier depuis n'importe quel appareil. N'échoue
+     jamais bruyamment : réseau coupé ou stockage cloud pas encore
+     activé retournent simplement false, et la commande reste valable
+     en local (voir submit() et syncPendingOrders() ci-dessous). */
+  async function pushOrder(order) {
+    if (!CLOUD_ENABLED) return false;
+    try {
+      const res = await fetch(API_BASE, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(order),
+      });
+      return res.ok;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  /* Enregistre la commande dans la file consultée par admin.html, puis
+     tente de la transmettre au serveur partagé. Retourne la commande
+     (avec son indicateur `synced`), ou lève une erreur si le stockage
+     local lui-même est inutilisable. */
+  async function submit() {
     const order = buildOrder();
     const orders = readOrders();
     orders.unshift(order);
@@ -290,11 +322,39 @@
       orders[0] = order;
       writeOrders(orders);
     }
-    commit((draft) => { draft.submitted = { ref: order.ref, createdAt: order.createdAt }; });
+
+    const synced = await pushOrder(order);
+    order.synced = synced;
+    if (synced) {
+      const stored = readOrders();
+      const idx = stored.findIndex((o) => o.ref === order.ref);
+      if (idx > -1) { stored[idx].synced = true; writeOrders(stored); }
+    }
+
+    commit((draft) => { draft.submitted = { ref: order.ref, createdAt: order.createdAt, synced }; });
     return order;
   }
 
+  /* Si une commande précédente n'a pas pu atteindre le serveur (réseau
+     coupé au moment de l'envoi, stockage cloud pas encore activé), on
+     retente en tâche de fond à l'ouverture suivante du configurateur —
+     sans bloquer le chargement ni redéclencher de rendu. */
+  function syncPendingOrders() {
+    if (!CLOUD_ENABLED) return;
+    let stored;
+    try { stored = readOrders(); } catch (err) { return; }
+    stored.filter((o) => o.synced !== true).forEach((order) => {
+      pushOrder(order).then((ok) => {
+        if (!ok) return;
+        const current = readOrders();
+        const idx = current.findIndex((o) => o.ref === order.ref);
+        if (idx > -1) { current[idx].synced = true; writeOrders(current); }
+      });
+    });
+  }
+
   restore();
+  syncPendingOrders();
 
   CZ.store = {
     DEFAULTS,

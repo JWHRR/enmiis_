@@ -647,15 +647,17 @@
   function bindSubmit(screen) {
     const send = screen.querySelector('#czSubmit');
     if (send) {
-      send.addEventListener('click', () => {
+      send.addEventListener('click', async () => {
         const errors = store.stepErrors('review');
         if (errors.length) { toast(errors[0]); goToId('review'); return; }
         send.disabled = true;
         send.textContent = 'Envoi en cours…';
         try {
-          const order = store.submit();
+          const order = await store.submit();
           renderScreen();
-          toast('Demande <em>' + esc(order.ref) + '</em> envoyée à l’atelier.');
+          toast(order.synced
+            ? 'Demande <em>' + esc(order.ref) + '</em> envoyée à l’atelier.'
+            : 'Demande <em>' + esc(order.ref) + '</em> enregistrée — synchronisation en attente.');
         } catch (err) {
           send.disabled = false;
           send.textContent = 'Envoyer ma demande';

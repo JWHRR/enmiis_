@@ -644,6 +644,11 @@
     },
 
     success(done) {
+      /* La commande est toujours enregistrée sur l'appareil du client ;
+         `synced` indique en plus si elle a atteint l'espace atelier
+         (réseau coupé ou stockage cloud pas encore activé sinon —
+         un nouvel essai automatique aura lieu à la prochaine ouverture). */
+      const offline = done.synced === false;
       return '<div class="cz-done">' +
         '<div class="cz-done__burst"><svg viewBox="0 0 64 64" aria-hidden="true">' +
           '<circle class="cz-done__ring" cx="32" cy="32" r="26"/>' +
@@ -653,6 +658,11 @@
         '<p class="cz-done__ref">Référence <strong>' + esc(done.ref) + '</strong></p>' +
         '<p class="cz-done__text">Conservez cette référence : elle identifie votre dossier auprès de l’atelier. ' +
         'Notre équipe confirme les mesures, la broderie et les couleurs avant lancement de la fabrication.</p>' +
+        (offline
+          ? '<p class="cz-help cz-help--workshop">La connexion à l’atelier n’a pas pu être confirmée immédiatement. ' +
+            'Votre demande est enregistrée sur cet appareil et sera transmise automatiquement dès que possible — ' +
+            'par sécurité, envoyez aussi votre référence par WhatsApp.</p>'
+          : '') +
         '<div class="cz-done__actions">' +
           '<button type="button" class="btn btn--solid" id="czPdf">Télécharger le récapitulatif</button>' +
           '<button type="button" class="btn btn--line" id="czRestart">Configurer une autre tenue</button>' +

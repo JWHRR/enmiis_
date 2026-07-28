@@ -18,6 +18,14 @@
   const SESSION_KEY = 'enmiis-admin-session';
   const ORDERS_KEY = 'enmiis-orders-v1';
 
+  /* API partagée (voir api/orders.js) — même origine Vercel que ce
+     fichier, donc chemin relatif : pas de CORS à gérer côté atelier. */
+  const API_BASE = '/api/orders';
+
+  /* Ouvert en fichier local (double-clic sur admin.html, tests),
+     `/api/orders` ne peut exister : on ne tente même pas l'appel. */
+  const CLOUD_ENABLED = global.location && global.location.protocol !== 'file:';
+
   const STATUSES = [
     { id: 'nouveau',   label: 'Nouveau',     tone: 'new'  },
     { id: 'confirme',  label: 'Confirmé',    tone: 'info' },
@@ -72,6 +80,10 @@
   let query = '';
   let sortMode = 'recent';
 
+  /* 'unknown' avant la première tentative · 'ok' synchronisé ·
+     'offline' réseau injoignable · 'unconfigured' KV pas encore activé. */
+  let cloudStatus = 'unknown';
+
   /* ---------- Toast local (l’espace admin ne charge pas main.js) ---------- */
   let toastTimer = null;
   function toast(message) {
@@ -101,6 +113,93 @@
       toast('Stockage saturé — exportez puis archivez d’anciennes commandes.');
       return false;
     }
+  }
+
+  /* ---------- Synchronisation avec l'API partagée ----------
+     admin.js reste pleinement fonctionnel hors connexion (localStorage
+     comme avant) ; ces appels ajoutent la synchronisation entre
+     appareils sans jamais bloquer l'interface si le serveur est
+     injoignable ou si le stockage cloud n'a pas encore été activé. */
+
+  function renderSync() {
+    const bar = $('#adSync');
+    const text = $('#adSyncText');
+    if (!bar || !text) return;
+    if (cloudStatus === 'ok' || cloudStatus === 'unknown') {
+      bar.hidden = true;
+      return;
+    }
+    bar.hidden = false;
+    text.textContent = cloudStatus === 'unconfigured'
+      ? 'Synchronisation cloud non activée — commandes affichées depuis cet appareil uniquement.'
+      : 'Connexion à l’atelier impossible pour le moment — commandes affichées depuis cet appareil uniquement.';
+  }
+
+  /* Récupère les commandes du serveur partagé et les fusionne avec
+     celles déjà en local : le serveur fait autorité sur toute
+     référence qu'il connaît ; une commande jamais synchronisée
+     (réseau coupé lors de l'envoi) reste visible en attendant. */
+  async function syncFromCloud(showFeedback) {
+    if (!CLOUD_ENABLED) {
+      if (showFeedback) toast('Synchronisation indisponible en fichier local.');
+      return;
+    }
+    try {
+      const res = await fetch(API_BASE, { headers: { Accept: 'application/json' } });
+      if (res.status === 503) {
+        cloudStatus = 'unconfigured';
+        renderSync();
+        return;
+      }
+      if (!res.ok) throw new Error('http_' + res.status);
+      const remote = await res.json();
+      if (!Array.isArray(remote)) throw new Error('bad_payload');
+
+      const remoteRefs = new Set(remote.map((o) => o.ref));
+      const localOnly = orders.filter((o) => !remoteRefs.has(o.ref));
+      orders = remote.concat(localOnly);
+      persist();
+      cloudStatus = 'ok';
+      renderSync();
+      renderAll();
+      if (showFeedback) toast('Commandes synchronisées.');
+    } catch (err) {
+      cloudStatus = 'offline';
+      renderSync();
+      if (showFeedback) toast('Synchronisation impossible pour le moment.');
+    }
+  }
+
+  async function pushStatus(order) {
+    if (!CLOUD_ENABLED) return false;
+    try {
+      const res = await fetch(API_BASE + '?ref=' + encodeURIComponent(order.ref), {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: order.status }),
+      });
+      return res.ok;
+    } catch (err) { return false; }
+  }
+
+  async function pushNote(order) {
+    if (!CLOUD_ENABLED) return false;
+    try {
+      const res = await fetch(API_BASE + '?ref=' + encodeURIComponent(order.ref), {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminNote: order.adminNote }),
+      });
+      return res.ok;
+    } catch (err) { return false; }
+  }
+
+  async function pushDelete(ref) {
+    if (!CLOUD_ENABLED) return false;
+    try {
+      const res = await fetch(API_BASE + '?ref=' + encodeURIComponent(ref), { method: 'DELETE' });
+      return res.ok;
+    } catch (err) { return false; }
   }
 
   /* ---------- Formatage ---------- */
@@ -671,6 +770,9 @@
           renderAll();
           toast('Statut : <em>' + esc(statusOf(order.status).label) + '</em>');
         }
+        pushStatus(order).then((ok) => {
+          if (!ok) toast('Statut enregistré localement — synchronisation en attente.');
+        });
         return;
       }
 
@@ -699,12 +801,14 @@
 
       if (event.target.closest('#adDelete')) {
         if (!global.confirm('Supprimer définitivement la commande ' + order.ref + ' ?')) return;
-        orders = orders.filter((o) => o.ref !== order.ref);
+        const ref = order.ref;
+        orders = orders.filter((o) => o.ref !== ref);
         selectedRef = null;
         if (persist()) {
           renderAll();
           toast('Commande supprimée.');
         }
+        pushDelete(ref);
       }
     });
 
@@ -721,9 +825,12 @@
       noteTimer = setTimeout(() => {
         if (persist()) state.textContent = 'Note enregistrée à ' +
           new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) + '.';
+        pushNote(order);
       }, 500);
     });
 
+    $('#adRefresh').addEventListener('click', () => syncFromCloud(true));
+    $('#adSyncRetry').addEventListener('click', () => syncFromCloud(true));
     $('#adExport').addEventListener('click', exportJson);
     $('#adCsv').addEventListener('click', exportCsv);
     $('#adImport').addEventListener('click', () => $('#adImportInput').click());
@@ -759,6 +866,7 @@
     load();
     bind();
     renderAll();
+    syncFromCloud(false);
   }
 
   function bindGate() {

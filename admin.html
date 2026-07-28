@@ -45,6 +45,7 @@
         <span class="ad-topbar__tag">Atelier</span>
       </div>
       <div class="ad-topbar__actions">
+        <button class="btn btn--line ad-topbar__btn" id="adRefresh" type="button">Actualiser</button>
         <button class="btn btn--line ad-topbar__btn" id="adImport" type="button">Importer</button>
         <button class="btn btn--line ad-topbar__btn" id="adExport" type="button">Exporter</button>
         <button class="btn btn--line ad-topbar__btn" id="adCsv" type="button">CSV</button>
@@ -52,6 +53,13 @@
         <input type="file" id="adImportInput" accept="application/json,.json" class="visually-hidden">
       </div>
     </header>
+
+    <!-- État de la synchronisation avec l'atelier (masqué quand tout va bien) -->
+    <div class="ad-sync" id="adSync" hidden role="status">
+      <span class="ad-sync__dot" aria-hidden="true"></span>
+      <span class="ad-sync__text" id="adSyncText"></span>
+      <button type="button" class="ad-sync__retry" id="adSyncRetry">Réessayer</button>
+    </div>
 
     <!-- Indicateurs -->
     <section class="ad-stats" id="adStats" aria-label="Indicateurs"></section>
