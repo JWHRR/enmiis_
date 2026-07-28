@@ -18,13 +18,11 @@
   const SESSION_KEY = 'enmiis-admin-session';
   const ORDERS_KEY = 'enmiis-orders-v1';
 
-  /* API partagée (voir api/orders.js) — même origine Vercel que ce
-     fichier, donc chemin relatif : pas de CORS à gérer côté atelier. */
   const API_BASE = '/api/orders';
+  const SUPABASE_REST_URL = 'https://kzqpvtrgchtiffcyxzfy.supabase.co/rest/v1/orders';
+  const SUPABASE_KEY = 'sb_publishable_x8IMyzlq6tqxbXITcP6YRg_-CnC0mj-';
 
-  /* Ouvert en fichier local (double-clic sur admin.html, tests),
-     `/api/orders` ne peut exister : on ne tente même pas l'appel. */
-  const CLOUD_ENABLED = global.location && global.location.protocol !== 'file:';
+  const CLOUD_ENABLED = true;
 
   const STATUSES = [
     { id: 'nouveau',   label: 'Nouveau',     tone: 'new'  },
@@ -139,22 +137,55 @@
      celles déjà en local : le serveur fait autorité sur toute
      référence qu'il connaît ; une commande jamais synchronisée
      (réseau coupé lors de l'envoi) reste visible en attendant. */
+  function toOrder(row) {
+    return {
+      ref: row.ref,
+      createdAt: row.created_at,
+      status: row.status,
+      adminNote: row.admin_note,
+      config: row.config,
+    };
+  }
+
   async function syncFromCloud(showFeedback) {
     if (!CLOUD_ENABLED) {
       if (showFeedback) toast('Synchronisation indisponible en fichier local.');
       return;
     }
+    let remote = null;
     try {
       const res = await fetch(API_BASE, { headers: { Accept: 'application/json' } });
-      if (res.status === 503) {
-        cloudStatus = 'unconfigured';
-        renderSync();
-        return;
+      if (res.ok) {
+        remote = await res.json();
+        console.log('[ENMIIS Admin] Orders loaded via API_BASE:', remote.length);
       }
-      if (!res.ok) throw new Error('http_' + res.status);
-      const remote = await res.json();
-      if (!Array.isArray(remote)) throw new Error('bad_payload');
+    } catch (err) {
+      console.warn('[ENMIIS Admin] API_BASE unavailable, trying direct Supabase REST');
+    }
 
+    if (!Array.isArray(remote)) {
+      try {
+        const res = await fetch(SUPABASE_REST_URL + '?select=*&order=created_at.desc', {
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_KEY,
+            'Accept': 'application/json',
+          },
+        });
+        if (res.ok) {
+          const rows = await res.json();
+          remote = rows.map(toOrder);
+          console.log('[ENMIIS Admin] Orders loaded via Supabase REST:', remote.length);
+        } else {
+          const txt = await res.text();
+          console.error('[ENMIIS Admin] Supabase fetch error:', res.status, txt);
+        }
+      } catch (err) {
+        console.error('[ENMIIS Admin] Supabase network error:', err);
+      }
+    }
+
+    if (Array.isArray(remote)) {
       const remoteRefs = new Set(remote.map((o) => o.ref));
       const localOnly = orders.filter((o) => !remoteRefs.has(o.ref));
       orders = remote.concat(localOnly);
@@ -162,8 +193,8 @@
       cloudStatus = 'ok';
       renderSync();
       renderAll();
-      if (showFeedback) toast('Commandes synchronisées.');
-    } catch (err) {
+      if (showFeedback) toast('Commandes synchronisées (' + remote.length + ').');
+    } else {
       cloudStatus = 'offline';
       renderSync();
       if (showFeedback) toast('Synchronisation impossible pour le moment.');
@@ -178,6 +209,20 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: order.status }),
       });
+      if (res.ok) return true;
+    } catch (err) {}
+
+    try {
+      const res = await fetch(SUPABASE_REST_URL + '?ref=eq.' + encodeURIComponent(order.ref), {
+        method: 'PATCH',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation',
+        },
+        body: JSON.stringify({ status: order.status }),
+      });
       return res.ok;
     } catch (err) { return false; }
   }
@@ -190,6 +235,20 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ adminNote: order.adminNote }),
       });
+      if (res.ok) return true;
+    } catch (err) {}
+
+    try {
+      const res = await fetch(SUPABASE_REST_URL + '?ref=eq.' + encodeURIComponent(order.ref), {
+        method: 'PATCH',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation',
+        },
+        body: JSON.stringify({ admin_note: order.adminNote }),
+      });
       return res.ok;
     } catch (err) { return false; }
   }
@@ -198,6 +257,17 @@
     if (!CLOUD_ENABLED) return false;
     try {
       const res = await fetch(API_BASE + '?ref=' + encodeURIComponent(ref), { method: 'DELETE' });
+      if (res.ok) return true;
+    } catch (err) {}
+
+    try {
+      const res = await fetch(SUPABASE_REST_URL + '?ref=eq.' + encodeURIComponent(ref), {
+        method: 'DELETE',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+        },
+      });
       return res.ok;
     } catch (err) { return false; }
   }

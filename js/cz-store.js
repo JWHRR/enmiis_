@@ -16,11 +16,10 @@
      Vercel. Sans elle, la commande reste valable en local — voir
      pushOrder() plus bas. */
   const API_BASE = '/api/orders';
+  const SUPABASE_REST_URL = 'https://kzqpvtrgchtiffcyxzfy.supabase.co/rest/v1/orders';
+  const SUPABASE_KEY = 'sb_publishable_x8IMyzlq6tqxbXITcP6YRg_-CnC0mj-';
 
-  /* Ouvert en fichier local (double-clic sur customizer.html, tests),
-     `/api/orders` ne peut exister : on ne tente même pas l'appel plutôt
-     que d'échouer prévisiblement à chaque envoi. */
-  const CLOUD_ENABLED = global.location && global.location.protocol !== 'file:';
+  const CLOUD_ENABLED = true;
 
   /* Les couleurs ne se choisissent plus dans le configurateur : elles sont
      définies par l'atelier lors de la confirmation. Le client ne choisit
@@ -300,8 +299,42 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(order),
       });
-      return res.ok;
+      if (res.ok) {
+        console.log('[ENMIIS Sync] Order sent to API_BASE:', order.ref);
+        return true;
+      }
     } catch (err) {
+      console.warn('[ENMIIS Sync] API_BASE unavailable, using direct Supabase REST');
+    }
+
+    try {
+      const row = {
+        ref: order.ref,
+        created_at: order.createdAt || new Date().toISOString(),
+        status: order.status || 'nouveau',
+        admin_note: order.adminNote || '',
+        config: order.config,
+      };
+      const res = await fetch(SUPABASE_REST_URL + '?on_conflict=ref', {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=merge-duplicates,return=representation',
+        },
+        body: JSON.stringify(row),
+      });
+      if (res.ok) {
+        console.log('[ENMIIS Sync] Order sent directly to Supabase:', order.ref);
+        return true;
+      } else {
+        const txt = await res.text();
+        console.error('[ENMIIS Sync] Supabase REST error:', res.status, txt);
+        return false;
+      }
+    } catch (err) {
+      console.error('[ENMIIS Sync] Supabase network error:', err);
       return false;
     }
   }
