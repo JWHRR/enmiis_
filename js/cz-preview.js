@@ -2,12 +2,14 @@
    ENMIIS — Configurateur : visionneuse d’aperçu.
 
    Deux modes :
-   · « photo »  — la photographie studio de la pièce en cours
-     (robe, capuche, mortier, gland), avec pastilles de résumé
-     et vitrine du dernier modèle choisi ;
-   · « design » — dès l’étape des fichiers, les images envoyées
-     par le client deviennent l’aperçu principal, avec vignettes,
-     zoom, déplacement et plein écran.
+   · « photo »  — tant qu’aucun fichier n’est envoyé : la
+     photographie studio de la pièce en cours (robe, capuche,
+     mortier, gland), avec pastilles de résumé ;
+   · « design » — dès qu’un fichier est envoyé, il devient
+     l’aperçu principal et le reste jusqu’à la fin du parcours
+     (vignettes, zoom, déplacement, plein écran). Les choix faits
+     sur les étapes suivantes s’affichent en vitrine par-dessus,
+     sans jamais remplacer le design du client.
 
    Toutes les transitions durent 300 ms (fondu + légère échelle).
 
@@ -81,9 +83,12 @@
     ];
   }
 
-  /* ---------- Mode courant ---------- */
+  /* ---------- Mode courant ----------
+     Un design envoyé reste l’aperçu principal jusqu’à la fin du
+     parcours : le mode ne dépend plus de l’étape, seulement de la
+     présence d’au moins un fichier. */
   function uploadsMode() {
-    return currentStep === 'upload' && CZ.store.get().files.length > 0;
+    return CZ.store.get().files.length > 0;
   }
 
   function selectedFile() {

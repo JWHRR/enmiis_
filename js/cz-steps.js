@@ -329,7 +329,7 @@
       const badges = ['PDF', 'PNG', 'JPG', 'SVG', 'AI', 'EPS', 'CDR']
         .map((label) => '<span class="cz-badge">' + label + '</span>').join('');
       return '<div class="cz-screen__intro"><p>Ces fichiers partent directement à l’atelier — et vos images ' +
-        's’affichent aussitôt dans l’aperçu.</p></div>' +
+        's’affichent aussitôt dans l’aperçu, où elles restent jusqu’à la fin du parcours.</p></div>' +
         '<div class="cz-drop" id="czDrop" tabindex="0" role="button"' +
         ' aria-label="Déposer ou choisir des fichiers de production">' +
           '<div class="cz-drop__ring"></div>' +
