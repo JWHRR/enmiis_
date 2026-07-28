@@ -1,52 +1,79 @@
 /* ============================================================
    ENMIIS — API des commandes (fonction serverless Vercel).
 
-   Stocke les commandes dans Vercel KV (Redis, fourni par Upstash)
-   pour qu'elles atteignent l'espace atelier depuis n'importe quel
-   appareil client — c'est la limite du stockage 100 % navigateur
-   utilisé jusqu'ici (localStorage : une commande passée sur le
-   téléphone d'un client n'apparaissait que sur CE téléphone, jamais
-   dans admin.html ouvert sur l'ordinateur de l'atelier).
+   Stocke les commandes dans Supabase (Postgres), via l'API REST
+   auto-générée de Supabase (PostgREST) — aucune dépendance à
+   installer, uniquement fetch(). Sans ce serveur partagé, chaque
+   commande restait coincée dans le localStorage du téléphone qui
+   l'avait passée, invisible depuis admin.html sur un autre appareil.
 
-   MISE EN ROUTE (une seule fois) — dans le tableau de bord Vercel :
-     Projet → Storage → Create Database → KV → Connect to Project.
-   Vercel injecte alors automatiquement KV_REST_API_URL et
-   KV_REST_API_TOKEN ; aucune autre configuration n'est nécessaire,
-   cette fonction les lit directement depuis l'environnement.
+   MISE EN ROUTE (une seule fois) :
 
-   Tant que le KV n'est pas ajouté, l'API répond 503 avec un message
-   clair. Le site continue de fonctionner (voir js/cz-store.js et
-   js/admin.js) en stockage local uniquement, simplement sans
-   synchronisation entre appareils — rien n'est perdu, la commande
-   attend juste que le stockage partagé soit activé.
+   1) Dans Supabase → SQL Editor, exécuter :
+
+        create table if not exists orders (
+          ref         text primary key,
+          created_at  timestamptz not null default now(),
+          status      text not null default 'nouveau',
+          admin_note  text not null default '',
+          config      jsonb not null
+        );
+
+      (RLS peut rester désactivée, ou activée sans policy : cette
+      fonction utilise la clé service_role, qui contourne RLS. Cette
+      clé ne doit JAMAIS être envoyée au navigateur ni au client —
+      uniquement lue ici, côté serveur, depuis les variables
+      d'environnement.)
+
+   2) Dans Vercel → Project → Settings → Environment Variables,
+      ajouter :
+
+        SUPABASE_URL              = https://<projet>.supabase.co
+        SUPABASE_SERVICE_ROLE_KEY = <clé service_role — Supabase →
+                                      Project Settings → API>
+
+      puis redéployer (ou laisser le prochain push redéployer).
+
+   Tant que ces variables ne sont pas définies, l'API répond 503 avec
+   un message clair ; le site continue de fonctionner (voir
+   js/cz-store.js et js/admin.js) en stockage local uniquement — rien
+   n'est perdu, la commande attend juste que le stockage partagé soit
+   activé, et se synchronisera automatiquement ensuite.
    ============================================================ */
 
-const REST_URL = process.env.KV_REST_API_URL;
-const REST_TOKEN = process.env.KV_REST_API_TOKEN;
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const TABLE = 'orders';
 
-/* Toutes les commandes vivent dans un unique hash Redis (un champ par
-   référence de commande) : chaque écriture est atomique et ne touche
-   que sa commande, sans risque d'écraser les autres en cas d'envois
-   simultanés depuis plusieurs clients. */
-const KEY = 'enmiis:orders';
+function authHeaders(extra) {
+  return Object.assign({
+    apikey: SERVICE_KEY,
+    Authorization: 'Bearer ' + SERVICE_KEY,
+    'Content-Type': 'application/json',
+  }, extra || {});
+}
 
-/* Le corps de la requête Upstash porte la commande en entier (clé,
-   champ, valeur) : rien ne transite par l'URL, donc aucune limite de
-   longueur ne s'applique aux fichiers/logos encodés en base64. */
-async function redis(command) {
-  const res = await fetch(REST_URL + '/pipeline', {
-    method: 'POST',
-    headers: {
-      Authorization: 'Bearer ' + REST_TOKEN,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify([command]),
-  });
-  if (!res.ok) throw new Error('upstash_http_' + res.status);
-  const data = await res.json();
-  const first = Array.isArray(data) ? data[0] : null;
-  if (!first || first.error) throw new Error((first && first.error) || 'upstash_bad_response');
-  return first.result;
+/* Traduit une ligne Postgres (colonnes snake_case, à plat) vers la
+   forme attendue par le configurateur et l'espace atelier (camelCase,
+   la config imbriquée telle qu'envoyée à l'origine). */
+function toOrder(row) {
+  return {
+    ref: row.ref,
+    createdAt: row.created_at,
+    status: row.status,
+    adminNote: row.admin_note,
+    config: row.config,
+  };
+}
+
+function toRow(order) {
+  return {
+    ref: order.ref,
+    created_at: order.createdAt || new Date().toISOString(),
+    status: order.status || 'nouveau',
+    admin_note: order.adminNote || '',
+    config: order.config,
+  };
 }
 
 /* Autorise le configurateur à joindre l'API même s'il est un jour servi
@@ -78,23 +105,22 @@ module.exports = async function handler(req, res) {
   setCors(res);
   if (req.method === 'OPTIONS') { res.status(204).end(); return; }
 
-  if (!REST_URL || !REST_TOKEN) {
+  if (!SUPABASE_URL || !SERVICE_KEY) {
     res.status(503).json({
       error: 'storage_not_configured',
-      message: 'Stockage partagé (Vercel KV) non activé sur ce projet — voir le commentaire en tête de api/orders.js.',
+      message: 'Supabase non configuré — voir le commentaire en tête de api/orders.js.',
     });
     return;
   }
 
+  const base = SUPABASE_URL.replace(/\/$/, '') + '/rest/v1/' + TABLE;
+
   try {
     if (req.method === 'GET') {
-      const flat = (await redis(['HGETALL', KEY])) || [];
-      const orders = [];
-      for (let i = 0; i < flat.length; i += 2) {
-        try { orders.push(JSON.parse(flat[i + 1])); } catch (err) { /* entrée corrompue ignorée */ }
-      }
-      orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      res.status(200).json(orders);
+      const r = await fetch(base + '?select=*&order=created_at.desc', { headers: authHeaders() });
+      if (!r.ok) throw new Error('supabase_http_' + r.status);
+      const rows = await r.json();
+      res.status(200).json(rows.map(toOrder));
       return;
     }
 
@@ -104,34 +130,49 @@ module.exports = async function handler(req, res) {
         res.status(400).json({ error: 'invalid_order' });
         return;
       }
-      order.createdAt = order.createdAt || new Date().toISOString();
-      order.status = order.status || 'nouveau';
-      order.adminNote = order.adminNote || '';
-      delete order.synced; /* indicateur local au navigateur, sans rapport côté serveur */
-      await redis(['HSET', KEY, order.ref, JSON.stringify(order)]);
-      res.status(201).json(order);
+      /* Upsert sur la référence : un renvoi (nouvel essai après coupure
+         réseau) met simplement à jour la même ligne au lieu d'échouer
+         sur la contrainte de clé primaire. */
+      const r = await fetch(base + '?on_conflict=ref', {
+        method: 'POST',
+        headers: authHeaders({ Prefer: 'resolution=merge-duplicates,return=representation' }),
+        body: JSON.stringify(toRow(order)),
+      });
+      if (!r.ok) throw new Error('supabase_http_' + r.status);
+      const [saved] = await r.json();
+      res.status(200).json(toOrder(saved));
       return;
     }
 
     if (req.method === 'PATCH') {
       const ref = readRef(req);
       if (!ref) { res.status(400).json({ error: 'missing_ref' }); return; }
-      const raw = await redis(['HGET', KEY, ref]);
-      if (!raw) { res.status(404).json({ error: 'not_found' }); return; }
-      const existing = JSON.parse(raw);
       const patch = readBody(req);
-      /* Fusion superficielle : seuls les champs envoyés (statut, note…)
-         sont modifiés, référence et date de création restent figées. */
-      const updated = Object.assign({}, existing, patch, { ref: existing.ref, createdAt: existing.createdAt });
-      await redis(['HSET', KEY, ref, JSON.stringify(updated)]);
-      res.status(200).json(updated);
+      const row = {};
+      if (patch.status !== undefined) row.status = patch.status;
+      if (patch.adminNote !== undefined) row.admin_note = patch.adminNote;
+      if (!Object.keys(row).length) { res.status(400).json({ error: 'empty_patch' }); return; }
+
+      const r = await fetch(base + '?ref=eq.' + encodeURIComponent(ref), {
+        method: 'PATCH',
+        headers: authHeaders({ Prefer: 'return=representation' }),
+        body: JSON.stringify(row),
+      });
+      if (!r.ok) throw new Error('supabase_http_' + r.status);
+      const rows = await r.json();
+      if (!rows.length) { res.status(404).json({ error: 'not_found' }); return; }
+      res.status(200).json(toOrder(rows[0]));
       return;
     }
 
     if (req.method === 'DELETE') {
       const ref = readRef(req);
       if (!ref) { res.status(400).json({ error: 'missing_ref' }); return; }
-      await redis(['HDEL', KEY, ref]);
+      const r = await fetch(base + '?ref=eq.' + encodeURIComponent(ref), {
+        method: 'DELETE',
+        headers: authHeaders(),
+      });
+      if (!r.ok) throw new Error('supabase_http_' + r.status);
       res.status(200).json({ ok: true });
       return;
     }
