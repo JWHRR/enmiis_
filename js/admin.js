@@ -305,7 +305,7 @@
   }
 
   function urgency(order) {
-    const days = daysUntil(order.config.client.date);
+    const days = daysUntil(order.config?.client?.date);
     if (days === null) return null;
     if (order.status === 'livre' || order.status === 'annule') return null;
     if (days < 0) return { tone: 'late', text: 'Date dépassée' };
@@ -316,7 +316,7 @@
 
   /* ---------- Filtrage & tri ---------- */
   function haystack(order) {
-    const c = order.config.client;
+    const c = order.config?.client || {};
     return [order.ref, c.name, c.region, c.university, c.whatsapp, c.email, c.notes]
       .join(' ').toLowerCase();
   }
@@ -332,8 +332,8 @@
     const sorters = {
       recent: (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
       old: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
-      date: (a, b) => String(a.config.client.date).localeCompare(String(b.config.client.date)),
-      name: (a, b) => String(a.config.client.name).localeCompare(String(b.config.client.name), 'fr'),
+      date: (a, b) => String(a.config?.client?.date || '').localeCompare(String(b.config?.client?.date || '')),
+      name: (a, b) => String(a.config?.client?.name || '').localeCompare(String(b.config?.client?.name || ''), 'fr'),
     };
     list = list.slice().sort(sorters[sortMode]);
     return list;
@@ -348,7 +348,7 @@
 
     const active = orders.filter((o) => o.status !== 'livre' && o.status !== 'annule');
     const urgent = active.filter((o) => {
-      const days = daysUntil(o.config.client.date);
+      const days = daysUntil(o.config?.client?.date);
       return days !== null && days <= 7;
     }).length;
 
@@ -392,7 +392,7 @@
     $('#adEmpty').hidden = list.length > 0;
 
     root.innerHTML = list.map((order) => {
-      const client = order.config.client;
+      const client = order.config?.client || {};
       const status = statusOf(order.status);
       const flag = urgency(order);
       return '<li class="ad-card' + (order.ref === selectedRef ? ' is-active' : '') + '"' +
@@ -416,7 +416,11 @@
   /* Les couleurs ne font plus partie de la configuration client :
      elles sont arrêtées par l'atelier et notées en note d'atelier. */
   function specRows(order) {
-    const s = order.config;
+    const s = order.config || {};
+    const robe = s.robe || {};
+    const emb = robe.emb || {};
+    const hood = s.hood || {};
+    const cap = s.cap || {};
     const row = (label, value) =>
       '<div class="ad-row"><dt>' + esc(label) + '</dt><dd>' + esc(value) + '</dd></div>';
 
@@ -424,17 +428,17 @@
       {
         title: 'Robe',
         rows:
-          row('Tissu', labelOf(cat.FABRICS, s.robe.fabric)) +
-          row('Coupe des manches', labelOf(cat.SLEEVES, s.robe.sleeve)) +
-          row('Col', labelOf(cat.COLLARS, s.robe.collar)) +
-          row('Bordure', labelOf(cat.TRIM_STYLES, s.robe.trim)) +
-          row('Broderie', s.robe.emb.enabled
-            ? (s.robe.emb.text || '—') + ' · ' + ((cat.FONTS[s.robe.emb.font] || {}).label || '—')
+          row('Tissu', labelOf(cat.FABRICS, robe.fabric)) +
+          row('Coupe des manches', labelOf(cat.SLEEVES, robe.sleeve)) +
+          row('Col', labelOf(cat.COLLARS, robe.collar)) +
+          row('Bordure', labelOf(cat.TRIM_STYLES, robe.trim)) +
+          row('Broderie', emb.enabled
+            ? (emb.text || '—') + ' · ' + ((cat.FONTS[emb.font] || {}).label || '—')
             : 'Aucune') +
-          row('Emplacement broderie', s.robe.emb.enabled
-            ? (cat.EMB_POSITIONS.find((p) => p.id === s.robe.emb.position) || {}).label || '—'
+          row('Emplacement broderie', emb.enabled
+            ? (cat.EMB_POSITIONS.find((p) => p.id === emb.position) || {}).label || '—'
             : '—') +
-          row('Logos fournis', [s.robe.emb.uniLogoName, s.robe.emb.facLogoName].filter(Boolean).join(' · ') || 'Aucun'),
+          row('Logos fournis', [emb.uniLogoName, emb.facLogoName].filter(Boolean).join(' · ') || 'Aucun'),
       },
       {
         title: 'Capuche',
@@ -551,7 +555,7 @@
     placeholder.hidden = true;
     body.hidden = false;
 
-    const client = order.config.client;
+    const client = order.config?.client || {};
     const flag = urgency(order);
     const phone = String(client.whatsapp || '').replace(/[^\d]/g, '');
     const waLink = phone
@@ -620,7 +624,14 @@
 
   /* ---------- Récapitulatif texte & fiche imprimable ---------- */
   function summaryText(order) {
-    const s = order.config;
+    const s = order.config || {};
+    const client = s.client || {};
+    const robe = s.robe || {};
+    const emb = robe.emb || {};
+    const hood = s.hood || {};
+    const cap = s.cap || {};
+    const tassel = s.tassel || {};
+    const measures = s.measures || {};
     return [
       'ENMIIS — Dossier de fabrication',
       'Référence : ' + order.ref,
@@ -628,42 +639,42 @@
       'Reçue le : ' + formatDateTime(order.createdAt),
       '',
       '— CLIENT —',
-      'Nom : ' + s.client.name,
-      'WhatsApp : ' + s.client.whatsapp,
-      'E-mail : ' + (s.client.email || '—'),
-      'Région : ' + s.client.region,
-      'Université : ' + (s.client.university || '—'),
-      'Soutenance : ' + s.client.date,
-      'Remarques : ' + (s.client.notes || '—'),
+      'Nom : ' + (client.name || '—'),
+      'WhatsApp : ' + (client.whatsapp || '—'),
+      'E-mail : ' + (client.email || '—'),
+      'Région : ' + (client.region || '—'),
+      'Université : ' + (client.university || '—'),
+      'Soutenance : ' + (client.date || '—'),
+      'Remarques : ' + (client.notes || '—'),
       '',
       '— FICHIERS —',
       (s.files || []).length ? s.files.map((f) => '• ' + f.name + ' (' + f.label + ')').join('\n') : '—',
       '',
       '— ROBE —',
-      'Tissu : ' + labelOf(cat.FABRICS, s.robe.fabric),
-      'Manches : ' + labelOf(cat.SLEEVES, s.robe.sleeve),
-      'Col : ' + labelOf(cat.COLLARS, s.robe.collar),
-      'Bordure : ' + labelOf(cat.TRIM_STYLES, s.robe.trim),
-      'Broderie : ' + (s.robe.emb.enabled ? s.robe.emb.text : 'aucune'),
+      'Tissu : ' + labelOf(cat.FABRICS, robe.fabric),
+      'Manches : ' + labelOf(cat.SLEEVES, robe.sleeve),
+      'Col : ' + labelOf(cat.COLLARS, robe.collar),
+      'Bordure : ' + labelOf(cat.TRIM_STYLES, robe.trim),
+      'Broderie : ' + (emb.enabled ? emb.text : 'aucune'),
       '',
       '— CAPUCHE —',
-      'Modèle : ' + labelOf(cat.HOOD_STYLES, s.hood.style),
-      'Broderie : ' + (s.hood.emb || '—'),
+      'Modèle : ' + labelOf(cat.HOOD_STYLES, hood.style),
+      'Broderie : ' + (hood.emb || '—'),
       '',
       '— MORTIER —',
-      'Forme : ' + labelOf(cat.CAP_STYLES, s.cap.style),
-      'Matière : ' + labelOf(cat.CAP_MATERIALS, s.cap.material),
-      'Broderie : ' + (s.cap.emb || '—'),
+      'Forme : ' + labelOf(cat.CAP_STYLES, cap.style),
+      'Matière : ' + labelOf(cat.CAP_MATERIALS, cap.material),
+      'Broderie : ' + (cap.emb || '—'),
       '',
       '— GLAND —',
-      'Style : ' + labelOf(cat.TASSEL_STYLES, s.tassel.style),
-      'Année : ' + (s.tassel.year || '—'),
+      'Style : ' + labelOf(cat.TASSEL_STYLES, tassel.style),
+      'Année : ' + (tassel.year || '—'),
       '',
       '— COULEURS —',
       'À définir avec le client (voir note d’atelier).',
       '',
       '— MESURES —',
-      cat.MEASUREMENTS.map((m) => m.label + ' : ' + (s.measures[m.id] || '—') + ' ' + m.unit).join('\n'),
+      cat.MEASUREMENTS.map((m) => m.label + ' : ' + (measures[m.id] || '—') + ' ' + m.unit).join('\n'),
       '',
       '— NOTE ATELIER —',
       order.adminNote || '—',
@@ -715,21 +726,26 @@
     const cell = (value) => '"' + String(value == null ? '' : value).replace(/"/g, '""') + '"';
 
     const rows = orders.map((order) => {
-      const s = order.config;
+      const s = order.config || {};
+      const client = s.client || {};
+      const robe = s.robe || {};
+      const hood = s.hood || {};
+      const cap = s.cap || {};
+      const tassel = s.tassel || {};
       return [
         order.ref,
         statusOf(order.status).label,
         formatDateTime(order.createdAt),
-        s.client.name,
-        s.client.whatsapp,
-        s.client.email,
-        s.client.region,
-        s.client.university,
-        s.client.date,
-        labelOf(cat.FABRICS, s.robe.fabric) + ' / ' + labelOf(cat.SLEEVES, s.robe.sleeve),
-        labelOf(cat.HOOD_STYLES, s.hood.style),
-        labelOf(cat.CAP_STYLES, s.cap.style) + ' / ' + labelOf(cat.CAP_MATERIALS, s.cap.material),
-        labelOf(cat.TASSEL_STYLES, s.tassel.style) + (s.tassel.year ? ' / ' + s.tassel.year : ''),
+        client.name,
+        client.whatsapp,
+        client.email,
+        client.region,
+        client.university,
+        client.date,
+        labelOf(cat.FABRICS, robe.fabric) + ' / ' + labelOf(cat.SLEEVES, robe.sleeve),
+        labelOf(cat.HOOD_STYLES, hood.style),
+        labelOf(cat.CAP_STYLES, cap.style) + ' / ' + labelOf(cat.CAP_MATERIALS, cap.material),
+        labelOf(cat.TASSEL_STYLES, tassel.style) + (tassel.year ? ' / ' + tassel.year : ''),
         (s.files || []).map((f) => f.name).join(' | '),
         order.adminNote,
       ].map(cell).join(';');
