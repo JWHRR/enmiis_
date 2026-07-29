@@ -799,6 +799,55 @@
     if (id === 'submit') bindSubmit(screen);
   }
 
+  function applyPresetModel(id) {
+    const presetMap = {
+      '1': {
+        name: 'Modèle Toge d’Excellence #1 (Photo de référence)',
+        src: 'img/soutenance/1.png',
+        fabric: 'gabardine', sleeve: 'cloche', collar: 'v', trim: 'double'
+      },
+      '2': {
+        name: 'Modèle Toge de Prestance #2 (Photo de référence)',
+        src: 'img/soutenance/2.png',
+        fabric: 'gabardine', sleeve: 'cloche', collar: 'v', trim: 'simple'
+      },
+      '3': {
+        name: 'Pack Soutenance Complète #3 (Photo de référence)',
+        src: 'img/soutenance/3.png',
+        fabric: 'gabardine', sleeve: 'cloche', collar: 'v', trim: 'double'
+      }
+    };
+
+    const preset = presetMap[id] || presetMap['1'];
+
+    /* Vérifie si l'image est déjà ajoutée dans les fichiers */
+    const existing = store.get().files.find(f => f.name === preset.name);
+    if (!existing) {
+      const fileObj = {
+        id: 'preset-' + id + '-' + Date.now(),
+        name: preset.name,
+        label: 'Modèle Référence Soutenance',
+        size: '1.1 MB',
+        type: 'image/png',
+        preview: preset.src
+      };
+      store.addFiles([fileObj]);
+    }
+
+    /* Pré-configure la robe selon le modèle */
+    store.commit((draft) => {
+      draft.robe.fabric = preset.fabric;
+      draft.robe.sleeve = preset.sleeve;
+      draft.robe.collar = preset.collar;
+      draft.robe.trim = preset.trim;
+    });
+
+    /* Notifie le client */
+    setTimeout(() => {
+      toast('<em>' + preset.name + '</em> attachée comme photo de référence !');
+    }, 300);
+  }
+
   /* ----------------------------------------------------------
      Démarrage
      ---------------------------------------------------------- */
@@ -806,6 +855,16 @@
     preview.init();
     bindModals();
     bindGlobalControls();
+
+    /* Vérification d'un modèle choisi depuis soutenance.html */
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const presetId = params.get('preset') || params.get('model') || params.get('photo');
+      if (presetId) {
+        applyPresetModel(presetId);
+      }
+    } catch (e) {}
+
     current = Math.min(store.at('step') || 0, cat.STEPS.length - 1);
     /* Une configuration déjà envoyée repart de la première étape. */
     if (stepAt(current).id === 'submit' && !store.at('submitted')) current = 0;

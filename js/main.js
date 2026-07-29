@@ -330,4 +330,95 @@
     newsletterForm.hidden = true;
     newsletterSuccess.hidden = false;
   });
+
+  /* ----------------------------------------------------------
+     Modal Zoom & Description — Créations Soutenance
+     ---------------------------------------------------------- */
+  const MODELS_DATA = {
+    '1': {
+      title: "Toge d’Excellence — Broderie Or & Logos Universitaires",
+      category: "Toges d'Apparat",
+      img: "img/soutenance/1.png",
+      desc: "Confectionnée dans notre gabardine de laine d'exception, cette tenue d'excellence se distingue par son tombé fluide, ses finitions dorées et ses broderies héraldiques sur mesure. Comprend le col en V avec double galon, les manches cloches sculptées, l'écharpe d'honneur ainsi que la personnalisation avec votre logo universitaire et le texte 'Félicitations Docteur'. Idéale pour les soutenances de thèse de médecine, pharmacie, droit et doctorats d'État.",
+      highlights: [
+        "Gabardine de laine noble & finitions satinées dorées",
+        "Broderie haute précision au fil métallisé",
+        "Écharpe d'honneur personnalisable nominative",
+        "Modèle officiel pour doctorats & soutenances"
+      ],
+      presetUrl: "customizer.html?preset=1"
+    },
+    '2': {
+      title: "Toge de Prestance — Finition Velours & Écharpe Satin",
+      category: "Toges de Soutenance",
+      img: "img/soutenance/2.png",
+      desc: "Incarnation du raffinement académique, cette toge associe la légèreté de la gabardine à la profondeur du velours noir. Dotée d'un mortier traditionnel ajusté avec gland torsadé et d'une écharpe brodée au fil d'or, elle offre une allure solennelle et élégante. Parfaitement adaptée pour marquer la réussite des diplômés lors de la cérémonie officielle.",
+      highlights: [
+        "Tissu satiné ultra-léger et agréable au porté",
+        "Col et rehausses en velours haute qualité",
+        "Mortier ajustable avec gland millésimé",
+        "Coupe élégante mixte convenant à toutes les statures"
+      ],
+      presetUrl: "customizer.html?preset=2"
+    },
+    '3': {
+      title: "Pack Soutenance Complète — Toge, Écharpe & Mortier",
+      category: "Coffret Soutenance",
+      img: "img/soutenance/3.png",
+      desc: "Le coffret ultime pour célébrer votre grand jour. Ce pack réunit votre tenue sur mesure (toge, mortier, écharpe brodée nominative avec votre nom, diplôme et date de soutenance) ainsi que le dossier de fabrication préparé par notre atelier. Conçu pour garantir un confort parfait durant votre présentation et des photos de diplôme inoubliables.",
+      highlights: [
+        "Ensemble complet sur mesure prêt pour le jour J",
+        "Écharpe nominative brodée (Nom, Spécialité & Date)",
+        "Inclus la housse de protection sérigraphiée ENMIIS",
+        "Livraison offerte & suivi dédié par notre atelier"
+      ],
+      presetUrl: "customizer.html?preset=3"
+    }
+  };
+
+  const modelModal = document.getElementById('modelModal');
+  const modelModalBackdrop = document.getElementById('modelModalBackdrop');
+  const modelModalClose = document.getElementById('modelModalClose');
+  const modelModalImg = document.getElementById('modelModalImg');
+  const modelModalTitle = document.getElementById('modelModalTitle');
+  const modelModalCategory = document.getElementById('modelModalCategory');
+  const modelModalDesc = document.getElementById('modelModalDesc');
+  const modelModalHighlights = document.getElementById('modelModalHighlights');
+  const modelModalChooseBtn = document.getElementById('modelModalChooseBtn');
+
+  function openModelModal(id) {
+    const data = MODELS_DATA[id] || MODELS_DATA['1'];
+    if (!modelModal) return;
+    modelModalImg.src = data.img;
+    modelModalTitle.textContent = data.title;
+    modelModalCategory.textContent = data.category;
+    modelModalDesc.textContent = data.desc;
+    modelModalChooseBtn.href = data.presetUrl;
+    modelModalHighlights.innerHTML = data.highlights.map(h => '<li><span>✓</span> ' + h + '</li>').join('');
+
+    modelModal.classList.add('is-open');
+    modelModal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('is-locked');
+  }
+
+  function closeModelModal() {
+    if (!modelModal) return;
+    modelModal.classList.remove('is-open');
+    modelModal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('is-locked');
+  }
+
+  document.querySelectorAll('[data-open-modal]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const id = btn.getAttribute('data-open-modal');
+      openModelModal(id);
+    });
+  });
+
+  modelModalClose?.addEventListener('click', closeModelModal);
+  modelModalBackdrop?.addEventListener('click', closeModelModal);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modelModal?.classList.contains('is-open')) closeModelModal();
+  });
 })();
