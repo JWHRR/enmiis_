@@ -799,7 +799,35 @@
     if (id === 'submit') bindSubmit(screen);
   }
 
-  function applyPresetModel(id) {
+  async function loadPresetDataUrl(src) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'Anonymous';
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const max = 1200;
+        let w = img.width;
+        let h = img.height;
+        if (w > max || h > max) {
+          if (w > h) { h = Math.round((h * max) / w); w = max; }
+          else { w = Math.round((w * max) / h); h = max; }
+        }
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        try {
+          resolve(canvas.toDataURL('image/png'));
+        } catch (e) {
+          resolve(src);
+        }
+      };
+      img.onerror = () => resolve(src);
+      img.src = src;
+    });
+  }
+
+  async function applyPresetModel(id) {
     const presetMap = {
       '1': {
         name: 'Modèle Toge d’Excellence #1 (Photo de référence)',
@@ -820,20 +848,6 @@
 
     const preset = presetMap[id] || presetMap['1'];
 
-    /* Vérifie si l'image est déjà ajoutée dans les fichiers */
-    const existing = store.get().files.find(f => f.name === preset.name);
-    if (!existing) {
-      const fileObj = {
-        id: 'preset-' + id + '-' + Date.now(),
-        name: preset.name,
-        label: 'Modèle Référence Soutenance',
-        size: '1.1 MB',
-        type: 'image/png',
-        preview: preset.src
-      };
-      store.addFiles([fileObj]);
-    }
-
     /* Pré-configure la robe selon le modèle */
     store.commit((draft) => {
       draft.robe.fabric = preset.fabric;
@@ -841,6 +855,28 @@
       draft.robe.collar = preset.collar;
       draft.robe.trim = preset.trim;
     });
+
+    const dataUrl = await loadPresetDataUrl(preset.src);
+
+    /* Vérifie si l'image est déjà ajoutée dans les fichiers */
+    const existing = store.get().files.find(f => f.name === preset.name);
+    if (!existing) {
+      const fileObj = {
+        id: 'preset-' + id + '-' + Date.now(),
+        name: preset.name,
+        size: 1100000,
+        ext: 'png',
+        label: 'PNG',
+        previewable: true,
+        dataUrl: dataUrl,
+        preview: dataUrl
+      };
+      store.addFiles([fileObj]);
+    }
+
+    if (CZ.preview && typeof CZ.preview.render === 'function') {
+      CZ.preview.render();
+    }
 
     /* Notifie le client */
     setTimeout(() => {
