@@ -19,12 +19,14 @@
   const FALLBACK =
     'data:image/svg+xml;charset=utf-8,' +
     encodeURIComponent(
-      "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 1000'>" +
+      /* Même rapport 5/7 que les cadres de cartes : le placeholder les
+         remplit exactement, sans filet clair sur les bords. */
+      "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 1120'>" +
         "<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>" +
         "<stop offset='0' stop-color='#F4F1EB'/><stop offset='1' stop-color='#E4DDD2'/>" +
         "</linearGradient></defs>" +
-        "<rect width='800' height='1000' fill='url(#g)'/>" +
-        "<text x='400' y='510' font-family='Georgia, serif' font-size='44' letter-spacing='18' fill='#B9A88C' text-anchor='middle'>ENMIIS</text>" +
+        "<rect width='800' height='1120' fill='url(#g)'/>" +
+        "<text x='400' y='570' font-family='Georgia, serif' font-size='44' letter-spacing='18' fill='#B9A88C' text-anchor='middle'>ENMIIS</text>" +
       '</svg>'
     );
 
