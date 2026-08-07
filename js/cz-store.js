@@ -28,11 +28,11 @@
     step: 0,
     files: [],
     robe: {
-      fabric: 'gabardine', sleeve: 'cloche', collar: 'v', trim: 'double',
-      emb: {
-        enabled: false, text: '', font: 'serif', position: 'chest-right',
-        uniLogo: null, uniLogoName: '', facLogo: null, facLogoName: '',
-      },
+      sleeve: 'cloche', collar: 'v', trim: 'double',
+      /* La broderie fait partie de la commande : le texte à broder est
+         demandé à tous. Police et emplacement sont arrêtés par l'atelier,
+         comme les couleurs. */
+      emb: { text: '', uniLogo: null, uniLogoName: '' },
     },
     hood: { style: 'etole-droite', emb: '' },
     cap: { style: 'classique', material: 'gabardine', emb: '', logo: null, logoName: '' },
@@ -228,6 +228,13 @@
     const catalog = CZ.catalog;
     if (stepId === 'upload') {
       return state.files.length ? [] : ['Ajoutez au moins un fichier de production.'];
+    }
+    if (stepId === 'robe') {
+      /* La broderie est comprise dans la commande : on demande à tous
+         ce qui doit être brodé (nom, titre, mention…). */
+      return state.robe.emb.text.trim()
+        ? []
+        : ['Indiquez le texte à broder sur la robe.'];
     }
     if (stepId === 'measure') {
       const missing = catalog.MEASUREMENTS

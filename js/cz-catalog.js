@@ -25,15 +25,6 @@
   /* Les couleurs ne sont plus proposées au client : leur choix est
      arrêté par l'atelier avec le client à la confirmation. */
 
-  /* ---------- Tissus ---------- */
-  const FABRICS = [
-    { id: 'gabardine', label: 'Gabardine mate',   note: 'Tenue structurée, aspect mat', sheen: 0.04 },
-    { id: 'crepe',     label: 'Crêpe fluide',     note: 'Tombé souple, léger',          sheen: 0.10 },
-    { id: 'satin',     label: 'Satin de soie',    note: 'Reflets lumineux',             sheen: 0.34 },
-    { id: 'velours',   label: 'Velours profond',  note: 'Texture dense et feutrée',     sheen: 0.02 },
-    { id: 'taffetas',  label: 'Taffetas',         note: 'Brillance sèche, tenue ferme', sheen: 0.22 },
-  ];
-
   /* ---------- Robe : cols & bordures ---------- */
   const COLLARS = [
     { id: 'v',      label: 'Col en V',       note: 'Encolure classique européenne' },
@@ -238,7 +229,7 @@
   /* Ordre des étapes de l’assistant */
   const STEPS = [
     { id: 'upload',  title: 'Vos fichiers',   phase: 'Production', sub: 'Téléversez les designs à broder ou imprimer.' },
-    { id: 'robe',    title: 'La Robe',        phase: 'Tenue',      sub: 'Tissu, coupe des manches, col, bordure et broderies.' },
+    { id: 'robe',    title: 'La Robe',        phase: 'Tenue',      sub: 'Coupe des manches, col, bordure et broderie personnalisée.' },
     { id: 'hood',    title: 'La Capuche',     phase: 'Tenue',      sub: 'Choisissez le modèle : chaque forme est illustrée.' },
     { id: 'cap',     title: 'Le Mortier',     phase: 'Tenue',      sub: 'Forme du plateau, matière, broderie et logo.' },
     { id: 'tassel',  title: 'Le Gland',       phase: 'Tenue',      sub: 'Style du gland et année de promotion.' },
@@ -252,18 +243,6 @@
     'Monastir', 'Nabeul', 'Sfax', 'Sidi Bouzid', 'Siliana', 'Sousse', 'Tataouine',
     'Tozeur', 'Tunis', 'Zaghouan'];
 
-  const FONTS = {
-    serif:  { label: 'Élégante',     stack: "'Cormorant Garamond', serif" },
-    script: { label: 'Calligraphie', stack: "'Great Vibes', cursive" },
-    modern: { label: 'Moderne',      stack: "'Inter', sans-serif" },
-  };
-
-  const EMB_POSITIONS = [
-    { id: 'chest-right', label: 'Poitrine droite', x: 243, y: 168 },
-    { id: 'chest-left',  label: 'Poitrine gauche', x: 157, y: 168 },
-    { id: 'back',        label: 'Dos',             x: 200, y: 210 },
-  ];
-
   /* Recherche d’un élément par identifiant, avec repli sur le premier. */
   function find(list, id) {
     return list.find((item) => item.id === id) || list[0];
@@ -271,9 +250,9 @@
 
   CZ.catalog = {
     FILE_TYPES, MAX_FILE_MB,
-    FABRICS, COLLARS, TRIM_STYLES, SLEEVES,
+    COLLARS, TRIM_STYLES, SLEEVES,
     HOOD_STYLES, CAP_STYLES, CAP_MATERIALS, TASSEL_STYLES,
-    MEASUREMENTS, STEPS, REGIONS, FONTS, EMB_POSITIONS,
+    MEASUREMENTS, STEPS, REGIONS,
     find,
   };
 })(window);

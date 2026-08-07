@@ -597,8 +597,8 @@ select.cz-input {
 }
 
 /* ---------- Pilules & polices ---------- */
-.cz-pills, .cz-fonts { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-.cz-pill, .cz-font {
+.cz-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.cz-pill {
   padding: 0.5rem 0.95rem;
   font-size: var(--fs-small);
   border: 1px solid var(--line);
@@ -607,50 +607,31 @@ select.cz-input {
   transition: border-color 0.3s var(--ease-lux), background 0.3s var(--ease-lux),
               color 0.3s var(--ease-lux), transform 0.3s var(--ease-lux);
 }
-.cz-font { font-size: 1rem; padding: 0.4rem 1.1rem; }
-.cz-pill:hover, .cz-font:hover { border-color: var(--gold); transform: translateY(-1px); }
-.cz-pill.is-active, .cz-font.is-active { background: var(--ink); color: var(--white); border-color: var(--ink); }
+.cz-pill:hover { border-color: var(--gold); transform: translateY(-1px); }
+.cz-pill.is-active { background: var(--ink); color: var(--white); border-color: var(--ink); }
 
-/* ---------- Interrupteur ---------- */
+/* ---------- En-tête de section obligatoire ---------- */
 .cz-switch {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
 }
+.cz-switch--static { margin-bottom: 1.4rem; }
 .cz-switch__text strong { display: block; font-size: 0.9375rem; font-weight: 500; }
 .cz-switch__text small { display: block; font-size: var(--fs-small); color: var(--ink-faint); margin-top: 0.15rem; }
-.cz-toggle {
-  flex: none;
-  width: 52px; height: 30px;
-  border-radius: 999px;
-  background: #DCD8D0;
-  padding: 3px;
-  transition: background 0.4s var(--ease-lux);
-}
-.cz-toggle__dot {
-  display: block;
-  width: 24px; height: 24px;
-  border-radius: 50%;
-  background: var(--white);
-  box-shadow: 0 2px 6px rgba(17, 17, 17, 0.24);
-  transition: transform 0.4s var(--ease-lux);
-}
-.cz-toggle.is-on { background: var(--gold); }
-.cz-toggle.is-on .cz-toggle__dot { transform: translateX(22px); }
 
-.cz-collapse {
-  display: grid;
-  grid-template-rows: 0fr;
-  opacity: 0;
-  transition: grid-template-rows 0.5s var(--ease-lux), opacity 0.4s var(--ease-lux), margin 0.4s var(--ease-lux);
+.cz-badge--required {
+  flex: none;
+  color: var(--gold-deep);
+  border-color: rgba(200, 168, 107, 0.55);
+  background: rgba(200, 168, 107, 0.12);
 }
-.cz-collapse > * { overflow: hidden; }
-.cz-collapse.is-open { grid-template-rows: 1fr; opacity: 1; margin-top: 1.4rem; }
-.cz-collapse.is-open > .cz-field:not(:last-child) { overflow: visible; }
+
+/* Champs de la broderie, toujours visibles */
+.cz-embed { display: grid; gap: 1.4rem; }
 
 /* ---------- Emplacements de logo ---------- */
-.cz-logos { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem; }
 .cz-logo {
   position: relative;
   display: flex;
@@ -1337,8 +1318,7 @@ select.cz-input {
   /* Cibles tactiles confortables sans alourdir la page. */
   .cz-measure__guide,
   .cz-file__btn,
-  .cz-pill,
-  .cz-font { min-height: 34px; }
+  .cz-pill { min-height: 34px; }
 }
 
 @media (min-width: 768px) {

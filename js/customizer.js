@@ -150,6 +150,16 @@
         setTimeout(() => drop.classList.remove('is-shake'), 500);
       }
     }
+    if (def.id === 'robe') {
+      /* La broderie est obligatoire : on pointe le champ manquant. */
+      const error = screensRoot.querySelector('[data-emb-error]');
+      const input = screensRoot.querySelector('[data-type="robe.emb.text"]');
+      if (error) error.hidden = false;
+      if (input) {
+        input.focus();
+        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
     if (def.id === 'measure') {
       let first = null;
       cat.MEASUREMENTS.forEach((m) => {
@@ -611,13 +621,11 @@
       s.files.length ? s.files.map((f) => '• ' + f.name + ' (' + f.label + ')').join('\n') : '—',
       '',
       '— ROBE —',
-      'Tissu : ' + label(cat.FABRICS, s.robe.fabric),
       'Manches : ' + label(cat.SLEEVES, s.robe.sleeve),
       'Col : ' + label(cat.COLLARS, s.robe.collar),
       'Bordure : ' + label(cat.TRIM_STYLES, s.robe.trim),
-      'Broderie : ' + (s.robe.emb.enabled
-        ? s.robe.emb.text + ' (' + cat.FONTS[s.robe.emb.font].label + ')'
-        : 'aucune'),
+      'Texte à broder : ' + (s.robe.emb.text.trim() || '—'),
+      'Logo université : ' + (s.robe.emb.uniLogoName || '—'),
       '',
       '— CAPUCHE —',
       'Modèle : ' + label(cat.HOOD_STYLES, s.hood.style),
@@ -719,12 +727,6 @@
         if (artNode && nameNode) preview.spotlight(artNode.innerHTML, nameNode.textContent);
         return;
       }
-      const toggle = event.target.closest('[data-toggle]');
-      if (toggle) {
-        const path = toggle.getAttribute('data-toggle');
-        store.set(path, !store.at(path));
-        rerenderScreenKeepScroll();
-      }
     });
 
     screensRoot.addEventListener('input', (event) => {
@@ -733,6 +735,12 @@
       store.type(input.getAttribute('data-type'), input.value);
       preview.render();
       syncUndo();
+      /* Le rappel « texte à broder » disparaît dès la première frappe. */
+      if (input.getAttribute('data-type') === 'robe.emb.text') {
+        const error = screensRoot.querySelector('[data-emb-error]');
+        if (error && input.value.trim()) error.hidden = true;
+        renderRail();
+      }
     });
 
     railRoot.addEventListener('click', (event) => {
@@ -848,17 +856,17 @@
       '1': {
         name: 'Modèle Toge d’Excellence #1 (Photo de référence)',
         src: 'img/soutenance/1.png',
-        fabric: 'gabardine', sleeve: 'cloche', collar: 'v', trim: 'double'
+        sleeve: 'cloche', collar: 'v', trim: 'double'
       },
       '2': {
         name: 'Modèle Toge de Prestance #2 (Photo de référence)',
         src: 'img/soutenance/2.png',
-        fabric: 'gabardine', sleeve: 'cloche', collar: 'v', trim: 'simple'
+        sleeve: 'cloche', collar: 'v', trim: 'simple'
       },
       '3': {
         name: 'Pack Soutenance Complète #3 (Photo de référence)',
         src: 'img/soutenance/3.png',
-        fabric: 'gabardine', sleeve: 'cloche', collar: 'v', trim: 'double'
+        sleeve: 'cloche', collar: 'v', trim: 'double'
       }
     };
 
@@ -866,7 +874,6 @@
 
     /* Pré-configure la robe selon le modèle */
     store.commit((draft) => {
-      draft.robe.fabric = preset.fabric;
       draft.robe.sleeve = preset.sleeve;
       draft.robe.collar = preset.collar;
       draft.robe.trim = preset.trim;

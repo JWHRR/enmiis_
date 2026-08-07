@@ -428,17 +428,11 @@
       {
         title: 'Robe',
         rows:
-          row('Tissu', labelOf(cat.FABRICS, robe.fabric)) +
           row('Coupe des manches', labelOf(cat.SLEEVES, robe.sleeve)) +
           row('Col', labelOf(cat.COLLARS, robe.collar)) +
           row('Bordure', labelOf(cat.TRIM_STYLES, robe.trim)) +
-          row('Broderie', emb.enabled
-            ? (emb.text || '—') + ' · ' + ((cat.FONTS[emb.font] || {}).label || '—')
-            : 'Aucune') +
-          row('Emplacement broderie', emb.enabled
-            ? (cat.EMB_POSITIONS.find((p) => p.id === emb.position) || {}).label || '—'
-            : '—') +
-          row('Logos fournis', [emb.uniLogoName, emb.facLogoName].filter(Boolean).join(' · ') || 'Aucun'),
+          row('Texte à broder', emb.text || '—') +
+          row('Logo d’université', emb.uniLogoName || 'Aucun'),
       },
       {
         title: 'Capuche',
@@ -514,7 +508,6 @@
     const s = order.config;
     const items = [
       { id: 'uni', src: s.robe.emb.uniLogo, name: s.robe.emb.uniLogoName, role: 'Logo université' },
-      { id: 'fac', src: s.robe.emb.facLogo, name: s.robe.emb.facLogoName, role: 'Logo faculté' },
       { id: 'cap', src: s.cap.logo, name: s.cap.logoName, role: 'Logo mortier' },
     ].filter((item) => item.src);
 
@@ -537,7 +530,6 @@
   function artworkOf(order, id) {
     const s = order.config;
     if (id === 'uni') return { src: s.robe.emb.uniLogo, name: s.robe.emb.uniLogoName || 'Logo université' };
-    if (id === 'fac') return { src: s.robe.emb.facLogo, name: s.robe.emb.facLogoName || 'Logo faculté' };
     if (id === 'cap') return { src: s.cap.logo, name: s.cap.logoName || 'Logo mortier' };
     return null;
   }
@@ -651,11 +643,11 @@
       (s.files || []).length ? s.files.map((f) => '• ' + f.name + ' (' + f.label + ')').join('\n') : '—',
       '',
       '— ROBE —',
-      'Tissu : ' + labelOf(cat.FABRICS, robe.fabric),
       'Manches : ' + labelOf(cat.SLEEVES, robe.sleeve),
       'Col : ' + labelOf(cat.COLLARS, robe.collar),
       'Bordure : ' + labelOf(cat.TRIM_STYLES, robe.trim),
-      'Broderie : ' + (emb.enabled ? emb.text : 'aucune'),
+      'Texte à broder : ' + (emb.text || '—'),
+      'Logo université : ' + (emb.uniLogoName || '—'),
       '',
       '— CAPUCHE —',
       'Modèle : ' + labelOf(cat.HOOD_STYLES, hood.style),
@@ -742,7 +734,7 @@
         client.region,
         client.university,
         client.date,
-        labelOf(cat.FABRICS, robe.fabric) + ' / ' + labelOf(cat.SLEEVES, robe.sleeve),
+        labelOf(cat.SLEEVES, robe.sleeve) + ' / ' + labelOf(cat.COLLARS, robe.collar),
         labelOf(cat.HOOD_STYLES, hood.style),
         labelOf(cat.CAP_STYLES, cap.style) + ' / ' + labelOf(cat.CAP_MATERIALS, cap.material),
         labelOf(cat.TASSEL_STYLES, tassel.style) + (tassel.year ? ' / ' + tassel.year : ''),

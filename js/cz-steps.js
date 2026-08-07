@@ -230,7 +230,6 @@
   }
 
   const ART = {
-    'robe.fabric': (id) => fabricArt(id),
     'robe.sleeve': (id) => gownArt({ sleeve: id, focus: 'sleeve' }),
     'robe.collar': (id) => gownArt({ collar: id, focus: 'collar' }),
     'robe.trim':   (id) => gownArt({ trim: id, focus: 'trim' }),
@@ -371,43 +370,32 @@
      ========================================================== */
   const robe = {
     html() {
-      const emb = store.at('robe.emb');
       return '<div class="cz-group">' +
-        field('Tissu', optionCards('robe.fabric', cat.FABRICS)) +
         field('Coupe des manches', optionCards('robe.sleeve', cat.SLEEVES),
           'La partie dorée montre la manche du modèle.') +
         field('Col', optionCards('robe.collar', cat.COLLARS)) +
         field('Bordure (contour)', optionCards('robe.trim', cat.TRIM_STYLES)) +
       '</div>' +
+      /* La broderie fait partie de la commande : plus d'interrupteur,
+         le texte à broder est demandé à tous. */
       '<div class="cz-group">' +
-        '<div class="cz-switch">' +
+        '<div class="cz-switch cz-switch--static">' +
           '<span class="cz-switch__text"><strong>Broderie personnalisée</strong>' +
-          '<small>Texte, logo d’université et logo de faculté.</small></span>' +
-          '<button type="button" class="cz-toggle' + (emb.enabled ? ' is-on' : '') + '"' +
-          ' data-toggle="robe.emb.enabled" role="switch" aria-checked="' + emb.enabled + '">' +
-          '<span class="cz-toggle__dot"></span></button>' +
+          '<small>Ce qui sera brodé sur votre robe.</small></span>' +
+          '<span class="cz-badge cz-badge--required">Obligatoire</span>' +
         '</div>' +
-        '<div class="cz-collapse' + (emb.enabled ? ' is-open' : '') + '" id="czEmbPanel">' +
-          field('Texte à broder',
-            textInput('robe.emb.text', { maxlength: 28, placeholder: 'Ex : Dr Salhi Wafa' })) +
-          field('Police', '<div class="cz-fonts">' + Object.keys(cat.FONTS).map((id) =>
-            '<button type="button" class="cz-font' + (emb.font === id ? ' is-active' : '') + '"' +
-            ' data-set="robe.emb.font" data-value="' + id + '" aria-pressed="' + (emb.font === id) + '"' +
-            ' style="font-family:' + cat.FONTS[id].stack + '">' + esc(cat.FONTS[id].label) + '</button>').join('') +
-            '</div>') +
-          field('Emplacement', '<div class="cz-pills">' + cat.EMB_POSITIONS.map((p) =>
-            '<button type="button" class="cz-pill' + (emb.position === p.id ? ' is-active' : '') + '"' +
-            ' data-set="robe.emb.position" data-value="' + p.id + '"' +
-            ' aria-pressed="' + (emb.position === p.id) + '">' + esc(p.label) + '</button>').join('') +
-            '</div>') +
-          '<div class="cz-logos">' +
-            uploadSlot('robe.emb.uniLogo', 'robe.emb.uniLogoName', 'Logo d’université', 'PNG · JPG · SVG') +
-            uploadSlot('robe.emb.facLogo', 'robe.emb.facLogoName', 'Logo de faculté', 'PNG · JPG · SVG') +
-          '</div>' +
+        '<div class="cz-embed">' +
+          field('Texte à broder *',
+            textInput('robe.emb.text', { maxlength: 40, placeholder: 'Ex : Dr Salhi Wafa' }),
+            'Nom, titre ou mention — exactement comme vous souhaitez le lire.') +
+          '<p class="cz-error" data-emb-error hidden>Indiquez le texte à broder sur la robe.</p>' +
+          field('Logo de votre université',
+            uploadSlot('robe.emb.uniLogo', 'robe.emb.uniLogoName', 'Ajouter le logo', 'PNG · JPG · SVG'),
+            'Facultatif — vous pouvez aussi le joindre à l’étape « Vos fichiers ».') +
         '</div>' +
       '</div>' +
-      '<p class="cz-help cz-help--workshop">Les couleurs (tissu, bordure, fils) sont définies avec vous par ' +
-      'l’atelier à la confirmation de la commande.</p>';
+      '<p class="cz-help cz-help--workshop">Police, emplacement de la broderie et couleurs sont arrêtés avec ' +
+      'vous par l’atelier à la confirmation de la commande.</p>';
     },
   };
 
@@ -513,16 +501,12 @@
       return [
         {
           step: 'robe', title: 'La Robe', rows: [
-            { label: 'Tissu', value: labelOf(cat.FABRICS, s.robe.fabric) },
             { label: 'Coupe des manches', value: labelOf(cat.SLEEVES, s.robe.sleeve) },
             { label: 'Col', value: labelOf(cat.COLLARS, s.robe.collar) },
             { label: 'Bordure', value: labelOf(cat.TRIM_STYLES, s.robe.trim) },
-            { label: 'Broderie', value: s.robe.emb.enabled
-              ? (s.robe.emb.text.trim() || '— sans texte —') + ' · ' + cat.FONTS[s.robe.emb.font].label +
-                ' · ' + ((cat.EMB_POSITIONS.find((p) => p.id === s.robe.emb.position) || {}).label || '')
-              : 'Aucune' },
-            { label: 'Logos brodés', value: [s.robe.emb.uniLogoName, s.robe.emb.facLogoName]
-              .filter(Boolean).join(' · ') || 'Aucun' },
+            { label: 'Texte à broder', value: s.robe.emb.text.trim() || '— à compléter —',
+              warn: !s.robe.emb.text.trim() },
+            { label: 'Logo d’université', value: s.robe.emb.uniLogoName || 'Aucun' },
           ],
         },
         {

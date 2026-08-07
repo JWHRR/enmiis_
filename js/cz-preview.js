@@ -47,12 +47,13 @@
   function chipList(state) {
     if (currentStep === 'robe') {
       const chips = [
-        { label: 'Tissu', value: label(cat.FABRICS, state.robe.fabric) },
         { label: 'Manches', value: label(cat.SLEEVES, state.robe.sleeve) },
         { label: 'Col', value: label(cat.COLLARS, state.robe.collar) },
         { label: 'Bordure', value: label(cat.TRIM_STYLES, state.robe.trim) },
       ];
-      if (state.robe.emb.enabled) chips.push({ label: 'Broderie', value: state.robe.emb.text.trim() || 'Oui' });
+      /* La broderie est obligatoire : la pastille apparaît dès la saisie. */
+      const text = state.robe.emb.text.trim();
+      if (text) chips.push({ label: 'Broderie', value: text });
       return chips;
     }
     if (currentStep === 'hood') {
@@ -75,8 +76,8 @@
     }
     /* Vue d’ensemble (fichiers, mesures, récapitulatif, envoi) */
     return [
-      { label: 'Robe', value: label(cat.FABRICS, state.robe.fabric) },
       { label: 'Manches', value: label(cat.SLEEVES, state.robe.sleeve) },
+      { label: 'Col', value: label(cat.COLLARS, state.robe.collar) },
       { label: 'Capuche', value: label(cat.HOOD_STYLES, state.hood.style) },
       { label: 'Mortier', value: label(cat.CAP_STYLES, state.cap.style) },
       { label: 'Gland', value: label(cat.TASSEL_STYLES, state.tassel.style) },
@@ -157,7 +158,7 @@
       el.piece.textContent = STEP_SHOT[currentStep] ? shot.piece : 'Votre tenue';
       el.style.textContent = STEP_SHOT[currentStep]
         ? ''
-        : label(cat.FABRICS, state.robe.fabric) + ' · ' + label(cat.SLEEVES, state.robe.sleeve);
+        : label(cat.SLEEVES, state.robe.sleeve) + ' · ' + label(cat.COLLARS, state.robe.collar);
     }
 
     el.spec.innerHTML = chipList(state).map((chip) =>
