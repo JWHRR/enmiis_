@@ -5,6 +5,11 @@
    ============================================================ */
 
 .cz-body {
+  /* Hauteur cumulée des barres fixes du haut : barre de marque (56) +
+     jauge de progression (2) + rail d'étapes (52). Sert à caler le
+     défilement quand on change d'étape. */
+  --cz-chrome: 110px;
+
   background:
     radial-gradient(900px 520px at 12% -8%, rgba(200, 168, 107, 0.10), transparent 62%),
     radial-gradient(760px 520px at 96% 4%, rgba(31, 42, 68, 0.07), transparent 58%),
@@ -494,10 +499,18 @@ select.cz-input {
   transition: border-color 0.3s ease-in-out, transform 0.3s ease-in-out,
               box-shadow 0.3s ease-in-out, background 0.3s ease-in-out;
 }
-.cz-option:hover {
-  transform: translateY(-3px) scale(1.03);
-  border-color: rgba(200, 168, 107, 0.6);
-  box-shadow: 0 18px 34px -18px rgba(17, 17, 17, 0.4);
+/* Réservé aux pointeurs qui survolent vraiment : au doigt, « :hover »
+   reste collé après le tap et la carte demeurait soulevée à tort. */
+@media (hover: hover) {
+  .cz-option:hover {
+    transform: translateY(-3px) scale(1.03);
+    border-color: rgba(200, 168, 107, 0.6);
+    box-shadow: 0 18px 34px -18px rgba(17, 17, 17, 0.4);
+  }
+}
+/* Au doigt, l'appui donne un retour immédiat plutôt qu'un état figé. */
+@media (hover: none) {
+  .cz-option:active { transform: scale(0.985); }
 }
 .cz-option.is-active {
   border-color: var(--gold);
@@ -1249,6 +1262,85 @@ select.cz-input {
 /* ============================================================
    RESPONSIVE
    ============================================================ */
+
+/* ------------------------------------------------------------
+   TÉLÉPHONE & TABLETTE (< 1024 px)
+
+   L'aperçu occupait ici jusqu'à 507 px de haut en `sticky` : avec la
+   barre du haut, le rail d'étapes et la barre d'action du bas, près de
+   80 % de l'écran restait figé et il ne restait qu'environ 150 px pour
+   faire défiler le contenu. Son cadre combine en plus `mix-blend-mode`
+   et un filtre, que le navigateur devait recomposer à chaque image
+   pendant le défilement — d'où les à-coups.
+
+   Il n'apparaît donc plus qu'aux deux étapes où il sert vraiment :
+   le dépôt des fichiers (voir son design) et la confirmation (revoir
+   sa commande). Sur ordinateur il reste affiché en permanence : c'est
+   une colonne latérale, elle ne coûte rien au défilement.
+   ------------------------------------------------------------ */
+@media (max-width: 1023px) {
+  .cz-preview {
+    display: none;
+    /* Quand il est affiché, il défile avec la page au lieu de figer
+       l'écran : le contenu récupère toute la hauteur utile. */
+    position: static;
+    padding: 0.75rem 0 0.9rem;
+  }
+  body[data-preview="on"] .cz-preview { display: block; }
+
+  /* Cadre plus compact : le design reste lisible sans manger l'écran. */
+  .cz-shot__frame { width: min(38vw, 168px); }
+  .cz-stage { gap: 0.5rem; }
+  .cz-spec { max-width: 340px; }
+
+  /* Le flou d'arrière-plan oblige le navigateur à ré-échantillonner puis
+     re-flouter tout ce qui passe derrière, à chaque image du défilement —
+     sur de grandes surfaces c'est la principale source de saccades sur
+     téléphone. On le retire et on rend les fonds légèrement plus opaques :
+     le rendu est le même à l'œil, pour une fraction du coût. */
+  .cz-topbar,
+  .cz-rail,
+  .cz-group,
+  .cz-drop,
+  .cz-measure,
+  .cz-recap,
+  .cz-send,
+  .cz-done,
+  .cz-chip,
+  .cz-tool,
+  .cz-spot {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .cz-topbar,
+  .cz-rail { background: var(--white); }
+  .cz-group { background: rgba(255, 255, 255, 0.9); }
+  .cz-drop { background: rgba(255, 255, 255, 0.86); }
+  .cz-measure,
+  .cz-recap { background: rgba(255, 255, 255, 0.92); }
+  .cz-send,
+  .cz-done { background: rgba(255, 255, 255, 0.93); }
+  .cz-chip { background: rgba(255, 255, 255, 0.92); }
+
+  /* Le rail défile horizontalement sans entraîner la page avec lui. */
+  .cz-rail { overscroll-behavior-inline: contain; }
+
+  /* Le panneau se cale sous les barres fixes quand on change d'étape. */
+  .cz-panel { scroll-margin-top: calc(var(--cz-chrome) + 8px); }
+
+  /* Barre d'action du bas compacte, au-dessus de la zone tactile système. */
+  .cz-nav {
+    margin-top: 1.25rem;
+    padding: 0.7rem 0 calc(0.7rem + env(safe-area-inset-bottom));
+  }
+
+  /* Cibles tactiles confortables sans alourdir la page. */
+  .cz-measure__guide,
+  .cz-file__btn,
+  .cz-pill,
+  .cz-font { min-height: 34px; }
+}
+
 @media (min-width: 768px) {
   .cz-shot__frame { width: min(34vw, 250px); }
   .cz-measure { grid-template-columns: 104px 1fr; }

@@ -38,8 +38,17 @@
     submit: () => steps.submit.html(),
   };
 
+  /* Sur téléphone, l'aperçu n'est montré qu'aux deux étapes où il sert
+     vraiment : déposer ses fichiers et confirmer sa commande. Ailleurs il
+     figeait la majeure partie de l'écran et hachait le défilement.
+     Cette liste est l'unique référence : le CSS se contente de lire
+     l'attribut posé ci-dessous (voir le bloc « max-width: 1023px »). */
+  const PREVIEW_STEPS = ['upload', 'submit'];
+  const showsPreview = (stepId) => PREVIEW_STEPS.indexOf(stepId) > -1;
+
   function renderScreen() {
     const def = stepAt(current);
+    document.body.dataset.preview = showsPreview(def.id) ? 'on' : 'off';
     $('#czPhase').textContent = def.phase;
     $('#czStepTitle').textContent = def.title;
     $('#czStepSub').textContent = def.sub;
@@ -115,7 +124,14 @@
     store.commit((draft) => { draft.step = current; });
     renderScreen();
     if (global.innerWidth < 1024) {
-      $('#czPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      /* Aux étapes qui montrent l'aperçu, on remonte tout en haut pour
+         qu'il soit visible ; aux autres, on cale directement sur le
+         panneau (son scroll-margin-top le place sous les barres fixes). */
+      if (showsPreview(stepAt(current).id)) {
+        global.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        $('#czPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
   }
 
