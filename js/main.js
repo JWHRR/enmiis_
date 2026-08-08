@@ -230,6 +230,35 @@
   window.enmiisToast = showToast;
 
   /* ----------------------------------------------------------
+     Panier (compteur d'entête)
+     Lu directement dans le stockage local : les pages vitrine ne
+     chargent pas le configurateur. Même clé et même durée de vie
+     de 24 h que js/cz-store.js.
+     ---------------------------------------------------------- */
+  const CART_KEY = 'enmiis-cart-v1';
+  const CART_TTL_MS = 24 * 60 * 60 * 1000;
+
+  function readCartCount() {
+    try {
+      const raw = localStorage.getItem(CART_KEY);
+      if (!raw) return 0;
+      const cart = JSON.parse(raw);
+      if (!cart || !Array.isArray(cart.items)) return 0;
+      if (!cart.savedAt || Date.now() - cart.savedAt > CART_TTL_MS) return 0;
+      return cart.items.length;
+    } catch (err) {
+      return 0;
+    }
+  }
+
+  const cartCountEl = document.getElementById('cartCount');
+  if (cartCountEl) {
+    const count = readCartCount();
+    cartCountEl.textContent = count;
+    cartCountEl.hidden = count === 0;
+  }
+
+  /* ----------------------------------------------------------
      Favoris (compteur d'entête)
      ---------------------------------------------------------- */
   const wishlistCountEl = document.getElementById('wishlistCount');

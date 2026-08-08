@@ -35,6 +35,15 @@
 
   const $ = (selector) => document.querySelector(selector);
 
+  /* Les fichiers machine voyagent en base64 dans la commande : au-delà
+     de cette taille la requête dépasserait la limite des fonctions
+     serverless. */
+  const MACHINE_MAX_MB = 2.5;
+
+  const fileSize = (bytes) => (!bytes ? '—' : bytes < 1024 * 1024
+    ? Math.max(1, Math.round(bytes / 1024)) + ' Ko'
+    : (bytes / (1024 * 1024)).toFixed(1).replace('.', ',') + ' Mo');
+
   /* Selon le navigateur et le mode de navigation, l'accès au stockage peut
      lever une exception (fichier local, navigation privée, cookies bloqués).
      Une session en mémoire prend alors le relais : l'espace reste utilisable
@@ -272,6 +281,68 @@
     } catch (err) { return false; }
   }
 
+  /* Les fichiers machine sont fusionnés côté serveur : la requête ne
+     transporte que la nouvelle liste, jamais la commande entière. */
+  async function pushMachineFiles(order) {
+    if (!CLOUD_ENABLED) return false;
+    const body = JSON.stringify({ machineFiles: machineFilesOf(order) });
+    try {
+      const res = await fetch(API_BASE + '?ref=' + encodeURIComponent(order.ref), {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body,
+      });
+      if (res.ok) return true;
+    } catch (err) { /* on tente la voie directe ci-dessous */ }
+
+    /* Repli direct : PostgREST n'accepte pas de fusion partielle du
+       jsonb, on renvoie donc la configuration complète. */
+    try {
+      const res = await fetch(SUPABASE_REST_URL + '?ref=eq.' + encodeURIComponent(order.ref), {
+        method: 'PATCH',
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: 'Bearer ' + SUPABASE_KEY,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ config: order.config }),
+      });
+      return res.ok;
+    } catch (err) { return false; }
+  }
+
+  async function pushNewOrder(order) {
+    if (!CLOUD_ENABLED) return false;
+    try {
+      const res = await fetch(API_BASE, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(order),
+      });
+      if (res.ok) return true;
+    } catch (err) { /* on tente la voie directe ci-dessous */ }
+
+    try {
+      const res = await fetch(SUPABASE_REST_URL + '?on_conflict=ref', {
+        method: 'POST',
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: 'Bearer ' + SUPABASE_KEY,
+          'Content-Type': 'application/json',
+          Prefer: 'resolution=merge-duplicates',
+        },
+        body: JSON.stringify({
+          ref: order.ref,
+          created_at: order.createdAt,
+          status: order.status,
+          admin_note: order.adminNote,
+          config: order.config,
+        }),
+      });
+      return res.ok;
+    } catch (err) { return false; }
+  }
+
   /* ---------- Formatage ---------- */
   const labelOf = (list, id) => {
     const found = list.find((item) => item.id === id);
@@ -305,7 +376,7 @@
   }
 
   function urgency(order) {
-    const days = daysUntil(order.config?.client?.date);
+    const days = daysUntil(clientOf(order).date);
     if (days === null) return null;
     if (order.status === 'livre' || order.status === 'annule') return null;
     if (days < 0) return { tone: 'late', text: 'Date dépassée' };
@@ -316,7 +387,7 @@
 
   /* ---------- Filtrage & tri ---------- */
   function haystack(order) {
-    const c = order.config?.client || {};
+    const c = clientOf(order);
     return [order.ref, c.name, c.region, c.university, c.whatsapp, c.email, c.notes]
       .join(' ').toLowerCase();
   }
@@ -392,7 +463,7 @@
     $('#adEmpty').hidden = list.length > 0;
 
     root.innerHTML = list.map((order) => {
-      const client = order.config?.client || {};
+      const client = clientOf(order);
       const status = statusOf(order.status);
       const flag = urgency(order);
       return '<li class="ad-card' + (order.ref === selectedRef ? ' is-active' : '') + '"' +
@@ -405,133 +476,190 @@
         '<p class="ad-card__meta">' + esc(client.region || '—') +
           (client.university ? ' · ' + esc(client.university) : '') + '</p>' +
         '<div class="ad-card__foot">' +
-          '<span>Reçue le ' + esc(formatDate(order.createdAt)) + '</span>' +
+          '<span>Reçue le ' + esc(formatDate(order.createdAt)) +
+            /* Une commande peut porter plusieurs tenues : on l'annonce
+               dès la liste pour éviter toute surprise à l'atelier. */
+            (itemsOf(order).length > 1
+              ? ' · <strong class="ad-card__items">' + itemsOf(order).length + ' tenues</strong>'
+              : '') + '</span>' +
           (flag ? '<span class="ad-flag ad-flag--' + flag.tone + '">' + esc(flag.text) + '</span>' : '') +
         '</div>' +
       '</li>';
     }).join('');
   }
 
-  /* ---------- Rendu : détail ---------- */
-  /* Les couleurs ne font plus partie de la configuration client :
-     elles sont arrêtées par l'atelier et notées en note d'atelier. */
-  function specRows(order) {
-    const s = order.config || {};
-    const robe = s.robe || {};
+  /* ---------- Normalisation ----------
+     Une commande porte désormais un client et un tableau de tenues
+     (`config.items`). Les commandes antérieures au panier n'avaient
+     qu'une seule tenue, à plat dans `config` : elles sont présentées
+     comme un article unique, sans conversion en base. */
+  function itemsOf(order) {
+    const cfg = order.config || {};
+    if (Array.isArray(cfg.items)) return cfg.items;
+    if (cfg.robe || cfg.measures) return [cfg];
+    return [];
+  }
+
+  function clientOf(order) {
+    return (order.config || {}).client || {};
+  }
+
+  function machineFilesOf(order) {
+    const list = (order.config || {}).machineFiles;
+    return Array.isArray(list) ? list : [];
+  }
+
+  /* ---------- Rendu : une tenue ---------- */
+
+  function specRows(item) {
+    const robe = item.robe || {};
     const emb = robe.emb || {};
-    const hood = s.hood || {};
-    const cap = s.cap || {};
+    const hood = item.hood || {};
+    const cap = item.cap || {};
+    const tassel = item.tassel || {};
     const row = (label, value) =>
       '<div class="ad-row"><dt>' + esc(label) + '</dt><dd>' + esc(value) + '</dd></div>';
 
-    const groups = [
-      {
-        title: 'Robe',
-        rows:
-          row('Coupe des manches', labelOf(cat.SLEEVES, robe.sleeve)) +
-          row('Col', labelOf(cat.COLLARS, robe.collar)) +
-          row('Bordure', labelOf(cat.TRIM_STYLES, robe.trim)) +
-          row('Texte à broder', emb.text || '—') +
-          row('Logo d’université', emb.uniLogoName || 'Aucun'),
-      },
-      {
-        title: 'Capuche',
-        rows:
-          row('Modèle', labelOf(cat.HOOD_STYLES, s.hood.style)) +
-          row('Broderie', s.hood.emb || 'Aucune'),
-      },
-      {
-        title: 'Mortier',
-        rows:
-          row('Forme', labelOf(cat.CAP_STYLES, s.cap.style)) +
-          row('Matière', labelOf(cat.CAP_MATERIALS, s.cap.material)) +
-          row('Broderie', s.cap.emb || 'Aucune') +
-          row('Logo', s.cap.logoName || 'Aucun'),
-      },
-      {
-        title: 'Gland',
-        rows:
-          row('Style', labelOf(cat.TASSEL_STYLES, s.tassel.style)) +
-          row('Année de promotion', s.tassel.year || 'Aucune'),
-      },
-      {
-        title: 'Couleurs',
-        rows: row('Palette', 'À définir avec le client — voir note d’atelier'),
-      },
-    ];
-
-    return groups.map((group) =>
-      '<section class="ad-block"><h3 class="ad-block__title">' + esc(group.title) + '</h3>' +
-      '<dl class="ad-rows">' + group.rows + '</dl></section>').join('');
+    return '<dl class="ad-rows">' +
+      row('Manches', labelOf(cat.SLEEVES, robe.sleeve)) +
+      row('Col', labelOf(cat.COLLARS, robe.collar)) +
+      row('Bordure', labelOf(cat.TRIM_STYLES, robe.trim)) +
+      row('Texte à broder', emb.text || '—') +
+      row('Logo d’université', emb.uniLogoName || 'Aucun') +
+      row('Capuche', labelOf(cat.HOOD_STYLES, hood.style)) +
+      row('Broderie capuche', hood.emb || 'Aucune') +
+      row('Mortier', labelOf(cat.CAP_STYLES, cap.style) + ' · ' + labelOf(cat.CAP_MATERIALS, cap.material)) +
+      row('Broderie mortier', cap.emb || 'Aucune') +
+      row('Logo mortier', cap.logoName || 'Aucun') +
+      row('Gland', labelOf(cat.TASSEL_STYLES, tassel.style)) +
+      row('Année de promotion', tassel.year || 'Aucune') +
+      row('Couleurs', 'À définir avec le client — voir note d’atelier') +
+      '</dl>';
   }
 
-  function measureTable(order) {
-    return '<section class="ad-block"><h3 class="ad-block__title">Mesures</h3>' +
-      '<div class="ad-measures">' + cat.MEASUREMENTS.map((m) => {
-        const value = order.config.measures[m.id];
-        return '<div class="ad-measure' + (value ? '' : ' is-missing') + '">' +
-          '<span class="ad-measure__label">' + esc(m.label) + '</span>' +
-          '<span class="ad-measure__value">' + (value ? esc(value) + ' ' + m.unit : '—') + '</span>' +
-        '</div>';
-      }).join('') + '</div></section>';
+  function measureTable(item) {
+    const measures = item.measures || {};
+    return '<div class="ad-measures">' + cat.MEASUREMENTS.map((m) => {
+      const value = measures[m.id];
+      return '<div class="ad-measure' + (value ? '' : ' is-missing') + '">' +
+        '<span class="ad-measure__label">' + esc(m.label) + '</span>' +
+        '<span class="ad-measure__value">' + (value ? esc(value) + ' ' + m.unit : '—') + '</span>' +
+      '</div>';
+    }).join('') + '</div>';
   }
 
-  function filesBlock(order) {
-    const files = order.config.files || [];
-    if (!files.length) {
-      return '<section class="ad-block"><h3 class="ad-block__title">Fichiers</h3>' +
-        '<p class="ad-note">Aucun fichier joint.</p></section>';
-    }
-    return '<section class="ad-block"><h3 class="ad-block__title">Fichiers de production ' +
-      '<span class="ad-block__count">' + files.length + '</span></h3>' +
-      '<ul class="ad-files">' + files.map((file) =>
-        '<li class="ad-file">' +
-          '<span class="ad-file__thumb">' + (file.preview
-            ? '<img src="' + esc(file.preview) + '" alt="">'
-            : '<span class="ad-file__ext">' + esc(file.label) + '</span>') + '</span>' +
-          '<span class="ad-file__meta"><strong>' + esc(file.name) + '</strong>' +
-            '<small>' + esc(file.label) + '</small></span>' +
-          (file.preview
-            ? '<button type="button" class="ad-file__btn" data-preview="' + esc(file.id) + '">Voir</button>' +
-              '<a class="ad-file__btn" href="' + esc(file.preview) + '" download="' + esc(file.name) + '">Télécharger</a>'
-            : '<span class="ad-file__btn is-off" title="Format sans aperçu navigateur">Fichier source</span>') +
-        '</li>').join('') + '</ul>' +
+  function filesBlock(item, index) {
+    const files = item.files || [];
+    if (!files.length) return '<p class="ad-note">Aucun fichier joint.</p>';
+    return '<ul class="ad-files">' + files.map((file) =>
+      '<li class="ad-file">' +
+        '<span class="ad-file__thumb">' + (file.preview
+          ? '<img src="' + esc(file.preview) + '" alt="">'
+          : '<span class="ad-file__ext">' + esc(file.label) + '</span>') + '</span>' +
+        '<span class="ad-file__meta"><strong>' + esc(file.name) + '</strong>' +
+          '<small>' + esc(file.label) + '</small></span>' +
+        (file.preview
+          ? '<button type="button" class="ad-file__btn" data-preview="' + index + ':' + esc(file.id) + '">Voir</button>' +
+            '<a class="ad-file__btn" href="' + esc(file.preview) + '" download="' + esc(file.name) + '">Télécharger</a>'
+          : '<span class="ad-file__btn is-off" title="Format sans aperçu navigateur">Fichier source</span>')
+      + '</li>').join('') + '</ul>' +
       (files.some((f) => !f.preview)
-        ? '<p class="ad-note">Les formats AI, EPS, CDR et PDF sont référencés ici ; ' +
-          'demandez au client de les transmettre par WhatsApp si le fichier source est requis.</p>'
-        : '') +
-      '</section>';
+        ? '<p class="ad-note">Les formats AI, EPS, CDR et PDF sont référencés ici ; demandez au client de ' +
+          'les transmettre par WhatsApp si le fichier source est requis.</p>'
+        : '');
   }
 
-  /* Visuels brodés joints à la configuration (hors fichiers de production). */
-  function artworkBlock(order) {
-    const s = order.config;
-    const items = [
-      { id: 'uni', src: s.robe.emb.uniLogo, name: s.robe.emb.uniLogoName, role: 'Logo université' },
-      { id: 'cap', src: s.cap.logo, name: s.cap.logoName, role: 'Logo mortier' },
-    ].filter((item) => item.src);
+  /* Visuels brodés joints à une tenue (logos université / mortier). */
+  function artworkList(item) {
+    const emb = (item.robe || {}).emb || {};
+    const cap = item.cap || {};
+    return [
+      { id: 'uni', src: emb.uniLogo, name: emb.uniLogoName, role: 'Logo université' },
+      { id: 'cap', src: cap.logo, name: cap.logoName, role: 'Logo mortier' },
+    ].filter((entry) => entry.src);
+  }
 
+  function artworkBlock(item, index) {
+    const items = artworkList(item);
     if (!items.length) return '';
-    return '<section class="ad-block"><h3 class="ad-block__title">Visuels à broder ' +
-      '<span class="ad-block__count">' + items.length + '</span></h3>' +
-      '<ul class="ad-art">' + items.map((item) =>
+    return '<h4 class="ad-item__sub">Visuels à broder</h4>' +
+      '<ul class="ad-art">' + items.map((entry) =>
         '<li class="ad-art__item">' +
-          '<button type="button" class="ad-art__thumb" data-art="' + item.id + '" ' +
-            'aria-label="Agrandir ' + esc(item.role) + '">' +
-            '<img src="' + esc(item.src) + '" alt="' + esc(item.role) + '">' +
+          '<button type="button" class="ad-art__thumb" data-art="' + index + ':' + entry.id + '"' +
+            ' aria-label="Agrandir ' + esc(entry.role) + '">' +
+            '<img src="' + esc(entry.src) + '" alt="' + esc(entry.role) + '">' +
           '</button>' +
-          '<span class="ad-art__role">' + esc(item.role) + '</span>' +
-          '<span class="ad-art__name">' + esc(item.name || '—') + '</span>' +
-          '<a class="ad-file__btn" href="' + esc(item.src) + '" download="' +
-            esc(item.name || item.role) + '">Télécharger</a>' +
-        '</li>').join('') + '</ul></section>';
+          '<span class="ad-art__role">' + esc(entry.role) + '</span>' +
+          '<span class="ad-art__name">' + esc(entry.name || '—') + '</span>' +
+          '<a class="ad-file__btn" href="' + esc(entry.src) + '" download="' +
+            esc(entry.name || entry.role) + '">Télécharger</a>' +
+        '</li>').join('') + '</ul>';
   }
 
-  function artworkOf(order, id) {
-    const s = order.config;
-    if (id === 'uni') return { src: s.robe.emb.uniLogo, name: s.robe.emb.uniLogoName || 'Logo université' };
-    if (id === 'cap') return { src: s.cap.logo, name: s.cap.logoName || 'Logo mortier' };
-    return null;
+  /* Retrouve un visuel à partir de « index:id » (voir data-art). */
+  function artworkAt(order, token) {
+    const parts = String(token).split(':');
+    const item = itemsOf(order)[Number(parts[0])];
+    if (!item) return null;
+    const found = artworkList(item).find((entry) => entry.id === parts[1]);
+    return found ? { src: found.src, name: found.name || found.role } : null;
+  }
+
+  function fileAt(order, token) {
+    const parts = String(token).split(':');
+    const item = itemsOf(order)[Number(parts[0])];
+    if (!item) return null;
+    return (item.files || []).find((f) => String(f.id) === parts.slice(1).join(':')) || null;
+  }
+
+  /* Une tenue complète, repliable quand la commande en compte plusieurs. */
+  function itemBlock(item, index, total) {
+    const emb = ((item.robe || {}).emb || {});
+    const title = total > 1
+      ? 'Tenue ' + (index + 1) + ' sur ' + total
+      : 'La tenue';
+    return '<section class="ad-item">' +
+      '<header class="ad-item__head">' +
+        '<h3 class="ad-item__title">' + esc(title) + '</h3>' +
+        '<span class="ad-item__tag">' + esc(emb.text || 'Sans broderie') + '</span>' +
+      '</header>' +
+      '<h4 class="ad-item__sub">Fichiers de production</h4>' +
+      filesBlock(item, index) +
+      artworkBlock(item, index) +
+      '<h4 class="ad-item__sub">Composition</h4>' +
+      specRows(item) +
+      '<h4 class="ad-item__sub">Mesures</h4>' +
+      measureTable(item) +
+    '</section>';
+  }
+
+  /* ---------- Fichiers machine (déposés par l'atelier) ---------- */
+  function machineBlock(order) {
+    const files = machineFilesOf(order);
+    return '<section class="ad-block">' +
+      '<h3 class="ad-block__title">Fichiers machine' +
+        (files.length ? ' <span class="ad-block__count">' + files.length + '</span>' : '') + '</h3>' +
+      (files.length
+        ? '<ul class="ad-files">' + files.map((file) =>
+            '<li class="ad-file">' +
+              '<span class="ad-file__thumb"><span class="ad-file__ext">' + esc(file.label || '—') + '</span></span>' +
+              '<span class="ad-file__meta"><strong>' + esc(file.name) + '</strong>' +
+                '<small>' + esc(fileSize(file.size)) + ' · déposé le ' + esc(formatDate(file.addedAt)) + '</small></span>' +
+              '<a class="ad-file__btn" href="' + esc(file.dataUrl) + '" download="' + esc(file.name) + '">Télécharger</a>' +
+              '<button type="button" class="ad-file__btn ad-file__btn--danger" data-machine-remove="' +
+                esc(file.id) + '">Retirer</button>' +
+            '</li>').join('') + '</ul>'
+        : '<p class="ad-note">Aucun fichier machine. Déposez ici le fichier de broderie (DST, EMB, PES…) ' +
+          'pour le retrouver plus tard.</p>') +
+      '<label class="ad-machine__drop" for="adMachineInput">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"/><polyline points="7 9 12 4 17 9"/><path d="M4 20h16"/></svg>' +
+        '<span>Ajouter un fichier machine</span>' +
+        '<small>DST · EMB · PES · JEF · EXP · VP3 · PDF · ZIP — ' + MACHINE_MAX_MB + ' Mo max</small>' +
+      '</label>' +
+      '<input type="file" id="adMachineInput" class="visually-hidden" multiple' +
+        ' accept=".dst,.emb,.pes,.jef,.exp,.vp3,.hus,.xxx,.pdf,.zip">' +
+      '<p class="ad-error" id="adMachineError" hidden></p>' +
+    '</section>';
   }
 
   function renderDetail() {
@@ -547,20 +675,24 @@
     placeholder.hidden = true;
     body.hidden = false;
 
-    const client = order.config?.client || {};
+    const client = clientOf(order);
+    const items = itemsOf(order);
     const flag = urgency(order);
     const phone = String(client.whatsapp || '').replace(/[^\d]/g, '');
     const waLink = phone
       ? 'https://wa.me/' + (phone.length === 8 ? '216' + phone : phone) +
-        '?text=' + encodeURIComponent('Bonjour ' + client.name + ', votre commande ENMIIS ' + order.ref + ' — ')
+        '?text=' + encodeURIComponent('Bonjour ' + (client.name || '') + ', votre commande ENMIIS ' + order.ref + ' — ')
       : '';
+    const manual = (order.config || {}).source === 'manual';
 
     body.innerHTML =
       '<header class="ad-head">' +
         '<div>' +
-          '<p class="ad-head__ref">' + esc(order.ref) + '</p>' +
+          '<p class="ad-head__ref">' + esc(order.ref) +
+            (manual ? ' · <span class="ad-head__origin">saisie atelier</span>' : '') + '</p>' +
           '<h2 class="ad-head__name">' + esc(client.name || 'Client sans nom') + '</h2>' +
-          '<p class="ad-head__sub">Reçue le ' + esc(formatDateTime(order.createdAt)) + '</p>' +
+          '<p class="ad-head__sub">Reçue le ' + esc(formatDateTime(order.createdAt)) +
+            ' · ' + items.length + ' tenue' + (items.length > 1 ? 's' : '') + '</p>' +
         '</div>' +
         (flag ? '<span class="ad-flag ad-flag--' + flag.tone + ' ad-flag--lg">' + esc(flag.text) + '</span>' : '') +
       '</header>' +
@@ -587,10 +719,11 @@
         '</dl>' +
       '</section>' +
 
-      filesBlock(order) +
-      artworkBlock(order) +
-      specRows(order) +
-      measureTable(order) +
+      (items.length
+        ? items.map((item, index) => itemBlock(item, index, items.length)).join('')
+        : '<section class="ad-block"><p class="ad-note">Cette commande ne contient aucune tenue.</p></section>') +
+
+      machineBlock(order) +
 
       '<section class="ad-block">' +
         '<h3 class="ad-block__title">Note d’atelier</h3>' +
@@ -607,6 +740,62 @@
       '</footer>';
   }
 
+  /* ---------- Fichiers machine ---------- */
+
+  function readAsDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error('read_failed'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function saveMachineFiles(order, files, message) {
+    order.config = order.config || {};
+    order.config.machineFiles = files;
+    if (!persist()) return;
+    renderDetail();
+    toast(message);
+    pushMachineFiles(order).then((ok) => {
+      if (!ok) toast('Enregistré localement — synchronisation en attente.');
+    });
+  }
+
+  async function addMachineFiles(order, fileList) {
+    const error = $('#adMachineError');
+    const rejected = [];
+    const accepted = [];
+
+    for (const raw of Array.from(fileList)) {
+      if (raw.size > MACHINE_MAX_MB * 1024 * 1024) {
+        rejected.push(raw.name + ' — dépasse ' + MACHINE_MAX_MB + ' Mo');
+        continue;
+      }
+      try {
+        accepted.push({
+          id: 'mf' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+          name: raw.name,
+          size: raw.size,
+          label: (raw.name.split('.').pop() || 'FICHIER').toUpperCase(),
+          addedAt: new Date().toISOString(),
+          dataUrl: await readAsDataUrl(raw),
+        });
+      } catch (err) {
+        rejected.push(raw.name + ' — lecture impossible');
+      }
+    }
+
+    if (accepted.length) {
+      saveMachineFiles(order, machineFilesOf(order).concat(accepted),
+        accepted.length + ' fichier machine ajouté' + (accepted.length > 1 ? 's' : '') + '.');
+    }
+    if (rejected.length && error) {
+      error.textContent = rejected.join(' · ');
+      error.hidden = false;
+    }
+  }
+
   function renderAll() {
     renderStats();
     renderFilters();
@@ -616,19 +805,17 @@
 
   /* ---------- Récapitulatif texte & fiche imprimable ---------- */
   function summaryText(order) {
-    const s = order.config || {};
-    const client = s.client || {};
-    const robe = s.robe || {};
-    const emb = robe.emb || {};
-    const hood = s.hood || {};
-    const cap = s.cap || {};
-    const tassel = s.tassel || {};
-    const measures = s.measures || {};
-    return [
+    const client = clientOf(order);
+    const items = itemsOf(order);
+    const machine = machineFilesOf(order);
+
+    const lines = [
       'ENMIIS — Dossier de fabrication',
       'Référence : ' + order.ref,
       'Statut : ' + statusOf(order.status).label,
       'Reçue le : ' + formatDateTime(order.createdAt),
+      'Origine : ' + ((order.config || {}).source === 'manual' ? 'saisie atelier' : 'site'),
+      'Tenues : ' + items.length,
       '',
       '— CLIENT —',
       'Nom : ' + (client.name || '—'),
@@ -638,39 +825,43 @@
       'Université : ' + (client.university || '—'),
       'Soutenance : ' + (client.date || '—'),
       'Remarques : ' + (client.notes || '—'),
-      '',
-      '— FICHIERS —',
-      (s.files || []).length ? s.files.map((f) => '• ' + f.name + ' (' + f.label + ')').join('\n') : '—',
-      '',
-      '— ROBE —',
-      'Manches : ' + labelOf(cat.SLEEVES, robe.sleeve),
-      'Col : ' + labelOf(cat.COLLARS, robe.collar),
-      'Bordure : ' + labelOf(cat.TRIM_STYLES, robe.trim),
-      'Texte à broder : ' + (emb.text || '—'),
-      'Logo université : ' + (emb.uniLogoName || '—'),
-      '',
-      '— CAPUCHE —',
-      'Modèle : ' + labelOf(cat.HOOD_STYLES, hood.style),
-      'Broderie : ' + (hood.emb || '—'),
-      '',
-      '— MORTIER —',
-      'Forme : ' + labelOf(cat.CAP_STYLES, cap.style),
-      'Matière : ' + labelOf(cat.CAP_MATERIALS, cap.material),
-      'Broderie : ' + (cap.emb || '—'),
-      '',
-      '— GLAND —',
-      'Style : ' + labelOf(cat.TASSEL_STYLES, tassel.style),
-      'Année : ' + (tassel.year || '—'),
-      '',
-      '— COULEURS —',
-      'À définir avec le client (voir note d’atelier).',
-      '',
-      '— MESURES —',
-      cat.MEASUREMENTS.map((m) => m.label + ' : ' + (measures[m.id] || '—') + ' ' + m.unit).join('\n'),
-      '',
-      '— NOTE ATELIER —',
-      order.adminNote || '—',
-    ].join('\n');
+    ];
+
+    items.forEach((item, index) => {
+      const robe = item.robe || {};
+      const emb = robe.emb || {};
+      const hood = item.hood || {};
+      const cap = item.cap || {};
+      const tassel = item.tassel || {};
+      const measures = item.measures || {};
+      lines.push('', '════ TENUE ' + (index + 1) + ' sur ' + items.length + ' ════');
+      lines.push('Fichiers : ' + ((item.files || []).length
+        ? item.files.map((f) => f.name + ' (' + f.label + ')').join(', ') : '—'));
+      lines.push('Manches : ' + labelOf(cat.SLEEVES, robe.sleeve));
+      lines.push('Col : ' + labelOf(cat.COLLARS, robe.collar));
+      lines.push('Bordure : ' + labelOf(cat.TRIM_STYLES, robe.trim));
+      lines.push('Texte à broder : ' + (emb.text || '—'));
+      lines.push('Logo université : ' + (emb.uniLogoName || '—'));
+      lines.push('Capuche : ' + labelOf(cat.HOOD_STYLES, hood.style) +
+        (hood.emb ? ' · broderie : ' + hood.emb : ''));
+      lines.push('Mortier : ' + labelOf(cat.CAP_STYLES, cap.style) +
+        ' / ' + labelOf(cat.CAP_MATERIALS, cap.material) +
+        (cap.emb ? ' · broderie : ' + cap.emb : ''));
+      lines.push('Gland : ' + labelOf(cat.TASSEL_STYLES, tassel.style) +
+        (tassel.year ? ' / ' + tassel.year : ''));
+      lines.push('— Mesures —');
+      cat.MEASUREMENTS.forEach((m) => {
+        lines.push('  ' + m.label + ' : ' + (measures[m.id] || '—') + ' ' + m.unit);
+      });
+    });
+
+    lines.push('', '— COULEURS —', 'À définir avec le client (voir note d’atelier).');
+    if (machine.length) {
+      lines.push('', '— FICHIERS MACHINE —',
+        machine.map((f) => '• ' + f.name).join('\n'));
+    }
+    lines.push('', '— NOTE ATELIER —', order.adminNote || '—');
+    return lines.join('\n');
   }
 
   function printSheet(order) {
@@ -713,34 +904,47 @@
 
   function exportCsv() {
     if (!orders.length) { toast('Aucune commande à exporter.'); return; }
-    const columns = ['Référence', 'Statut', 'Reçue le', 'Client', 'WhatsApp', 'E-mail', 'Région',
-      'Université', 'Soutenance', 'Robe', 'Capuche', 'Mortier', 'Gland', 'Fichiers', 'Note'];
+    /* Une ligne par tenue : une commande de trois tenues donne trois
+       lignes partageant la même référence et le même client, ce qui
+       reste exploitable dans un tableur. */
+    const columns = ['Référence', 'Statut', 'Origine', 'Reçue le', 'Tenue', 'Sur', 'Client', 'WhatsApp',
+      'E-mail', 'Région', 'Université', 'Soutenance', 'Robe', 'Broderie', 'Capuche', 'Mortier',
+      'Gland', 'Fichiers', 'Note'];
     const cell = (value) => '"' + String(value == null ? '' : value).replace(/"/g, '""') + '"';
 
-    const rows = orders.map((order) => {
-      const s = order.config || {};
-      const client = s.client || {};
-      const robe = s.robe || {};
-      const hood = s.hood || {};
-      const cap = s.cap || {};
-      const tassel = s.tassel || {};
-      return [
-        order.ref,
-        statusOf(order.status).label,
-        formatDateTime(order.createdAt),
-        client.name,
-        client.whatsapp,
-        client.email,
-        client.region,
-        client.university,
-        client.date,
-        labelOf(cat.SLEEVES, robe.sleeve) + ' / ' + labelOf(cat.COLLARS, robe.collar),
-        labelOf(cat.HOOD_STYLES, hood.style),
-        labelOf(cat.CAP_STYLES, cap.style) + ' / ' + labelOf(cat.CAP_MATERIALS, cap.material),
-        labelOf(cat.TASSEL_STYLES, tassel.style) + (tassel.year ? ' / ' + tassel.year : ''),
-        (s.files || []).map((f) => f.name).join(' | '),
-        order.adminNote,
-      ].map(cell).join(';');
+    const rows = [];
+    orders.forEach((order) => {
+      const client = clientOf(order);
+      const items = itemsOf(order);
+      const list = items.length ? items : [{}];
+      list.forEach((item, index) => {
+        const robe = item.robe || {};
+        const emb = robe.emb || {};
+        const hood = item.hood || {};
+        const cap = item.cap || {};
+        const tassel = item.tassel || {};
+        rows.push([
+          order.ref,
+          statusOf(order.status).label,
+          (order.config || {}).source === 'manual' ? 'Atelier' : 'Site',
+          formatDateTime(order.createdAt),
+          index + 1,
+          list.length,
+          client.name,
+          client.whatsapp,
+          client.email,
+          client.region,
+          client.university,
+          client.date,
+          labelOf(cat.SLEEVES, robe.sleeve) + ' / ' + labelOf(cat.COLLARS, robe.collar),
+          emb.text,
+          labelOf(cat.HOOD_STYLES, hood.style),
+          labelOf(cat.CAP_STYLES, cap.style) + ' / ' + labelOf(cat.CAP_MATERIALS, cap.material),
+          labelOf(cat.TASSEL_STYLES, tassel.style) + (tassel.year ? ' / ' + tassel.year : ''),
+          (item.files || []).map((f) => f.name).join(' | '),
+          order.adminNote,
+        ].map(cell).join(';'));
+      });
     });
 
     /* BOM UTF-8 : Excel reconnaît alors les accents. */
@@ -793,6 +997,221 @@
     modal.classList.remove('is-open');
     modal.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('is-locked');
+  }
+
+  /* ==========================================================
+     Nouvelle commande saisie à l'atelier
+
+     Les commandes arrivent parfois par téléphone : ce formulaire
+     produit exactement la même structure qu'une commande du site
+     (un client + N tenues), simplement marquée `source: 'manual'`.
+     Les mesures y sont facultatives — l'atelier les complète souvent
+     après un passage en boutique.
+     ========================================================== */
+
+  const CLIENT_FIELDS = [
+    { id: 'name', label: 'Nom & prénom *', placeholder: 'Ex : Salhi Wafa' },
+    { id: 'whatsapp', label: 'Numéro WhatsApp *', type: 'tel', placeholder: 'Ex : 22 123 456' },
+    { id: 'email', label: 'E-mail', type: 'email', placeholder: 'vous@exemple.tn' },
+    { id: 'region', label: 'Région *', kind: 'region' },
+    { id: 'university', label: 'Université / établissement', placeholder: 'Ex : Université de Tunis El Manar' },
+    { id: 'date', label: 'Date de soutenance *', type: 'date' },
+    { id: 'notes', label: 'Remarques', kind: 'textarea', placeholder: 'Précisions convenues au téléphone…' },
+  ];
+
+  let newItemSeq = 0;
+
+  function selectField(name, list, value) {
+    return '<select class="ad-input" data-new-item-field="' + name + '">' +
+      list.map((entry) => '<option value="' + esc(entry.id) + '"' +
+        (entry.id === value ? ' selected' : '') + '>' + esc(entry.label) + '</option>').join('') +
+      '</select>';
+  }
+
+  function newItemMarkup(index) {
+    const years = [];
+    const thisYear = new Date().getFullYear();
+    for (let y = thisYear; y <= thisYear + 3; y += 1) years.push(String(y));
+
+    return '<article class="ad-new__item" data-new-item="' + index + '">' +
+      '<header class="ad-new__itemHead">' +
+        '<h4>Tenue <span data-new-item-num>' + (index + 1) + '</span></h4>' +
+        '<button type="button" class="ad-new__remove" data-new-item-remove' +
+          ' aria-label="Retirer cette tenue">×</button>' +
+      '</header>' +
+
+      '<div class="ad-new__grid">' +
+        '<label class="ad-new__field ad-new__field--wide"><span>Texte à broder</span>' +
+          '<input class="ad-input" type="text" data-new-item-field="emb" maxlength="40"' +
+            ' placeholder="Ex : Dr Salhi Wafa"></label>' +
+        '<label class="ad-new__field"><span>Manches</span>' +
+          selectField('sleeve', cat.SLEEVES, 'cloche') + '</label>' +
+        '<label class="ad-new__field"><span>Col</span>' +
+          selectField('collar', cat.COLLARS, 'v') + '</label>' +
+        '<label class="ad-new__field"><span>Bordure</span>' +
+          selectField('trim', cat.TRIM_STYLES, 'double') + '</label>' +
+        '<label class="ad-new__field"><span>Capuche</span>' +
+          selectField('hood', cat.HOOD_STYLES, 'etole-droite') + '</label>' +
+        '<label class="ad-new__field"><span>Mortier</span>' +
+          selectField('cap', cat.CAP_STYLES, 'classique') + '</label>' +
+        '<label class="ad-new__field"><span>Matière du mortier</span>' +
+          selectField('capMaterial', cat.CAP_MATERIALS, 'gabardine') + '</label>' +
+        '<label class="ad-new__field"><span>Gland</span>' +
+          selectField('tassel', cat.TASSEL_STYLES, 'noeud') + '</label>' +
+        '<label class="ad-new__field"><span>Année de promotion</span>' +
+          '<select class="ad-input" data-new-item-field="year">' +
+            '<option value="">Aucune</option>' +
+            years.map((y) => '<option value="' + y + '">' + y + '</option>').join('') +
+          '</select></label>' +
+      '</div>' +
+
+      '<details class="ad-new__measures">' +
+        '<summary>Mesures (facultatives)</summary>' +
+        '<div class="ad-new__grid">' + cat.MEASUREMENTS.map((m) =>
+          '<label class="ad-new__field"><span>' + esc(m.label) + ' (' + m.unit + ')</span>' +
+            '<input class="ad-input" type="number" inputmode="decimal" step="0.5"' +
+              ' data-new-measure="' + m.id + '" placeholder="' + m.placeholder + '"' +
+              ' min="' + m.min + '" max="' + m.max + '"></label>').join('') +
+        '</div>' +
+      '</details>' +
+    '</article>';
+  }
+
+  function renumberNewItems() {
+    const items = document.querySelectorAll('[data-new-item]');
+    items.forEach((node, index) => {
+      node.querySelector('[data-new-item-num]').textContent = String(index + 1);
+      /* Une commande garde au moins une tenue. */
+      node.querySelector('[data-new-item-remove]').hidden = items.length === 1;
+    });
+  }
+
+  function addNewItem() {
+    newItemSeq += 1;
+    $('#adNewItems').insertAdjacentHTML('beforeend', newItemMarkup(newItemSeq - 1));
+    renumberNewItems();
+  }
+
+  function renderNewClient() {
+    $('#adNewClient').innerHTML = CLIENT_FIELDS.map((field) => {
+      const wide = field.kind === 'textarea' ? ' ad-new__field--wide' : '';
+      let control;
+      if (field.kind === 'region') {
+        control = '<select class="ad-input" data-new-client="region">' +
+          '<option value="">— Choisir un gouvernorat —</option>' +
+          cat.REGIONS.map((r) => '<option value="' + esc(r) + '">' + esc(r) + '</option>').join('') +
+          '</select>';
+      } else if (field.kind === 'textarea') {
+        control = '<textarea class="ad-input" rows="2" data-new-client="' + field.id + '"' +
+          ' placeholder="' + esc(field.placeholder || '') + '"></textarea>';
+      } else {
+        control = '<input class="ad-input" type="' + (field.type || 'text') + '"' +
+          ' data-new-client="' + field.id + '" placeholder="' + esc(field.placeholder || '') + '">';
+      }
+      return '<label class="ad-new__field' + wide + '"><span>' + esc(field.label) + '</span>' +
+        control + '</label>';
+    }).join('');
+  }
+
+  function openNewOrder() {
+    renderNewClient();
+    $('#adNewItems').innerHTML = '';
+    newItemSeq = 0;
+    addNewItem();
+    $('#adNewError').hidden = true;
+    const modal = $('#adNewModal');
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('is-locked');
+    const first = modal.querySelector('[data-new-client="name"]');
+    if (first) first.focus();
+  }
+
+  function closeNewOrder() {
+    const modal = $('#adNewModal');
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('is-locked');
+  }
+
+  /* Construit la commande à partir du formulaire, ou renvoie l'erreur
+     qui empêche de l'enregistrer. */
+  function collectNewOrder() {
+    const client = {};
+    CLIENT_FIELDS.forEach((field) => {
+      const node = document.querySelector('[data-new-client="' + field.id + '"]');
+      client[field.id] = node ? node.value.trim() : '';
+    });
+
+    if (client.name.length < 3) return { error: 'Indiquez le nom du client.' };
+    if (!client.whatsapp) return { error: 'Indiquez le numéro WhatsApp du client.' };
+    if (!client.region) return { error: 'Choisissez la région du client.' };
+    if (!client.date) return { error: 'Indiquez la date de soutenance.' };
+
+    const nodes = Array.from(document.querySelectorAll('[data-new-item]'));
+    if (!nodes.length) return { error: 'Ajoutez au moins une tenue.' };
+
+    const collected = nodes.map((node) => {
+      const field = (name) => {
+        const el = node.querySelector('[data-new-item-field="' + name + '"]');
+        return el ? el.value : '';
+      };
+      const measures = {};
+      cat.MEASUREMENTS.forEach((m) => {
+        const el = node.querySelector('[data-new-measure="' + m.id + '"]');
+        measures[m.id] = el ? el.value.trim() : '';
+      });
+      return {
+        id: 'it' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+        addedAt: new Date().toISOString(),
+        files: [],
+        robe: {
+          sleeve: field('sleeve'),
+          collar: field('collar'),
+          trim: field('trim'),
+          emb: { text: field('emb').trim(), uniLogo: null, uniLogoName: '' },
+        },
+        hood: { style: field('hood'), emb: '' },
+        cap: { style: field('cap'), material: field('capMaterial'), emb: '', logo: null, logoName: '' },
+        tassel: { style: field('tassel'), year: field('year') },
+        measures,
+      };
+    });
+
+    const stamp = new Date();
+    const ref = 'ENM-' + stamp.toISOString().slice(2, 10).replace(/-/g, '') + '-' +
+      Math.random().toString(36).slice(2, 6).toUpperCase();
+
+    return {
+      order: {
+        ref,
+        createdAt: stamp.toISOString(),
+        status: 'nouveau',
+        adminNote: '',
+        config: { source: 'manual', client, items: collected, machineFiles: [] },
+      },
+    };
+  }
+
+  function saveNewOrder() {
+    const result = collectNewOrder();
+    const errorNode = $('#adNewError');
+    if (result.error) {
+      errorNode.textContent = result.error;
+      errorNode.hidden = false;
+      return;
+    }
+    errorNode.hidden = true;
+
+    orders = [result.order].concat(orders);
+    if (!persist()) return;
+    selectedRef = result.order.ref;
+    closeNewOrder();
+    renderAll();
+    toast('Commande <em>' + esc(result.order.ref) + '</em> enregistrée.');
+    pushNewOrder(result.order).then((ok) => {
+      if (!ok) toast('Enregistrée localement — synchronisation en attente.');
+    });
   }
 
   /* ---------- Branchements ---------- */
@@ -856,15 +1275,23 @@
 
       const preview = event.target.closest('[data-preview]');
       if (preview) {
-        const file = (order.config.files || []).find((f) => f.id === preview.getAttribute('data-preview'));
+        const file = fileAt(order, preview.getAttribute('data-preview'));
         if (file) openModal(file.name, '<img src="' + esc(file.preview) + '" alt="' + esc(file.name) + '">');
         return;
       }
 
       const art = event.target.closest('[data-art]');
       if (art) {
-        const item = artworkOf(order, art.getAttribute('data-art'));
-        if (item) openModal(item.name, '<img src="' + esc(item.src) + '" alt="' + esc(item.name) + '">');
+        const entry = artworkAt(order, art.getAttribute('data-art'));
+        if (entry) openModal(entry.name, '<img src="' + esc(entry.src) + '" alt="' + esc(entry.name) + '">');
+        return;
+      }
+
+      const machineRemove = event.target.closest('[data-machine-remove]');
+      if (machineRemove) {
+        const id = machineRemove.getAttribute('data-machine-remove');
+        const kept = machineFilesOf(order).filter((f) => f.id !== id);
+        saveMachineFiles(order, kept, 'Fichier machine retiré.');
         return;
       }
 
@@ -907,6 +1334,35 @@
       }, 500);
     });
 
+    /* Dépôt d'un fichier machine — le panneau étant reconstruit à chaque
+       rendu, l'écoute se fait par délégation. */
+    $('#adDetail').addEventListener('change', (event) => {
+      if (event.target.id !== 'adMachineInput') return;
+      const order = orders.find((o) => o.ref === selectedRef);
+      if (!order || !event.target.files || !event.target.files.length) return;
+      addMachineFiles(order, event.target.files);
+      event.target.value = '';
+    });
+
+    /* Nouvelle commande saisie à l'atelier */
+    $('#adNew').addEventListener('click', openNewOrder);
+    $('#adNewAddItem').addEventListener('click', addNewItem);
+    $('#adNewForm').addEventListener('submit', (event) => {
+      event.preventDefault();
+      saveNewOrder();
+    });
+    $('#adNewItems').addEventListener('click', (event) => {
+      if (!event.target.closest('[data-new-item-remove]')) return;
+      const node = event.target.closest('[data-new-item]');
+      if (node && document.querySelectorAll('[data-new-item]').length > 1) {
+        node.remove();
+        renumberNewItems();
+      }
+    });
+    $('#adNewModal').addEventListener('click', (event) => {
+      if (event.target.closest('[data-new-close]')) closeNewOrder();
+    });
+
     $('#adRefresh').addEventListener('click', () => syncFromCloud(true));
     $('#adSyncRetry').addEventListener('click', () => syncFromCloud(true));
     $('#adExport').addEventListener('click', exportJson);
@@ -926,7 +1382,9 @@
       if (event.target.closest('[data-ad-close]')) closeModal();
     });
     document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && $('#adModal').classList.contains('is-open')) closeModal();
+      if (event.key !== 'Escape') return;
+      if ($('#adModal').classList.contains('is-open')) closeModal();
+      else if ($('#adNewModal').classList.contains('is-open')) closeNewOrder();
     });
 
     /* Deux onglets ouverts : la liste reste synchronisée. */

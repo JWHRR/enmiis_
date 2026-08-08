@@ -732,3 +732,205 @@
   .ad-main { display: block; padding: 0; }
   .ad-detail { border: 0; padding: 0; }
 }
+
+/* ============================================================
+   TENUES D'UNE COMMANDE
+   Une commande peut en porter plusieurs : chacune est présentée
+   dans son propre bloc, numérotée « Tenue n sur N ».
+   ============================================================ */
+.ad-item {
+  margin-top: 1.5rem;
+  padding: 1.1rem 1.2rem 1.3rem;
+  background: var(--off-white);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--gold);
+  border-radius: 14px;
+}
+.ad-item__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding-bottom: 0.6rem;
+  margin-bottom: 0.9rem;
+  border-bottom: 1px solid var(--line);
+}
+.ad-item__title {
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+.ad-item__tag {
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+  padding: 0.2rem 0.6rem;
+  background: rgba(200, 168, 107, 0.14);
+  border-radius: 999px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ad-item__sub {
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 1.1rem 0 0.6rem;
+}
+.ad-item__sub:first-of-type { margin-top: 0; }
+.ad-item .ad-measures { margin-top: 0; }
+
+.ad-card__items { color: var(--gold-deep); font-weight: 500; }
+.ad-head__origin {
+  font-style: normal;
+  color: var(--ink-faint);
+  letter-spacing: 0.08em;
+}
+
+/* ---------- Fichiers machine ---------- */
+.ad-machine__drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  margin-top: 0.9rem;
+  padding: 1.1rem;
+  text-align: center;
+  cursor: pointer;
+  border: 1px dashed rgba(17, 17, 17, 0.22);
+  border-radius: 12px;
+  background: var(--off-white);
+  transition: border-color 0.3s var(--ease-lux), background 0.3s var(--ease-lux);
+}
+.ad-machine__drop:hover { border-color: var(--gold); background: rgba(200, 168, 107, 0.07); }
+.ad-machine__drop svg { width: 22px; height: 22px; fill: none; stroke: var(--ink-faint); stroke-width: 1.5; }
+.ad-machine__drop span { font-size: var(--fs-small); font-weight: 500; }
+.ad-machine__drop small { font-size: 0.6875rem; color: var(--ink-faint); letter-spacing: 0.06em; }
+.ad-file__btn--danger:hover { background: #B4342F; border-color: #B4342F; color: var(--white); }
+
+/* ============================================================
+   NOUVELLE COMMANDE (saisie atelier)
+   ============================================================ */
+.ad-topbar__new { font-size: 0.625rem; letter-spacing: 0.14em; padding: 0.7em 1.4em; }
+
+.ad-modal--wide .ad-modal__panel { width: min(880px, 100%); }
+
+.ad-new__intro {
+  font-size: var(--fs-small);
+  color: var(--ink-soft);
+  line-height: 1.6;
+  margin: -0.5rem 0 1.5rem;
+}
+.ad-new__section { margin-bottom: 1.75rem; }
+.ad-new__legend {
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.9rem;
+  border-bottom: 1px solid var(--line);
+}
+.ad-new__itemsHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.ad-new__itemsHead .ad-new__legend { flex: 1; }
+.ad-new__add { font-size: 0.625rem; letter-spacing: 0.14em; text-transform: uppercase; white-space: nowrap; }
+
+.ad-new__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 0.75rem;
+}
+.ad-new__field { display: grid; gap: 0.3rem; min-width: 0; }
+.ad-new__field--wide { grid-column: 1 / -1; }
+.ad-new__field > span {
+  font-size: var(--fs-label);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.ad-input {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  font-family: var(--sans);
+  font-size: 0.9375rem;
+  color: var(--ink);
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  transition: border-color 0.3s var(--ease-lux), box-shadow 0.3s var(--ease-lux);
+}
+.ad-input:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(200, 168, 107, 0.16);
+}
+textarea.ad-input { resize: vertical; line-height: 1.6; }
+select.ad-input {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23555' stroke-width='1.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+  background-size: 15px;
+  padding-right: 2.2rem;
+}
+
+.ad-new__item {
+  position: relative;
+  margin-top: 0.9rem;
+  padding: 1rem;
+  background: var(--off-white);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--gold);
+  border-radius: 12px;
+}
+.ad-new__itemHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.8rem;
+}
+.ad-new__itemHead h4 { font-family: var(--serif); font-size: 1.05rem; font-weight: 500; }
+.ad-new__remove {
+  width: 28px; height: 28px;
+  display: grid;
+  place-items: center;
+  font-size: 1.2rem;
+  line-height: 1;
+  border-radius: 50%;
+  color: var(--ink-faint);
+  transition: background 0.3s var(--ease-lux), color 0.3s var(--ease-lux);
+}
+.ad-new__remove:hover { background: rgba(180, 52, 47, 0.1); color: #B4342F; }
+
+.ad-new__measures { margin-top: 0.9rem; }
+.ad-new__measures summary {
+  cursor: pointer;
+  font-size: var(--fs-small);
+  color: var(--gold-deep);
+  padding: 0.4rem 0;
+}
+.ad-new__measures[open] summary { margin-bottom: 0.6rem; }
+
+.ad-new__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+}

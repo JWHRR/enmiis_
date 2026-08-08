@@ -562,18 +562,7 @@
           '</dl>' +
         '</section>').join('');
 
-      const inputRow = (id, label, attrs) => {
-        const a = attrs || {};
-        return '<div class="cz-field">' +
-          '<label class="cz-field__label" for="cz_' + id + '">' + esc(label) + '</label>' +
-          '<input class="cz-input" id="cz_' + id + '" type="' + (a.type || 'text') + '"' +
-          ' data-client="' + id + '" value="' + esc(store.at('client.' + id)) + '"' +
-          (a.placeholder ? ' placeholder="' + esc(a.placeholder) + '"' : '') +
-          (a.autocomplete ? ' autocomplete="' + a.autocomplete + '"' : '') +
-          (a.min ? ' min="' + a.min + '"' : '') + '>' +
-          '<p class="cz-error" data-client-error="' + id + '" hidden></p></div>';
-      };
-
+      const count = store.cartCount();
       return '<section class="cz-recap">' +
           '<header class="cz-recap__head"><h3>Vos fichiers</h3>' +
           '<button type="button" class="btn btn--line cz-recap__edit" data-goto="upload">Modifier</button>' +
@@ -581,82 +570,20 @@
         '</section>' + sections +
         '<p class="cz-help cz-help--workshop">Les couleurs de chaque pièce sont arrêtées avec vous par ' +
         'l’atelier avant la mise en fabrication.</p>' +
-        '<section class="cz-recap">' +
-          '<header class="cz-recap__head"><h3>Vos coordonnées</h3></header>' +
-          '<div class="cz-form">' +
-            inputRow('name', 'Nom & prénom *', { placeholder: 'Ex : Salhi Wafa', autocomplete: 'name' }) +
-            inputRow('whatsapp', 'Numéro WhatsApp *', { type: 'tel', placeholder: 'Ex : 22 123 456', autocomplete: 'tel' }) +
-            inputRow('email', 'E-mail (optionnel)', { type: 'email', placeholder: 'vous@exemple.tn', autocomplete: 'email' }) +
-            '<div class="cz-field"><label class="cz-field__label" for="cz_region">Région *</label>' +
-              '<select class="cz-input" id="cz_region" data-client="region">' +
-              '<option value="">— Choisir un gouvernorat —</option>' +
-              cat.REGIONS.map((r) => '<option value="' + esc(r) + '"' +
-                (store.at('client.region') === r ? ' selected' : '') + '>' + esc(r) + '</option>').join('') +
-              '</select><p class="cz-error" data-client-error="region" hidden></p></div>' +
-            inputRow('university', 'Université / établissement', { placeholder: 'Ex : Université de Tunis El Manar' }) +
-            inputRow('date', 'Date de soutenance *', { type: 'date', min: new Date().toISOString().slice(0, 10) }) +
-            '<div class="cz-field cz-field--wide"><label class="cz-field__label" for="cz_notes">Remarques</label>' +
-              '<textarea class="cz-input" id="cz_notes" data-client="notes" rows="3"' +
-              ' placeholder="Couleurs souhaitées, contraintes de délai, précisions de broderie…">' +
-              esc(store.at('client.notes')) + '</textarea></div>' +
-          '</div>' +
-        '</section>';
-    },
-  };
-
-  /* ==========================================================
-     Étape 8 — Envoi
-     ========================================================== */
-  const submit = {
-    html() {
-      const done = store.at('submitted');
-      if (done) return submit.success(done);
-      return '<div class="cz-send">' +
-        '<div class="cz-send__seal"><svg viewBox="0 0 48 48" aria-hidden="true">' +
-          '<circle cx="24" cy="24" r="20"/><polyline points="15 24 21 30 33 18"/></svg></div>' +
-        '<h3 class="cz-send__title">Votre dossier de fabrication est complet</h3>' +
-        '<p class="cz-send__text">En confirmant, votre configuration, vos fichiers et vos mesures sont ' +
-        'transmis à l’atelier ENMIIS et apparaissent immédiatement dans l’espace de gestion des commandes.</p>' +
-        '<ul class="cz-send__checks">' +
-          '<li>' + store.get().files.length + ' fichier(s) de production</li>' +
-          '<li>Robe, capuche, mortier et gland configurés</li>' +
-          '<li>9 mesures validées</li>' +
-        '</ul>' +
-        '<button type="button" class="btn btn--solid cz-send__cta" id="czSubmit">Envoyer ma demande</button>' +
-        '<p class="cz-send__note">Réponse de l’atelier sous 24 h ouvrées sur WhatsApp.</p>' +
-      '</div>';
-    },
-
-    success(done) {
-      /* La commande est toujours enregistrée sur l'appareil du client ;
-         `synced` indique en plus si elle a atteint l'espace atelier
-         (réseau coupé ou stockage cloud pas encore activé sinon —
-         un nouvel essai automatique aura lieu à la prochaine ouverture). */
-      const offline = done.synced === false;
-      return '<div class="cz-done">' +
-        '<div class="cz-done__burst"><svg viewBox="0 0 64 64" aria-hidden="true">' +
-          '<circle class="cz-done__ring" cx="32" cy="32" r="26"/>' +
-          '<polyline class="cz-done__tick" points="20 33 28 41 44 23"/></svg></div>' +
-        '<p class="cz-done__label">Demande enregistrée</p>' +
-        '<h3 class="cz-done__title">Merci — votre commande est entre nos mains</h3>' +
-        '<p class="cz-done__ref">Référence <strong>' + esc(done.ref) + '</strong></p>' +
-        '<p class="cz-done__text">Conservez cette référence : elle identifie votre dossier auprès de l’atelier. ' +
-        'Notre équipe confirme les mesures, la broderie et les couleurs avant lancement de la fabrication.</p>' +
-        (offline
-          ? '<p class="cz-help cz-help--workshop">La connexion à l’atelier n’a pas pu être confirmée immédiatement. ' +
-            'Votre demande est enregistrée sur cet appareil et sera transmise automatiquement dès que possible — ' +
-            'par sécurité, envoyez aussi votre référence par WhatsApp.</p>'
-          : '') +
-        '<div class="cz-done__actions">' +
-          '<button type="button" class="btn btn--solid" id="czPdf">Télécharger le récapitulatif</button>' +
-          '<button type="button" class="btn btn--line" id="czRestart">Configurer une autre tenue</button>' +
-        '</div>' +
-      '</div>';
+        '<div class="cz-tocart">' +
+          '<button type="button" class="btn btn--solid cz-tocart__cta" id="czAddToCart">' +
+            'Ajouter cette tenue au panier</button>' +
+          '<p class="cz-tocart__note">' + (count
+            ? 'Votre panier contient déjà ' + count + ' tenue' + (count > 1 ? 's' : '') +
+              '. Vous renseignerez vos coordonnées une seule fois, au panier.'
+            : 'Vous pourrez ensuite ajouter une autre tenue ou passer commande. ' +
+              'Vos coordonnées sont demandées une seule fois, au panier.') + '</p>' +
+        '</div>';
     },
   };
 
   CZ.steps = {
-    esc, FIGURES,
-    upload, robe, hood, cap, tassel, measure, review, submit,
+    esc, kb, FIGURES,
+    upload, robe, hood, cap, tassel, measure, review,
   };
 })(window);

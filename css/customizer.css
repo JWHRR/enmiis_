@@ -1072,6 +1072,25 @@ select.cz-input {
 }
 .cz-nav__next { flex: none; }
 
+/* ---------- Ajout au panier (dernière étape) ---------- */
+.cz-tocart {
+  margin-top: 1.5rem;
+  padding: clamp(1.25rem, 4vw, 1.75rem);
+  text-align: center;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(200, 168, 107, 0.45);
+  border-radius: 18px;
+  box-shadow: 0 16px 36px -26px rgba(17, 17, 17, 0.45);
+}
+.cz-tocart__cta { display: block; width: 100%; max-width: 360px; margin-inline: auto; }
+.cz-tocart__note {
+  font-size: var(--fs-small);
+  color: var(--ink-soft);
+  line-height: 1.65;
+  max-width: 46ch;
+  margin: 0.9rem auto 0;
+}
+
 /* ============================================================
    MODALES
    ============================================================ */

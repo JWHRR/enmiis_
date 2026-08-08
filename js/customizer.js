@@ -1,7 +1,7 @@
 /* ============================================================
    ENMIIS — Configurateur : contrôleur de l’assistant.
-   Navigation entre les huit étapes, branchement des écrans,
-   téléversement des fichiers, guides de mesure et envoi.
+   Navigation entre les étapes, branchement des écrans,
+   téléversement des fichiers, guides de mesure et ajout au panier.
    ============================================================ */
 (function (global) {
   'use strict';
@@ -35,7 +35,6 @@
     tassel: () => steps.tassel.html(),
     measure: () => steps.measure.html(),
     review: () => steps.review.html(),
-    submit: () => steps.submit.html(),
   };
 
   /* Sur téléphone, l'aperçu n'est montré qu'aux deux étapes où il sert
@@ -43,7 +42,7 @@
      figeait la majeure partie de l'écran et hachait le défilement.
      Cette liste est l'unique référence : le CSS se contente de lire
      l'attribut posé ci-dessous (voir le bloc « max-width: 1023px »). */
-  const PREVIEW_STEPS = ['upload', 'submit'];
+  const PREVIEW_STEPS = ['upload', 'review'];
   const showsPreview = (stepId) => PREVIEW_STEPS.indexOf(stepId) > -1;
 
   function renderScreen() {
@@ -97,9 +96,9 @@
     const prev = $('#czPrev');
     const next = $('#czNext');
     prev.disabled = current === 0;
-    /* La dernière étape porte sa propre action de confirmation. */
-    next.hidden = def.id === 'submit';
-    next.textContent = def.id === 'review' ? 'Valider et envoyer' : 'Continuer';
+    /* La dernière étape porte son propre bouton « Ajouter au panier ». */
+    next.hidden = def.id === 'review';
+    next.textContent = 'Continuer';
   }
 
   /* ----------------------------------------------------------
@@ -168,19 +167,6 @@
       });
       const node = first && screensRoot.querySelector('[data-measure-input="' + first + '"]');
       if (node) { node.focus(); node.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-    }
-    if (def.id === 'review') {
-      const errors = store.clientErrors();
-      let first = null;
-      Object.keys(store.DEFAULTS.client).forEach((key) => {
-        const node = screensRoot.querySelector('[data-client-error="' + key + '"]');
-        if (!node) return;
-        node.textContent = errors[key] || '';
-        node.hidden = !errors[key];
-        if (errors[key] && !first) first = key;
-      });
-      const input = first && screensRoot.querySelector('[data-client="' + first + '"]');
-      if (input) { input.focus(); input.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
     }
   }
 
@@ -569,145 +555,28 @@
   function bindReview(screen) {
     screen.addEventListener('click', (event) => {
       const goto = event.target.closest('[data-goto]');
-      if (goto) goToId(goto.getAttribute('data-goto'));
-    });
-    /* L’erreur d’un champ n’apparaît qu’une fois celui-ci renseigné puis
-       invalidé — jamais tant qu’il est simplement vide et intouché. */
-    const showFieldError = (key, value) => {
-      const errorNode = screen.querySelector('[data-client-error="' + key + '"]');
-      if (!errorNode) return;
-      const message = store.clientErrors()[key];
-      const visible = Boolean(message) && String(value).trim() !== '';
-      errorNode.textContent = message || '';
-      errorNode.hidden = !visible;
-    };
+      if (goto) { goToId(goto.getAttribute('data-goto')); return; }
 
-    screen.addEventListener('input', (event) => {
-      const input = event.target.closest('input[data-client], textarea[data-client]');
-      if (!input) return;
-      const key = input.getAttribute('data-client');
-      store.type('client.' + key, input.value);
-      showFieldError(key, input.value);
-      syncUndo();
-    });
+      if (event.target.closest('#czAddToCart')) {
+        /* Toutes les étapes doivent être complètes avant l'ajout. */
+        const blocking = cat.STEPS
+          .filter((def) => def.id !== 'review')
+          .map((def) => ({ id: def.id, errors: store.stepErrors(def.id) }))
+          .find((entry) => entry.errors.length);
+        if (blocking) { toast(blocking.errors[0]); goToId(blocking.id); return; }
 
-    screen.addEventListener('change', (event) => {
-      const select = event.target.closest('select[data-client]');
-      if (!select) return;
-      const key = select.getAttribute('data-client');
-      store.set('client.' + key, select.value);
-      showFieldError(key, select.value);
-    });
-  }
-
-  function summaryText(order) {
-    const s = order.config;
-    const label = (list, id) => (cat.find(list, id) || {}).label || '—';
-    const lines = [
-      'ENMIIS — Dossier de fabrication',
-      'Référence : ' + order.ref,
-      'Date : ' + new Date(order.createdAt).toLocaleString('fr-FR'),
-      '',
-      '— CLIENT —',
-      'Nom : ' + s.client.name,
-      'WhatsApp : ' + s.client.whatsapp,
-      'E-mail : ' + (s.client.email || '—'),
-      'Région : ' + s.client.region,
-      'Université : ' + (s.client.university || '—'),
-      'Soutenance : ' + s.client.date,
-      'Remarques : ' + (s.client.notes || '—'),
-      '',
-      '— FICHIERS —',
-      s.files.length ? s.files.map((f) => '• ' + f.name + ' (' + f.label + ')').join('\n') : '—',
-      '',
-      '— ROBE —',
-      'Manches : ' + label(cat.SLEEVES, s.robe.sleeve),
-      'Col : ' + label(cat.COLLARS, s.robe.collar),
-      'Bordure : ' + label(cat.TRIM_STYLES, s.robe.trim),
-      'Texte à broder : ' + (s.robe.emb.text.trim() || '—'),
-      'Logo université : ' + (s.robe.emb.uniLogoName || '—'),
-      '',
-      '— CAPUCHE —',
-      'Modèle : ' + label(cat.HOOD_STYLES, s.hood.style),
-      'Broderie : ' + (s.hood.emb || '—'),
-      '',
-      '— MORTIER —',
-      'Forme : ' + label(cat.CAP_STYLES, s.cap.style),
-      'Matière : ' + label(cat.CAP_MATERIALS, s.cap.material),
-      'Broderie : ' + (s.cap.emb || '—'),
-      '',
-      '— GLAND —',
-      'Style : ' + label(cat.TASSEL_STYLES, s.tassel.style),
-      'Année : ' + (s.tassel.year || '—'),
-      '',
-      'Couleurs : à définir avec l’atelier à la confirmation.',
-      '',
-      '— MESURES —',
-      cat.MEASUREMENTS.map((m) => m.label + ' : ' + s.measures[m.id] + ' ' + m.unit).join('\n'),
-    ];
-    return lines.join('\n');
-  }
-
-  /* Récapitulatif imprimable : la boîte d’impression du navigateur
-     permet l’enregistrement en PDF. */
-  function downloadSummary(order) {
-    const win = global.open('', '_blank');
-    if (!win) { toast('Autorisez les fenêtres pour générer le PDF.'); return; }
-    win.document.write(
-      '<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">' +
-      '<title>ENMIIS — ' + esc(order.ref) + '</title><style>' +
-      'body{font-family:Inter,Arial,sans-serif;color:#111;margin:40px;line-height:1.6;font-size:13px}' +
-      'h1{font-family:Georgia,serif;font-size:24px;letter-spacing:.04em;margin:0 0 4px}' +
-      'p.sub{color:#8A8A8A;margin:0 0 28px;font-size:12px;letter-spacing:.14em;text-transform:uppercase}' +
-      'pre{white-space:pre-wrap;font-family:inherit;font-size:13px;border-top:1px solid #EAEAEA;padding-top:20px}' +
-      '</style></head><body><h1>ENMIIS</h1>' +
-      '<p class="sub">Dossier de fabrication · ' + esc(order.ref) + '</p>' +
-      '<pre>' + esc(summaryText(order)) + '</pre></body></html>');
-    win.document.close();
-    win.focus();
-    win.print();
-  }
-
-  function bindSubmit(screen) {
-    const send = screen.querySelector('#czSubmit');
-    if (send) {
-      send.addEventListener('click', async () => {
-        const errors = store.stepErrors('review');
-        if (errors.length) { toast(errors[0]); goToId('review'); return; }
-        send.disabled = true;
-        send.textContent = 'Envoi en cours…';
         try {
-          const order = await store.submit();
-          renderScreen();
-          toast(order.synced
-            ? 'Demande <em>' + esc(order.ref) + '</em> envoyée à l’atelier.'
-            : 'Demande <em>' + esc(order.ref) + '</em> enregistrée — synchronisation en attente.');
+          store.addToCart();
         } catch (err) {
-          send.disabled = false;
-          send.textContent = 'Envoyer ma demande';
-          toast('Envoi impossible — stockage du navigateur saturé.');
+          toast('Ajout impossible — stockage du navigateur saturé.');
+          return;
         }
-      });
-    }
-
-    const pdf = screen.querySelector('#czPdf');
-    if (pdf) {
-      pdf.addEventListener('click', () => {
-        const ref = store.at('submitted').ref;
-        const order = store.readOrders().find((o) => o.ref === ref);
-        if (order) downloadSummary(order);
-      });
-    }
-
-    const restart = screen.querySelector('#czRestart');
-    if (restart) {
-      restart.addEventListener('click', () => {
+        /* La tenue est au panier : le configurateur repart à neuf pour
+           permettre d'en composer une autre. */
         store.reset();
-        current = 0;
-        renderScreen();
-        toast('Nouvelle configuration.');
-      });
-    }
+        global.location.href = 'panier.html';
+      }
+    });
   }
 
   /* ----------------------------------------------------------
@@ -820,7 +689,6 @@
     if (id === 'robe' || id === 'cap') bindLogos(screen);
     if (id === 'measure') bindMeasure(screen);
     if (id === 'review') bindReview(screen);
-    if (id === 'submit') bindSubmit(screen);
   }
 
   async function loadPresetDataUrl(src) {
@@ -925,8 +793,6 @@
     } catch (e) {}
 
     current = Math.min(store.at('step') || 0, cat.STEPS.length - 1);
-    /* Une configuration déjà envoyée repart de la première étape. */
-    if (stepAt(current).id === 'submit' && !store.at('submitted')) current = 0;
     renderScreen();
   }
 

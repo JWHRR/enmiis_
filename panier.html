@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Votre Panier | ENMIIS</title>
+  <meta name="description" content="Votre panier ENMIIS : vérifiez vos tenues de soutenance, renseignez vos coordonnées et envoyez votre commande à l’atelier.">
+  <meta name="theme-color" content="#FFFFFF">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/customizer.css">
+  <link rel="stylesheet" href="css/panier.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23111111'/%3E%3Ctext x='16' y='22' font-family='Georgia' font-size='18' fill='%23C8A86B' text-anchor='middle'%3EE%3C/text%3E%3C/svg%3E">
+</head>
+<body class="cz-body pn-body">
+
+  <a class="skip-link" href="#pnMain">Aller au panier</a>
+
+  <!-- ======================= TOPBAR ======================= -->
+  <header class="cz-topbar">
+    <a class="cz-topbar__back" href="customizer.html">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 5 8 12 15 19"/></svg>
+      <span>Configurateur</span>
+    </a>
+    <a class="cz-topbar__logo" href="index.html" aria-label="Accueil ENMIIS">
+      <img src="img/logo-enmiis.png" alt="ENMIIS">
+    </a>
+    <div class="cz-topbar__actions">
+      <span class="pn-count" id="pnCount" aria-live="polite"></span>
+    </div>
+  </header>
+
+  <main class="pn-main" id="pnMain">
+
+    <header class="pn-head">
+      <p class="pn-head__label">Votre commande</p>
+      <h1 class="pn-head__title">Panier</h1>
+      <p class="pn-head__sub" id="pnSub"></p>
+      <p class="pn-expiry" id="pnExpiry" hidden></p>
+    </header>
+
+    <!-- ======================= PANIER VIDE ======================= -->
+    <section class="pn-empty" id="pnEmpty" hidden>
+      <div class="pn-empty__art">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <path d="M10 16h6l6 28h26l6-20H20"/><circle cx="26" cy="52" r="3"/><circle cx="44" cy="52" r="3"/>
+        </svg>
+      </div>
+      <h2 class="pn-empty__title">Votre panier est vide</h2>
+      <p class="pn-empty__text">Composez votre tenue de soutenance dans le configurateur : elle viendra
+        se ranger ici, et vous pourrez en ajouter plusieurs avant de commander.</p>
+      <a class="btn btn--solid" href="customizer.html">Composer ma tenue</a>
+    </section>
+
+    <!-- ======================= CONTENU ======================= -->
+    <div class="pn-layout" id="pnLayout" hidden>
+
+      <section class="pn-items" aria-label="Tenues du panier">
+        <ul id="pnList"></ul>
+        <a class="pn-add" href="customizer.html">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Ajouter une autre tenue
+        </a>
+      </section>
+
+      <section class="pn-checkout" aria-label="Vos coordonnées">
+        <div class="cz-group">
+          <h2 class="pn-checkout__title">Vos coordonnées</h2>
+          <p class="pn-checkout__note">Renseignées une seule fois — elles valent pour toutes les tenues
+            de ce panier.</p>
+
+          <div class="cz-form" id="pnForm">
+            <div class="cz-field">
+              <label class="cz-field__label" for="pn_name">Nom &amp; prénom *</label>
+              <input class="cz-input" id="pn_name" type="text" data-client="name"
+                     placeholder="Ex : Salhi Wafa" autocomplete="name">
+              <p class="cz-error" data-client-error="name" hidden></p>
+            </div>
+            <div class="cz-field">
+              <label class="cz-field__label" for="pn_whatsapp">Numéro WhatsApp *</label>
+              <input class="cz-input" id="pn_whatsapp" type="tel" data-client="whatsapp"
+                     placeholder="Ex : 22 123 456" autocomplete="tel">
+              <p class="cz-error" data-client-error="whatsapp" hidden></p>
+            </div>
+            <div class="cz-field">
+              <label class="cz-field__label" for="pn_email">E-mail (optionnel)</label>
+              <input class="cz-input" id="pn_email" type="email" data-client="email"
+                     placeholder="vous@exemple.tn" autocomplete="email">
+              <p class="cz-error" data-client-error="email" hidden></p>
+            </div>
+            <div class="cz-field">
+              <label class="cz-field__label" for="pn_region">Région *</label>
+              <select class="cz-input" id="pn_region" data-client="region"></select>
+              <p class="cz-error" data-client-error="region" hidden></p>
+            </div>
+            <div class="cz-field">
+              <label class="cz-field__label" for="pn_university">Université / établissement</label>
+              <input class="cz-input" id="pn_university" type="text" data-client="university"
+                     placeholder="Ex : Université de Tunis El Manar">
+            </div>
+            <div class="cz-field">
+              <label class="cz-field__label" for="pn_date">Date de soutenance *</label>
+              <input class="cz-input" id="pn_date" type="date" data-client="date">
+              <p class="cz-error" data-client-error="date" hidden></p>
+            </div>
+            <div class="cz-field cz-field--wide">
+              <label class="cz-field__label" for="pn_notes">Remarques</label>
+              <textarea class="cz-input" id="pn_notes" data-client="notes" rows="3"
+                        placeholder="Couleurs souhaitées, contraintes de délai, précisions de broderie…"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="pn-summary">
+          <div class="pn-summary__row">
+            <span>Tenues</span><strong id="pnSummaryCount">0</strong>
+          </div>
+          <p class="pn-summary__note">Le devis est confirmé par l’atelier après vérification des mesures
+            et de la broderie.</p>
+          <button type="button" class="btn btn--solid pn-submit" id="pnSubmit">Envoyer ma commande</button>
+          <p class="cz-error" id="pnFormError" hidden></p>
+        </div>
+      </section>
+    </div>
+
+    <!-- ======================= CONFIRMATION ======================= -->
+    <section class="pn-done" id="pnDone" hidden>
+      <div class="cz-done__burst">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <circle class="cz-done__ring" cx="32" cy="32" r="26"/>
+          <polyline class="cz-done__tick" points="20 33 28 41 44 23"/>
+        </svg>
+      </div>
+      <p class="cz-done__label">Commande enregistrée</p>
+      <h2 class="cz-done__title">Merci — votre commande est entre nos mains</h2>
+      <p class="cz-done__ref">Référence <strong id="pnDoneRef"></strong></p>
+      <p class="cz-done__text" id="pnDoneText"></p>
+      <p class="cz-help cz-help--workshop" id="pnDoneOffline" hidden>La connexion à l’atelier n’a pas pu être
+        confirmée immédiatement. Votre commande est enregistrée sur cet appareil et sera transmise dès que
+        possible — par sécurité, envoyez aussi votre référence par WhatsApp.</p>
+      <div class="cz-done__actions">
+        <button type="button" class="btn btn--solid" id="pnPdf">Télécharger le récapitulatif</button>
+        <a class="btn btn--line" href="customizer.html">Composer une autre tenue</a>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/main.js" defer></script>
+  <script src="js/cz-catalog.js" defer></script>
+  <script src="js/cz-store.js" defer></script>
+  <script src="js/panier.js" defer></script>
+</body>
+</html>

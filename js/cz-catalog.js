@@ -234,8 +234,10 @@
     { id: 'cap',     title: 'Le Mortier',     phase: 'Tenue',      sub: 'Forme du plateau, matière, broderie et logo.' },
     { id: 'tassel',  title: 'Le Gland',       phase: 'Tenue',      sub: 'Style du gland et année de promotion.' },
     { id: 'measure', title: 'Vos Mesures',    phase: 'Atelier',    sub: 'Chaque mesure est accompagnée de son guide.' },
-    { id: 'review',  title: 'Récapitulatif',  phase: 'Validation', sub: 'Vérifiez et corrigez avant l’envoi.' },
-    { id: 'submit',  title: 'Envoi',          phase: 'Validation', sub: 'Votre dossier de fabrication est prêt.' },
+    /* Dernière étape du configurateur : la tenue rejoint le panier.
+       Les coordonnées et l'envoi de la commande se font au panier,
+       une seule fois pour toutes les tenues. */
+    { id: 'review',  title: 'Votre tenue',    phase: 'Validation', sub: 'Vérifiez, puis ajoutez cette tenue au panier.' },
   ];
 
   const REGIONS = ['Ariana', 'Béja', 'Ben Arous', 'Bizerte', 'Gabès', 'Gafsa', 'Jendouba',

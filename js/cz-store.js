@@ -9,7 +9,14 @@
   const CZ = global.CZ || (global.CZ = {});
   const STATE_KEY = 'enmiis-configurator-v3';
   const ORDERS_KEY = 'enmiis-orders-v1';
+  const CART_KEY = 'enmiis-cart-v1';
   const MAX_HISTORY = 80;
+
+  /* Le client n'a pas de compte : son panier vit dans son navigateur et
+     expire au bout de 24 h, comme une session. Passé ce délai il est
+     vidé au premier accès plutôt que de ressusciter une commande
+     oubliée depuis des jours. */
+  const CART_TTL_MS = 24 * 60 * 60 * 1000;
 
   /* API partagée (voir api/orders.js) : chemin relatif, car le
      configurateur et l'espace atelier vivent sur le même domaine
@@ -41,8 +48,11 @@
       height: '', weight: '', head: '', chest: '', waist: '',
       hip: '', shoulder: '', sleeve: '', gown: '',
     },
-    client: { name: '', whatsapp: '', email: '', region: '', university: '', date: '', notes: '' },
-    submitted: null,
+  };
+
+  /* Coordonnées et articles : renseignés au panier, pas dans la tenue. */
+  const EMPTY_CLIENT = {
+    name: '', whatsapp: '', email: '', region: '', university: '', date: '', notes: '',
   };
 
   const clone = (value) => JSON.parse(JSON.stringify(value));
@@ -96,7 +106,6 @@
       mergeInto(merged, parsed);
       /* Les fichiers restaurés n’ont plus leur contenu : on repart à vide. */
       merged.files = [];
-      merged.submitted = null;
       state = merged;
     } catch (err) {
       state = clone(DEFAULTS);
@@ -211,8 +220,9 @@
     return '';
   }
 
-  function clientErrors() {
-    const c = state.client;
+  /* Valide les coordonnées du panier (le configurateur ne les porte plus). */
+  function clientErrors(client) {
+    const c = Object.assign({}, EMPTY_CLIENT, client || {});
     const errors = {};
     if (!c.name.trim() || c.name.trim().length < 3) errors.name = 'Indiquez votre nom complet.';
     if (!validPhone(c.whatsapp)) errors.whatsapp = 'Numéro tunisien attendu (8 chiffres).';
@@ -242,10 +252,6 @@
         .map((field) => field.label);
       return missing.length ? ['Mesures à compléter : ' + missing.join(', ') + '.'] : [];
     }
-    if (stepId === 'review') {
-      const errors = clientErrors();
-      return Object.keys(errors).length ? ['Complétez vos coordonnées avant l’envoi.'] : [];
-    }
     return [];
   }
 
@@ -260,22 +266,106 @@
     return 'ENM-' + stamp + '-' + rand;
   }
 
-  function buildOrder() {
-    const payload = clone(state);
-    delete payload.step;
-    delete payload.submitted;
-    payload.files = state.files.map((file) => ({
+  /* Une tenue prête à rejoindre le panier : les aperçus d'image sont
+     conservés pour l'atelier, les formats vectoriels propriétaires
+     (AI, EPS, CDR) n'ayant pas de rendu navigateur. */
+  function buildItem() {
+    const item = clone(state);
+    delete item.step;
+    item.id = 'it' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    item.addedAt = new Date().toISOString();
+    item.files = state.files.map((file) => ({
       id: file.id, name: file.name, size: file.size, ext: file.ext, label: file.label,
-      /* L’aperçu image est conservé pour l’atelier ; les formats vectoriels
-         propriétaires (AI, EPS, CDR) n’ont pas de rendu navigateur. */
       preview: file.previewable ? file.dataUrl : '',
     }));
+    return item;
+  }
+
+  /* ---------- Panier (24 h, sans compte) ---------- */
+
+  const EMPTY_CART = { savedAt: 0, items: [], client: clone(EMPTY_CLIENT) };
+
+  function readCart() {
+    try {
+      const raw = localStorage.getItem(CART_KEY);
+      if (!raw) return clone(EMPTY_CART);
+      const parsed = JSON.parse(raw);
+      if (!parsed || !Array.isArray(parsed.items)) return clone(EMPTY_CART);
+      /* Session expirée : on repart d'un panier vide. */
+      if (!parsed.savedAt || Date.now() - parsed.savedAt > CART_TTL_MS) {
+        localStorage.removeItem(CART_KEY);
+        return clone(EMPTY_CART);
+      }
+      parsed.client = Object.assign(clone(EMPTY_CLIENT), parsed.client || {});
+      return parsed;
+    } catch (err) {
+      return clone(EMPTY_CART);
+    }
+  }
+
+  function writeCart(cart) {
+    cart.savedAt = Date.now();
+    localStorage.setItem(CART_KEY, JSON.stringify(cart));
+    return cart;
+  }
+
+  /* Millisecondes restantes avant expiration (0 si panier vide/expiré). */
+  function cartExpiresIn() {
+    const cart = readCart();
+    if (!cart.items.length || !cart.savedAt) return 0;
+    return Math.max(0, cart.savedAt + CART_TTL_MS - Date.now());
+  }
+
+  function cartCount() { return readCart().items.length; }
+
+  /* Ajoute la tenue en cours au panier. Si le quota du navigateur est
+     atteint, on retente sans les aperçus d'image plutôt que d'échouer. */
+  function addToCart() {
+    const cart = readCart();
+    const item = buildItem();
+    cart.items.push(item);
+    try {
+      writeCart(cart);
+    } catch (err) {
+      cart.items = cart.items.map((entry) => Object.assign({}, entry, {
+        files: (entry.files || []).map((f) => Object.assign({}, f, { preview: '' })),
+      }));
+      writeCart(cart);
+    }
+    return item;
+  }
+
+  function removeCartItem(id) {
+    const cart = readCart();
+    cart.items = cart.items.filter((item) => item.id !== id);
+    writeCart(cart);
+    return cart;
+  }
+
+  function setCartClient(client) {
+    const cart = readCart();
+    cart.client = Object.assign(clone(EMPTY_CLIENT), client || {});
+    writeCart(cart);
+    return cart;
+  }
+
+  function clearCart() {
+    try { localStorage.removeItem(CART_KEY); } catch (err) { /* rien à effacer */ }
+  }
+
+  /* Une commande = un client + une ou plusieurs tenues. */
+  function buildOrder(cart) {
     return {
       ref: reference(),
       createdAt: new Date().toISOString(),
       status: 'nouveau',
       adminNote: '',
-      config: payload,
+      config: {
+        source: 'web',
+        client: clone(cart.client),
+        items: clone(cart.items),
+        machineFiles: [],
+      },
     };
   }
 
@@ -350,15 +440,23 @@
      tente de la transmettre au serveur partagé. Retourne la commande
      (avec son indicateur `synced`), ou lève une erreur si le stockage
      local lui-même est inutilisable. */
-  async function submit() {
-    const order = buildOrder();
+  /* Envoie le panier entier : une commande, un client, N tenues.
+     La commande est d'abord enregistrée localement (elle n'est jamais
+     perdue), puis transmise au serveur partagé. */
+  async function submitCart() {
+    const cart = readCart();
+    if (!cart.items.length) throw new Error('empty_cart');
+
+    const order = buildOrder(cart);
     const orders = readOrders();
     orders.unshift(order);
     try {
       writeOrders(orders);
     } catch (err) {
-      /* Quota atteint : on retente sans les aperçus d’image. */
-      order.config.files = order.config.files.map((file) => ({ ...file, preview: '' }));
+      /* Quota atteint : on retente sans les aperçus d'image. */
+      order.config.items = order.config.items.map((item) => Object.assign({}, item, {
+        files: (item.files || []).map((f) => Object.assign({}, f, { preview: '' })),
+      }));
       orders[0] = order;
       writeOrders(orders);
     }
@@ -370,8 +468,6 @@
       const idx = stored.findIndex((o) => o.ref === order.ref);
       if (idx > -1) { stored[idx].synced = true; writeOrders(stored); }
     }
-
-    commit((draft) => { draft.submitted = { ref: order.ref, createdAt: order.createdAt, synced }; });
     return order;
   }
 
@@ -397,11 +493,13 @@
   syncPendingOrders();
 
   CZ.store = {
-    DEFAULTS,
+    DEFAULTS, EMPTY_CLIENT, CART_TTL_MS,
     get, at, set, type, commit,
     addFiles, replaceFile, removeFile,
     undo, canUndo, reset,
     measureError, clientErrors, stepErrors, isComplete,
-    submit, readOrders,
+    readCart, addToCart, removeCartItem, setCartClient, clearCart,
+    cartCount, cartExpiresIn,
+    submitCart, readOrders,
   };
 })(window);

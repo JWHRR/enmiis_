@@ -45,6 +45,7 @@
         <span class="ad-topbar__tag">Atelier</span>
       </div>
       <div class="ad-topbar__actions">
+        <button class="btn btn--solid ad-topbar__new" id="adNew" type="button">+ Nouvelle commande</button>
         <button class="btn btn--line ad-topbar__btn" id="adRefresh" type="button">Actualiser</button>
         <button class="btn btn--line ad-topbar__btn" id="adImport" type="button">Importer</button>
         <button class="btn btn--line ad-topbar__btn" id="adExport" type="button">Exporter</button>
@@ -115,6 +116,41 @@
       </button>
       <h2 class="ad-modal__title" id="adModalTitle"></h2>
       <div class="ad-modal__body" id="adModalBody"></div>
+    </div>
+  </div>
+
+  <!-- ======================= NOUVELLE COMMANDE (saisie atelier) ======================= -->
+  <div class="ad-modal ad-modal--wide" id="adNewModal" aria-hidden="true" role="dialog" aria-modal="true"
+       aria-labelledby="adNewTitle">
+    <div class="ad-modal__backdrop" data-new-close></div>
+    <div class="ad-modal__panel">
+      <button class="ad-modal__close" type="button" aria-label="Fermer" data-new-close>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
+      </button>
+      <h2 class="ad-modal__title" id="adNewTitle">Nouvelle commande</h2>
+      <p class="ad-new__intro">Pour une commande reçue par téléphone ou en boutique. Un seul client,
+        autant de tenues que nécessaire.</p>
+
+      <form id="adNewForm" autocomplete="off">
+        <section class="ad-new__section">
+          <h3 class="ad-new__legend">Client</h3>
+          <div class="ad-new__grid" id="adNewClient"></div>
+        </section>
+
+        <section class="ad-new__section">
+          <div class="ad-new__itemsHead">
+            <h3 class="ad-new__legend">Tenues</h3>
+            <button type="button" class="btn btn--line ad-new__add" id="adNewAddItem">+ Ajouter une tenue</button>
+          </div>
+          <div id="adNewItems"></div>
+        </section>
+
+        <p class="ad-error" id="adNewError" hidden></p>
+        <footer class="ad-new__actions">
+          <button type="button" class="btn btn--line" data-new-close>Annuler</button>
+          <button type="submit" class="btn btn--solid" id="adNewSave">Enregistrer la commande</button>
+        </footer>
+      </form>
     </div>
   </div>
 

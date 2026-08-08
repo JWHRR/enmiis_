@@ -151,6 +151,25 @@ module.exports = async function handler(req, res) {
       const row = {};
       if (patch.status !== undefined) row.status = patch.status;
       if (patch.adminNote !== undefined) row.admin_note = patch.adminNote;
+
+      /* Fichiers machine (broderie) déposés depuis l'espace atelier.
+         Ils sont fusionnés dans la configuration côté serveur : la
+         requête ne transporte que les nouveaux fichiers, jamais la
+         commande entière — indispensable pour rester sous la limite
+         de taille des requêtes serverless. */
+      if (patch.machineFiles !== undefined) {
+        const cur = await fetch(
+          base + '?ref=eq.' + encodeURIComponent(ref) + '&select=config',
+          { headers: authHeaders() },
+        );
+        if (!cur.ok) throw new Error('supabase_http_' + cur.status);
+        const found = await cur.json();
+        if (!found.length) { res.status(404).json({ error: 'not_found' }); return; }
+        const config = found[0].config || {};
+        config.machineFiles = patch.machineFiles;
+        row.config = config;
+      }
+
       if (!Object.keys(row).length) { res.status(400).json({ error: 'empty_patch' }); return; }
 
       const r = await fetch(base + '?ref=eq.' + encodeURIComponent(ref), {
