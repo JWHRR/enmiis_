@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Vos Favoris | ENMIIS</title>
+  <meta name="description" content="Vos créations ENMIIS mises de côté : retrouvez-les et lancez la personnalisation quand vous êtes prête.">
+  <meta name="theme-color" content="#FFFFFF">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/customizer.css">
+  <link rel="stylesheet" href="css/panier.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23111111'/%3E%3Ctext x='16' y='22' font-family='Georgia' font-size='18' fill='%23C8A86B' text-anchor='middle'%3EE%3C/text%3E%3C/svg%3E">
+</head>
+<body class="cz-body pn-body">
+
+  <a class="skip-link" href="#fvMain">Aller à vos favoris</a>
+
+  <header class="cz-topbar">
+    <a class="cz-topbar__back" href="soutenance.html">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 5 8 12 15 19"/></svg>
+      <span>Créations</span>
+    </a>
+    <a class="cz-topbar__logo" href="index.html" aria-label="Accueil ENMIIS">
+      <img src="img/logo-enmiis.png" alt="ENMIIS">
+    </a>
+    <div class="cz-topbar__actions">
+      <span class="pn-count" id="fvCount" aria-live="polite"></span>
+    </div>
+  </header>
+
+  <main class="pn-main" id="fvMain">
+
+    <header class="pn-head">
+      <p class="pn-head__label">Mis de côté</p>
+      <h1 class="pn-head__title">Vos favoris</h1>
+      <p class="pn-head__sub" id="fvSub"></p>
+    </header>
+
+    <section class="pn-empty" id="fvEmpty" hidden>
+      <div class="pn-empty__art">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <path d="M32 54l-21-20c-6-5.6-6-15 0-20.6 5.4-5 14-5 19.4 0L32 15l1.6-1.6c5.4-5 14-5 19.4 0 6 5.6 6 15 0 20.6L32 54z"/>
+        </svg>
+      </div>
+      <h2 class="pn-empty__title">Aucun favori pour l’instant</h2>
+      <p class="pn-empty__text">Parcourez nos créations et touchez le cœur sur celles qui vous plaisent :
+        vous les retrouverez ici, prêtes à être personnalisées.</p>
+      <a class="btn btn--solid" href="soutenance.html">Voir les créations</a>
+    </section>
+
+    <section class="fv-grid" id="fvGrid" hidden aria-label="Créations favorites"></section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/main.js" defer></script>
+  <script src="js/favoris.js" defer></script>
+</body>
+</html>

@@ -88,7 +88,7 @@
   let sortMode = 'recent';
 
   /* 'unknown' avant la première tentative · 'ok' synchronisé ·
-     'offline' réseau injoignable · 'unconfigured' KV pas encore activé. */
+     'offline' serveur et Supabase tous deux injoignables. */
   let cloudStatus = 'unknown';
 
   /* ---------- Toast local (l’espace admin ne charge pas main.js) ---------- */
@@ -137,9 +137,8 @@
       return;
     }
     bar.hidden = false;
-    text.textContent = cloudStatus === 'unconfigured'
-      ? 'Synchronisation cloud non activée — commandes affichées depuis cet appareil uniquement.'
-      : 'Connexion à l’atelier impossible pour le moment — commandes affichées depuis cet appareil uniquement.';
+    text.textContent = 'Connexion à l’atelier impossible pour le moment — ' +
+      'commandes affichées depuis cet appareil uniquement.';
   }
 
   /* Récupère les commandes du serveur partagé et les fusionne avec

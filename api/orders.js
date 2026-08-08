@@ -7,9 +7,22 @@
    commande restait coincée dans le localStorage du téléphone qui
    l'avait passée, invisible depuis admin.html sur un autre appareil.
 
-   MISE EN ROUTE (une seule fois) :
+   CLÉS — deux modes, sans rupture :
 
-   1) Dans Supabase → SQL Editor, exécuter :
+   1) Tel quel, sans rien configurer : la fonction reprend la clé
+      publiable, celle qui figure déjà dans le code du navigateur.
+      Tout fonctionne immédiatement.
+
+   2) Recommandé : définir SUPABASE_SERVICE_ROLE_KEY dans Vercel
+      (Settings → Environment Variables). La fonction passe alors sur
+      la clé service_role, qui contourne RLS. C'est ce qui permet de
+      fermer la table aux clés publiques — voir SECURITE.md — pour que
+      les coordonnées des clientes ne soient plus lisibles par
+      n'importe quel visiteur du site. Cette clé ne doit jamais
+      apparaître dans le code envoyé au navigateur : uniquement ici,
+      côté serveur.
+
+   Table attendue (Supabase → SQL Editor) :
 
         create table if not exists orders (
           ref         text primary key,
@@ -18,31 +31,15 @@
           admin_note  text not null default '',
           config      jsonb not null
         );
-
-      (RLS peut rester désactivée, ou activée sans policy : cette
-      fonction utilise la clé service_role, qui contourne RLS. Cette
-      clé ne doit JAMAIS être envoyée au navigateur ni au client —
-      uniquement lue ici, côté serveur, depuis les variables
-      d'environnement.)
-
-   2) Dans Vercel → Project → Settings → Environment Variables,
-      ajouter :
-
-        SUPABASE_URL              = https://<projet>.supabase.co
-        SUPABASE_SERVICE_ROLE_KEY = <clé service_role — Supabase →
-                                      Project Settings → API>
-
-      puis redéployer (ou laisser le prochain push redéployer).
-
-   Tant que ces variables ne sont pas définies, l'API répond 503 avec
-   un message clair ; le site continue de fonctionner (voir
-   js/cz-store.js et js/admin.js) en stockage local uniquement — rien
-   n'est perdu, la commande attend juste que le stockage partagé soit
-   activé, et se synchronisera automatiquement ensuite.
    ============================================================ */
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://kzqpvtrgchtiffcyxzfy.supabase.co';
-const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+/* La clé publiable est déjà exposée dans le code du navigateur
+   (js/cz-store.js, js/admin.js) : la reprendre ici comme repli
+   n'expose rien de plus et évite toute configuration préalable. */
+const PUBLISHABLE_KEY = 'sb_publishable_x8IMyzlq6tqxbXITcP6YRg_-CnC0mj-';
+const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || PUBLISHABLE_KEY;
 const TABLE = 'orders';
 
 function authHeaders(extra) {
@@ -104,14 +101,6 @@ function readBody(req) {
 module.exports = async function handler(req, res) {
   setCors(res);
   if (req.method === 'OPTIONS') { res.status(204).end(); return; }
-
-  if (!SUPABASE_URL || !SERVICE_KEY) {
-    res.status(503).json({
-      error: 'storage_not_configured',
-      message: 'Supabase non configuré — voir le commentaire en tête de api/orders.js.',
-    });
-    return;
-  }
 
   const base = SUPABASE_URL.replace(/\/$/, '') + '/rest/v1/' + TABLE;
 

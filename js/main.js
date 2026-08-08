@@ -259,10 +259,58 @@
   }
 
   /* ----------------------------------------------------------
-     Favoris (compteur d'entête)
+     Favoris
+
+     Le client n'a pas de compte : ses favoris vivent dans son
+     navigateur, sans expiration (contrairement au panier, qui est une
+     commande en cours). La liste est consultable sur favoris.html.
      ---------------------------------------------------------- */
+  const FAV_KEY = 'enmiis-favorites-v1';
+
+  function readFavorites() {
+    try {
+      const raw = localStorage.getItem(FAV_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (err) {
+      return [];
+    }
+  }
+
+  function writeFavorites(list) {
+    try {
+      localStorage.setItem(FAV_KEY, JSON.stringify(list));
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  /* Identifiant stable dérivé du titre : les créations n'ont pas d'id
+     propre dans le balisage, et leurs titres sont uniques. */
+  function favId(title) {
+    return String(title).trim().toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  }
+
+  function isFavorite(id) {
+    return readFavorites().some((entry) => entry.id === id);
+  }
+
+  function removeFavorite(id) {
+    const list = readFavorites().filter((entry) => entry.id !== id);
+    writeFavorites(list);
+    return list;
+  }
+
+  window.enmiisFavorites = {
+    read: readFavorites,
+    remove: removeFavorite,
+    id: favId,
+    count: () => readFavorites().length,
+  };
+
   const wishlistCountEl = document.getElementById('wishlistCount');
-  let wishlistCount = 0;
 
   function bump(el, value) {
     el.textContent = value;
@@ -272,31 +320,74 @@
     el.classList.add('is-bumped');
   }
 
+  function syncFavoriteBadge(animate) {
+    if (!wishlistCountEl) return;
+    const count = readFavorites().length;
+    if (animate) bump(wishlistCountEl, count);
+    else {
+      wishlistCountEl.textContent = count;
+      wishlistCountEl.hidden = count === 0;
+    }
+  }
+
+  /* Extrait de la carte tout ce qu'il faut pour la réafficher ailleurs. */
+  function cardToFavorite(card) {
+    const title = card.querySelector('.work-card__title')?.textContent.trim() || 'Création';
+    const preset = card.querySelector('.work-card__btn-choose')?.getAttribute('href') || '';
+    return {
+      id: favId(title),
+      title,
+      label: card.querySelector('.work-card__label')?.textContent.trim() || '',
+      desc: card.querySelector('.work-card__desc')?.textContent.trim() || '',
+      img: card.querySelector('.work-card__media img')?.getAttribute('src') || '',
+      href: preset,
+      addedAt: new Date().toISOString(),
+    };
+  }
+
   document.querySelectorAll('.work-card__wishlist').forEach((btn) => {
+    const card = btn.closest('.work-card');
+    if (!card) return;
+    const entry = cardToFavorite(card);
+
+    /* État initial : un favori déjà enregistré reste marqué au retour. */
+    if (isFavorite(entry.id)) {
+      btn.classList.add('is-active');
+      btn.setAttribute('aria-pressed', 'true');
+      btn.setAttribute('aria-label', 'Retirer des favoris');
+    }
+
     btn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      const active = btn.classList.toggle('is-active');
-      btn.setAttribute('aria-pressed', String(active));
+
+      const nowActive = !isFavorite(entry.id);
+      if (nowActive) {
+        const list = readFavorites();
+        list.unshift(cardToFavorite(card));
+        if (!writeFavorites(list)) {
+          showToast('Impossible d’enregistrer ce favori — stockage saturé');
+          return;
+        }
+      } else {
+        removeFavorite(entry.id);
+      }
+
+      btn.classList.toggle('is-active', nowActive);
+      btn.setAttribute('aria-pressed', String(nowActive));
+      btn.setAttribute('aria-label', nowActive ? 'Retirer des favoris' : 'Ajouter aux favoris');
       btn.classList.remove('is-popped');
       void btn.offsetWidth;
       btn.classList.add('is-popped');
 
-      wishlistCount += active ? 1 : -1;
-      if (wishlistCountEl) bump(wishlistCountEl, wishlistCount);
-
-      const name = btn.closest('.work-card')?.querySelector('.work-card__title')?.textContent || 'Création';
-      showToast(active
-        ? '<em>' + name + '</em> ajoutée à vos favoris'
-        : '<em>' + name + '</em> retirée de vos favoris');
+      syncFavoriteBadge(true);
+      showToast(nowActive
+        ? '<em>' + entry.title + '</em> ajoutée à vos favoris'
+        : '<em>' + entry.title + '</em> retirée de vos favoris');
     });
   });
 
-  document.getElementById('wishlistBtn')?.addEventListener('click', () => {
-    showToast(wishlistCount > 0
-      ? '<em>' + wishlistCount + '</em> création' + (wishlistCount > 1 ? 's' : '') + ' dans vos favoris'
-      : 'Votre liste de favoris est vide');
-  });
+  syncFavoriteBadge(false);
 
   /* ----------------------------------------------------------
      Overlay "en construction" — catégories pas encore ouvertes

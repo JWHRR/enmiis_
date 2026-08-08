@@ -229,3 +229,76 @@
 @media (prefers-reduced-motion: reduce) {
   .pn-item { animation: none; transition: none; }
 }
+
+/* ============================================================
+   FAVORIS (favoris.html)
+   ============================================================ */
+.fv-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.5rem 1.25rem;
+}
+
+.fv-card {
+  display: flex;
+  flex-direction: column;
+  animation: pn-in 0.35s ease-in-out both;
+  transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+.fv-card.is-out { opacity: 0; transform: scale(0.97); }
+
+.fv-card__media {
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #EDE6DC;
+  margin-bottom: 0.85rem;
+}
+.fv-card__media img {
+  width: 100%;
+  aspect-ratio: 5 / 7;
+  object-fit: contain;
+  display: block;
+}
+
+.fv-card__remove {
+  position: absolute;
+  top: 0.6rem; right: 0.6rem;
+  width: 34px; height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(17, 17, 17, 0.08);
+  box-shadow: 0 4px 14px rgba(17, 17, 17, 0.1);
+  transition: background 0.3s var(--ease-lux), color 0.3s var(--ease-lux), transform 0.3s var(--ease-lux);
+}
+.fv-card__remove svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.fv-card__remove:hover { background: #B4342F; color: var(--white); border-color: #B4342F; }
+.fv-card__remove:active { transform: scale(0.9); }
+
+.fv-card__label {
+  font-size: var(--fs-label);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+  margin-bottom: 0.3rem;
+}
+.fv-card__title {
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  font-weight: 500;
+  line-height: 1.25;
+}
+.fv-card__desc {
+  font-size: var(--fs-small);
+  color: var(--ink-soft);
+  line-height: 1.6;
+  margin-top: 0.4rem;
+}
+.fv-card__cta { margin-top: auto; align-self: flex-start; margin-top: 1rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fv-card { animation: none; transition: none; }
+}
