@@ -92,11 +92,11 @@
       <div class="search-overlay__suggestions">
         <p class="search-overlay__label">Recherches populaires</p>
         <ul>
-          <li><a href="customizer.html">Toge de soutenance</a></li>
-          <li><a href="customizer.html">Écharpe Félicitations Dr</a></li>
+          <li><a href="customizer.html?produit=robe">Toge de soutenance</a></li>
+          <li><a href="customizer.html?produit=echarpe">Écharpe Félicitations Dr</a></li>
           <li><a href="soutenance.html">Box cadeau soutenance</a></li>
           <li><a href="#" data-soon>Peignoir brodé</a></li>
-          <li><a href="customizer.html">Mortier</a></li>
+          <li><a href="customizer.html?produit=casquette">Mortier</a></li>
         </ul>
       </div>
     </div>
@@ -145,6 +145,76 @@
         <p class="page-hero__label">Le grand jour mérite le plus grand soin</p>
         <h1 class="page-hero__title">Nos Créations Soutenance</h1>
         <p class="page-hero__text">Toges, écharpes brodées, box cadeaux et décorations — chaque création est réalisée à la main pour célébrer votre réussite. Découvrez nos réalisations, puis composez la vôtre.</p>
+      </div>
+    </section>
+
+    <!-- ======================= COMPOSER SA TENUE ======================= -->
+    <section class="section pieces" aria-labelledby="piecesTitle">
+      <div class="container">
+        <header class="pieces__head" data-reveal>
+          <p class="pieces__label">Composez votre tenue</p>
+          <h2 class="pieces__title" id="piecesTitle">Trois pièces, configurées séparément</h2>
+          <p class="pieces__text">Choisissez ce dont vous avez besoin — la robe, la casquette, l’écharpe,
+            ou les trois. Chaque pièce se personnalise à part et vient se ranger dans votre panier.</p>
+        </header>
+
+        <div class="pieces__grid">
+
+          <article class="piece" data-reveal>
+            <div class="piece__media">
+              <img src="img/soutenance/1.png" alt="Robe de soutenance ENMIIS" loading="lazy" decoding="async">
+              <span class="piece__price">120 DT</span>
+            </div>
+            <p class="piece__label">Toge de soutenance</p>
+            <h3 class="piece__title">Robe</h3>
+            <p class="piece__desc">Gabardine de laine noble, coupe sur mesure et broderie personnalisée
+              au fil d’or.</p>
+            <ul class="piece__specs">
+              <li>Manches, col et bordure au choix</li>
+              <li>Broderie de votre nom incluse</li>
+              <li>8 mesures pour une coupe juste</li>
+            </ul>
+            <a class="btn btn--solid piece__cta" href="customizer.html?produit=robe">Configurer la robe</a>
+          </article>
+
+          <article class="piece" data-reveal>
+            <div class="piece__media">
+              <img src="img/cap.webp" alt="Casquette de diplômé ENMIIS" loading="lazy" decoding="async">
+              <span class="piece__price">35 DT</span>
+            </div>
+            <p class="piece__label">Mortier de diplômé</p>
+            <h3 class="piece__title">Casquette</h3>
+            <p class="piece__desc">Plateau carré parfaitement plan, gland assorti et broderie
+              du plateau.</p>
+            <ul class="piece__specs">
+              <li>Trois formes de plateau illustrées</li>
+              <li>Gland et année de promotion</li>
+              <li>Tour de tête uniquement</li>
+            </ul>
+            <a class="btn btn--solid piece__cta" href="customizer.html?produit=casquette">Configurer la casquette</a>
+          </article>
+
+          <article class="piece" data-reveal>
+            <div class="piece__media">
+              <img src="img/hood.webp" alt="Écharpe de félicitations ENMIIS" loading="lazy" decoding="async">
+              <span class="piece__price">25 DT</span>
+            </div>
+            <p class="piece__label">Étole de félicitations</p>
+            <h3 class="piece__title">Écharpe</h3>
+            <p class="piece__desc">Satin doublé, pans brodés à votre nom, à votre faculté ou à
+              votre mention.</p>
+            <ul class="piece__specs">
+              <li>Cinq modèles de la planche « Cape »</li>
+              <li>Broderie libre sur les pans</li>
+              <li>Longueur adaptée à votre stature</li>
+            </ul>
+            <a class="btn btn--solid piece__cta" href="customizer.html?produit=echarpe">Configurer l’écharpe</a>
+          </article>
+
+        </div>
+
+        <p class="pieces__note">Les couleurs de chaque pièce sont arrêtées avec vous par l’atelier
+          avant la mise en fabrication.</p>
       </div>
     </section>
 
@@ -304,7 +374,7 @@
             </div>
           </div>
 
-          <a href="customizer.html" class="work-card" data-category="echarpes" data-reveal>
+          <a href="customizer.html?produit=echarpe" class="work-card" data-category="echarpes" data-reveal>
             <div class="work-card__media">
               <img src="img/works/echarpe-03.jpg" alt="Écharpe brodée aux couleurs de l'université" loading="lazy" decoding="async">
               <button class="work-card__wishlist" type="button" aria-label="Ajouter aux favoris" aria-pressed="false">

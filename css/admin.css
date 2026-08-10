@@ -934,3 +934,9 @@ select.ad-input {
   padding-top: 1.25rem;
   border-top: 1px solid var(--line);
 }
+
+/* Saisie atelier : les champs qui ne concernent pas la pièce choisie
+   sont masqués. Sans cette règle, `display: grid`/`flex` l'emporterait
+   sur l'attribut `hidden`. */
+.ad-new__grid[hidden],
+.ad-new__field[hidden] { display: none; }

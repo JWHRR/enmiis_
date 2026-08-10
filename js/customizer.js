@@ -22,7 +22,13 @@
   let fileSeq = 0;
   let replacing = null;   /* identifiant du fichier en cours de remplacement */
 
-  const stepAt = (index) => cat.STEPS[index];
+  /* Le configurateur ne compose qu'une pièce à la fois : la liste des
+     étapes dépend donc du produit choisi (robe, casquette, écharpe). */
+  const productId = () => store.at('product');
+  const product = () => cat.product(productId());
+  const stepList = () => cat.stepsFor(productId());
+  const stepAt = (index) => stepList()[index];
+  const measureFields = () => cat.measuresFor(productId());
 
   /* ----------------------------------------------------------
      Rendu de l’écran courant
@@ -47,11 +53,12 @@
 
   function renderScreen() {
     const def = stepAt(current);
+    const steps = stepList();
     document.body.dataset.preview = showsPreview(def.id) ? 'on' : 'off';
-    $('#czPhase').textContent = def.phase;
+    $('#czPhase').textContent = product().label + ' · ' + def.phase;
     $('#czStepTitle').textContent = def.title;
     $('#czStepSub').textContent = def.sub;
-    $('#czStepCount').textContent = 'Étape ' + (current + 1) + ' sur ' + cat.STEPS.length;
+    $('#czStepCount').textContent = 'Étape ' + (current + 1) + ' sur ' + steps.length;
 
     screensRoot.innerHTML = '<div class="cz-screen" data-screen="' + def.id + '">' +
       RENDERERS[def.id]() + '</div>';
@@ -62,7 +69,7 @@
     });
 
     if (def.id === 'upload') renderFiles();
-    if (def.id === 'measure') cat.MEASUREMENTS.forEach((m) => validateMeasure(m.id, false));
+    if (def.id === 'measure') measureFields().forEach((m) => validateMeasure(m.id, false));
 
     renderRail();
     renderNav();
@@ -79,7 +86,8 @@
 
   function renderRail() {
     syncUndo();
-    railRoot.innerHTML = cat.STEPS.map((def, index) => {
+    const steps = stepList();
+    railRoot.innerHTML = steps.map((def, index) => {
       const state = index === current ? 'is-current'
         : index < current || store.isComplete(def.id) ? 'is-done' : '';
       return '<li class="cz-rail__item ' + state + '">' +
@@ -88,7 +96,7 @@
         '<span class="cz-rail__dot">' + (index + 1) + '</span>' +
         '<span class="cz-rail__name">' + esc(def.title) + '</span></button></li>';
     }).join('');
-    $('#czProgressBar').style.width = (((current + 1) / cat.STEPS.length) * 100).toFixed(2) + '%';
+    $('#czProgressBar').style.width = (((current + 1) / steps.length) * 100).toFixed(2) + '%';
   }
 
   function renderNav() {
@@ -105,7 +113,7 @@
      Navigation
      ---------------------------------------------------------- */
   function goTo(index, options) {
-    const target = Math.max(0, Math.min(cat.STEPS.length - 1, index));
+    const target = Math.max(0, Math.min(stepList().length - 1, index));
     if (target === current) return;
     /* Vers l’avant : toutes les étapes franchies doivent être complètes,
        y compris celles qu’un saut dans le rail passerait par-dessus. */
@@ -135,7 +143,7 @@
   }
 
   function goToId(stepId) {
-    const index = cat.STEPS.findIndex((def) => def.id === stepId);
+    const index = stepList().findIndex((def) => def.id === stepId);
     if (index > -1) goTo(index, { force: true });
   }
 
@@ -161,7 +169,7 @@
     }
     if (def.id === 'measure') {
       let first = null;
-      cat.MEASUREMENTS.forEach((m) => {
+      measureFields().forEach((m) => {
         const invalid = validateMeasure(m.id, true);
         if (invalid && !first) first = m.id;
       });
@@ -558,25 +566,50 @@
       if (goto) { goToId(goto.getAttribute('data-goto')); return; }
 
       if (event.target.closest('#czAddToCart')) {
-        /* Toutes les étapes doivent être complètes avant l'ajout. */
-        const blocking = cat.STEPS
+        /* Toutes les étapes de cette pièce doivent être complètes. */
+        const blocking = stepList()
           .filter((def) => def.id !== 'review')
           .map((def) => ({ id: def.id, errors: store.stepErrors(def.id) }))
           .find((entry) => entry.errors.length);
         if (blocking) { toast(blocking.errors[0]); goToId(blocking.id); return; }
 
+        const wasEditing = Boolean(store.at('editing'));
+        let item;
         try {
-          store.addToCart();
+          item = store.addToCart();
         } catch (err) {
           toast('Ajout impossible — stockage du navigateur saturé.');
           return;
         }
-        /* La tenue est au panier : le configurateur repart à neuf pour
-           permettre d'en composer une autre. */
+
+        /* La pièce est au panier : le configurateur repart à neuf. */
+        const addedProduct = item.product;
         store.reset();
-        global.location.href = 'panier.html';
+
+        /* Après une modification, le client revient à son panier ;
+           après un ajout, on lui propose de compléter sa tenue. */
+        if (wasEditing) {
+          global.location.href = 'panier.html';
+          return;
+        }
+        showAdded(addedProduct);
       }
     });
+  }
+
+  /* Écran de confirmation : la pièce est au panier, on propose les
+     deux autres. Le rail et la navigation n'ont plus lieu d'être. */
+  function showAdded(addedProduct) {
+    document.body.dataset.preview = 'off';
+    document.body.classList.add('is-added');
+    $('#czPhase').textContent = 'Panier';
+    $('#czStepTitle').textContent = 'Bien reçu';
+    $('#czStepSub').textContent = '';
+    $('#czStepCount').textContent = '';
+    $('#czProgressBar').style.width = '100%';
+    screensRoot.innerHTML = '<div class="cz-screen is-in" data-screen="added">' +
+      steps.added.html(addedProduct) + '</div>';
+    global.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   /* ----------------------------------------------------------
@@ -783,16 +816,25 @@
     bindModals();
     bindGlobalControls();
 
-    /* Vérification d'un modèle choisi depuis soutenance.html */
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const presetId = params.get('preset') || params.get('model') || params.get('photo');
-      if (presetId) {
-        applyPresetModel(presetId);
-      }
-    } catch (e) {}
+    let params;
+    try { params = new URLSearchParams(global.location.search); }
+    catch (e) { params = new URLSearchParams(''); }
 
-    current = Math.min(store.at('step') || 0, cat.STEPS.length - 1);
+    /* « Modifier » depuis le panier : on recharge la ligne telle quelle. */
+    const editId = params.get('edit');
+    const editing = editId ? store.loadCartItem(editId) : null;
+    if (editId && !editing) toast('Cette pièce n’est plus dans votre panier.');
+
+    if (!editing) {
+      const preset = params.get('preset') || params.get('model') || params.get('photo');
+      /* Une photo de référence choisie dans les créations concerne la
+         robe : c'est son configurateur qui s'ouvre. */
+      store.setProduct(params.get('produit') || params.get('product') || (preset ? 'robe' : productId()));
+      if (preset && productId() === 'robe') applyPresetModel(preset);
+    }
+
+    document.title = product().label + ' — Configurateur | ENMIIS';
+    current = editing ? 0 : Math.min(store.at('step') || 0, stepList().length - 1);
     renderScreen();
   }
 

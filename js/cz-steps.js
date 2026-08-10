@@ -461,9 +461,12 @@
      ========================================================== */
   const measure = {
     html() {
-      return '<div class="cz-screen__intro"><p>Chaque mesure dispose de son illustration et de son guide. ' +
-        'Munissez-vous d’un mètre ruban souple.</p></div>' +
-        '<div class="cz-measures">' + cat.MEASUREMENTS.map((m) => {
+      const fields = cat.measuresFor(store.at('product'));
+      const intro = fields.length > 1
+        ? 'Chaque mesure dispose de son illustration et de son guide. Munissez-vous d’un mètre ruban souple.'
+        : 'Une seule mesure suffit pour cette pièce — son guide illustré est juste à côté.';
+      return '<div class="cz-screen__intro"><p>' + intro + '</p></div>' +
+        '<div class="cz-measures">' + fields.map((m) => {
           const value = store.at('measures.' + m.id);
           return '<div class="cz-measure" data-measure="' + m.id + '">' +
             '<div class="cz-measure__fig">' + FIGURES[m.guide.figure] + '</div>' +
@@ -495,11 +498,16 @@
      Étape 7 — Récapitulatif
      ========================================================== */
   const review = {
+    /* Un bloc de récapitulatif par étape réellement traversée : le
+       récapitulatif d'une casquette ne parle pas de la robe. */
     lines() {
       const s = store.get();
+      const product = cat.product(s.product);
       const labelOf = (list, id) => (cat.find(list, id) || {}).label || '—';
-      return [
-        {
+      const blocks = [];
+
+      if (product.id === 'robe') {
+        blocks.push({
           step: 'robe', title: 'La Robe', rows: [
             { label: 'Coupe des manches', value: labelOf(cat.SLEEVES, s.robe.sleeve) },
             { label: 'Col', value: labelOf(cat.COLLARS, s.robe.collar) },
@@ -508,47 +516,59 @@
               warn: !s.robe.emb.text.trim() },
             { label: 'Logo d’université', value: s.robe.emb.uniLogoName || 'Aucun' },
           ],
-        },
-        {
-          step: 'hood', title: 'La Capuche', rows: [
-            { label: 'Modèle', value: labelOf(cat.HOOD_STYLES, s.hood.style) },
-            { label: 'Broderie', value: s.hood.emb.trim() || 'Aucune' },
-          ],
-        },
-        {
-          step: 'cap', title: 'Le Mortier', rows: [
+        });
+      }
+
+      if (product.id === 'casquette') {
+        blocks.push({
+          step: 'cap', title: 'La Casquette', rows: [
             { label: 'Forme', value: labelOf(cat.CAP_STYLES, s.cap.style) },
             { label: 'Matière', value: labelOf(cat.CAP_MATERIALS, s.cap.material) },
             { label: 'Broderie', value: s.cap.emb.trim() || 'Aucune' },
             { label: 'Logo', value: s.cap.logoName || 'Aucun' },
           ],
-        },
-        {
+        });
+        blocks.push({
           step: 'tassel', title: 'Le Gland', rows: [
             { label: 'Style', value: labelOf(cat.TASSEL_STYLES, s.tassel.style) },
             { label: 'Année de promotion', value: s.tassel.year || 'Aucune' },
           ],
-        },
-        {
-          step: 'measure', title: 'Vos Mesures',
-          rows: cat.MEASUREMENTS.map((m) => ({
-            label: m.label,
-            value: s.measures[m.id] ? s.measures[m.id] + ' ' + m.unit : '— manquante —',
-            warn: !s.measures[m.id],
-          })),
-        },
-      ];
+        });
+      }
+
+      if (product.id === 'echarpe') {
+        blocks.push({
+          step: 'hood', title: 'L’Écharpe', rows: [
+            { label: 'Modèle', value: labelOf(cat.HOOD_STYLES, s.hood.style) },
+            { label: 'Broderie', value: s.hood.emb.trim() || 'Aucune' },
+          ],
+        });
+      }
+
+      blocks.push({
+        step: 'measure', title: 'Vos Mesures',
+        rows: cat.measuresFor(product.id).map((m) => ({
+          label: m.label,
+          value: s.measures[m.id] ? s.measures[m.id] + ' ' + m.unit : '— manquante —',
+          warn: !s.measures[m.id],
+        })),
+      });
+
+      return blocks;
     },
 
     html() {
       const s = store.get();
+      const product = cat.product(s.product);
       const filesBlock = s.files.length
         ? '<ul class="cz-recap__files">' + s.files.map((f) =>
             '<li>' + (f.previewable
               ? '<img src="' + esc(f.dataUrl) + '" alt="" loading="lazy" decoding="async">'
               : '<span class="cz-file__ext">' + esc(f.label) + '</span>') +
             '<span>' + esc(f.name) + '<small>' + kb(f.size) + '</small></span></li>').join('') + '</ul>'
-        : '<p class="cz-recap__empty">Aucun fichier — revenez à l’étape « Vos fichiers ».</p>';
+        : '<p class="cz-recap__empty">' + (product.fileRequired
+            ? 'Aucun fichier — revenez à l’étape « Vos fichiers ».'
+            : 'Aucun fichier joint — facultatif pour cette pièce.') + '</p>';
 
       const sections = this.lines().map((section) =>
         '<section class="cz-recap">' +
@@ -562,6 +582,7 @@
           '</dl>' +
         '</section>').join('');
 
+      const editing = Boolean(s.editing);
       const count = store.cartCount();
       return '<section class="cz-recap">' +
           '<header class="cz-recap__head"><h3>Vos fichiers</h3>' +
@@ -571,19 +592,66 @@
         '<p class="cz-help cz-help--workshop">Les couleurs de chaque pièce sont arrêtées avec vous par ' +
         'l’atelier avant la mise en fabrication.</p>' +
         '<div class="cz-tocart">' +
+          '<div class="cz-tocart__price"><span>' + esc(product.label) + '</span>' +
+            '<strong>' + esc(cat.price(product.price)) + '</strong></div>' +
           '<button type="button" class="btn btn--solid cz-tocart__cta" id="czAddToCart">' +
-            'Ajouter cette tenue au panier</button>' +
-          '<p class="cz-tocart__note">' + (count
-            ? 'Votre panier contient déjà ' + count + ' tenue' + (count > 1 ? 's' : '') +
-              '. Vous renseignerez vos coordonnées une seule fois, au panier.'
-            : 'Vous pourrez ensuite ajouter une autre tenue ou passer commande. ' +
-              'Vos coordonnées sont demandées une seule fois, au panier.') + '</p>' +
+            (editing ? 'Enregistrer les modifications' : 'Ajouter ' + esc(product.the) + ' au panier') +
+          '</button>' +
+          '<p class="cz-tocart__note">' + (editing
+            ? 'Vos modifications remplaceront cette ligne dans le panier.'
+            : count
+              ? 'Votre panier contient déjà ' + count + ' article' + (count > 1 ? 's' : '') +
+                '. Vos coordonnées sont demandées une seule fois, au panier.'
+              : 'Vous pourrez ensuite ajouter une autre pièce ou passer commande. ' +
+                'Vos coordonnées sont demandées une seule fois, au panier.') + '</p>' +
         '</div>';
+    },
+  };
+
+  /* ==========================================================
+     Écran de confirmation — après l’ajout au panier
+     ========================================================== */
+  const added = {
+    html(productId) {
+      const product = cat.product(productId);
+      const others = cat.PRODUCTS.filter((p) => p.id !== product.id);
+      const count = store.cartCount();
+      const total = store.cartTotal();
+
+      return '<div class="cz-added">' +
+        '<div class="cz-done__burst">' +
+          '<svg viewBox="0 0 64 64" aria-hidden="true">' +
+            '<circle class="cz-done__ring" cx="32" cy="32" r="26"/>' +
+            '<polyline class="cz-done__tick" points="20 33 28 41 44 23"/>' +
+          '</svg>' +
+        '</div>' +
+        '<p class="cz-done__label">Ajouté au panier</p>' +
+        '<h2 class="cz-done__title">' + esc(product.label) + ' ajoutée au panier</h2>' +
+        '<p class="cz-added__cart">' + count + ' article' + (count > 1 ? 's' : '') +
+          ' · <strong>' + esc(cat.price(total)) + '</strong></p>' +
+        '<p class="cz-added__text">Complétez votre tenue, ou passez directement à la commande.</p>' +
+        '<div class="cz-added__grid">' +
+          others.map((other) =>
+            '<a class="cz-added__card" href="customizer.html?produit=' + esc(other.id) + '">' +
+              '<span class="cz-added__thumb">' +
+                '<img src="' + esc(other.photo) + '" alt="" loading="lazy" decoding="async">' +
+              '</span>' +
+              '<span class="cz-added__body">' +
+                '<strong>' + esc(other.cta) + '</strong>' +
+                '<small>' + esc(other.tagline) + ' · ' + esc(cat.price(other.price)) + '</small>' +
+              '</span>' +
+            '</a>').join('') +
+        '</div>' +
+        '<div class="cz-added__actions">' +
+          '<a class="btn btn--solid" href="panier.html">Voir mon panier</a>' +
+          '<a class="btn btn--line" href="soutenance.html">Continuer mes achats</a>' +
+        '</div>' +
+      '</div>';
     },
   };
 
   CZ.steps = {
     esc, kb, FIGURES,
-    upload, robe, hood, cap, tassel, measure, review,
+    upload, robe, hood, cap, tassel, measure, review, added,
   };
 })(window);

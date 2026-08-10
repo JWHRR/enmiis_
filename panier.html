@@ -22,9 +22,9 @@
 
   <!-- ======================= TOPBAR ======================= -->
   <header class="cz-topbar">
-    <a class="cz-topbar__back" href="customizer.html">
+    <a class="cz-topbar__back" href="soutenance.html">
       <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 5 8 12 15 19"/></svg>
-      <span>Configurateur</span>
+      <span>Soutenances</span>
     </a>
     <a class="cz-topbar__logo" href="index.html" aria-label="Accueil ENMIIS">
       <img src="img/logo-enmiis.png" alt="ENMIIS">
@@ -51,26 +51,53 @@
         </svg>
       </div>
       <h2 class="pn-empty__title">Votre panier est vide</h2>
-      <p class="pn-empty__text">Composez votre tenue de soutenance dans le configurateur : elle viendra
-        se ranger ici, et vous pourrez en ajouter plusieurs avant de commander.</p>
-      <a class="btn btn--solid" href="customizer.html">Composer ma tenue</a>
+      <p class="pn-empty__text">Configurez votre robe, votre casquette ou votre écharpe : chaque pièce
+        viendra se ranger ici, et vous commanderez le tout en une seule fois.</p>
+      <a class="btn btn--solid" href="soutenance.html">Composer ma tenue</a>
     </section>
 
     <!-- ======================= CONTENU ======================= -->
     <div class="pn-layout" id="pnLayout" hidden>
 
-      <section class="pn-items" aria-label="Tenues du panier">
+      <section class="pn-items" aria-label="Articles du panier">
         <ul id="pnList"></ul>
-        <a class="pn-add" href="customizer.html">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Ajouter une autre tenue
-        </a>
+
+        <div class="pn-more">
+          <p class="pn-more__title">Compléter votre tenue</p>
+          <div class="pn-more__row">
+            <a class="pn-add" href="customizer.html?produit=robe">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Robe
+            </a>
+            <a class="pn-add" href="customizer.html?produit=casquette">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Casquette
+            </a>
+            <a class="pn-add" href="customizer.html?produit=echarpe">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Écharpe
+            </a>
+          </div>
+        </div>
+
+        <!-- ============ ESSAYAGE VIRTUEL ============ -->
+        <section class="pn-tryon" aria-labelledby="pnTryonTitle">
+          <div class="pn-tryon__art" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15l-1.9-4.1L5.5 9l4.6-1.4z"/>
+              <path d="M18 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/>
+            </svg>
+          </div>
+          <h2 class="pn-tryon__title" id="pnTryonTitle">Visualisez votre tenue ENMIIS</h2>
+          <p class="pn-tryon__text">Découvrez votre tenue de soutenance sur vous avant de commander.</p>
+          <a class="btn btn--line pn-tryon__cta" href="essayage.html">Essayer avec l’IA</a>
+        </section>
       </section>
 
       <section class="pn-checkout" aria-label="Vos coordonnées">
         <div class="cz-group">
           <h2 class="pn-checkout__title">Vos coordonnées</h2>
-          <p class="pn-checkout__note">Renseignées une seule fois — elles valent pour toutes les tenues
+          <p class="pn-checkout__note">Renseignées une seule fois — elles valent pour tous les articles
             de ce panier.</p>
 
           <div class="cz-form" id="pnForm">
@@ -116,8 +143,11 @@
         </div>
 
         <div class="pn-summary">
+          <div class="pn-summary__line">
+            <span>Articles</span><span id="pnSummaryCount">0</span>
+          </div>
           <div class="pn-summary__row">
-            <span>Tenues</span><strong id="pnSummaryCount">0</strong>
+            <span>Total</span><strong id="pnTotal">0 DT</strong>
           </div>
           <p class="pn-summary__note">Le devis est confirmé par l’atelier après vérification des mesures
             et de la broderie.</p>
@@ -144,7 +174,7 @@
         possible — par sécurité, envoyez aussi votre référence par WhatsApp.</p>
       <div class="cz-done__actions">
         <button type="button" class="btn btn--solid" id="pnPdf">Télécharger le récapitulatif</button>
-        <a class="btn btn--line" href="customizer.html">Composer une autre tenue</a>
+        <a class="btn btn--line" href="soutenance.html">Composer une autre tenue</a>
       </div>
     </section>
   </main>

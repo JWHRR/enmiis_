@@ -479,7 +479,7 @@
             /* Une commande peut porter plusieurs tenues : on l'annonce
                dès la liste pour éviter toute surprise à l'atelier. */
             (itemsOf(order).length > 1
-              ? ' · <strong class="ad-card__items">' + itemsOf(order).length + ' tenues</strong>'
+              ? ' · <strong class="ad-card__items">' + itemsOf(order).length + ' articles</strong>'
               : '') + '</span>' +
           (flag ? '<span class="ad-flag ad-flag--' + flag.tone + '">' + esc(flag.text) + '</span>' : '') +
         '</div>' +
@@ -510,35 +510,51 @@
 
   /* ---------- Rendu : une tenue ---------- */
 
+  /* Chaque article est une pièce indépendante : on n'affiche que les
+     réglages qui la concernent. Les commandes passées avant la
+     séparation en trois produits portaient toutes les pièces à la
+     fois — ce rendu les couvre aussi, bloc par bloc. */
   function specRows(item) {
-    const robe = item.robe || {};
-    const emb = robe.emb || {};
-    const hood = item.hood || {};
-    const cap = item.cap || {};
-    const tassel = item.tassel || {};
     const row = (label, value) =>
       '<div class="ad-row"><dt>' + esc(label) + '</dt><dd>' + esc(value) + '</dd></div>';
+    let rows = '';
 
-    return '<dl class="ad-rows">' +
-      row('Manches', labelOf(cat.SLEEVES, robe.sleeve)) +
-      row('Col', labelOf(cat.COLLARS, robe.collar)) +
-      row('Bordure', labelOf(cat.TRIM_STYLES, robe.trim)) +
-      row('Texte à broder', emb.text || '—') +
-      row('Logo d’université', emb.uniLogoName || 'Aucun') +
-      row('Capuche', labelOf(cat.HOOD_STYLES, hood.style)) +
-      row('Broderie capuche', hood.emb || 'Aucune') +
-      row('Mortier', labelOf(cat.CAP_STYLES, cap.style) + ' · ' + labelOf(cat.CAP_MATERIALS, cap.material)) +
-      row('Broderie mortier', cap.emb || 'Aucune') +
-      row('Logo mortier', cap.logoName || 'Aucun') +
-      row('Gland', labelOf(cat.TASSEL_STYLES, tassel.style)) +
-      row('Année de promotion', tassel.year || 'Aucune') +
-      row('Couleurs', 'À définir avec le client — voir note d’atelier') +
-      '</dl>';
+    if (item.robe) {
+      const robe = item.robe;
+      const emb = robe.emb || {};
+      rows += row('Manches', labelOf(cat.SLEEVES, robe.sleeve)) +
+        row('Col', labelOf(cat.COLLARS, robe.collar)) +
+        row('Bordure', labelOf(cat.TRIM_STYLES, robe.trim)) +
+        row('Texte à broder', emb.text || '—') +
+        row('Logo d’université', emb.uniLogoName || 'Aucun');
+    }
+    if (item.cap) {
+      rows += row('Casquette', labelOf(cat.CAP_STYLES, item.cap.style) + ' · ' +
+          labelOf(cat.CAP_MATERIALS, item.cap.material)) +
+        row('Broderie du plateau', item.cap.emb || 'Aucune') +
+        row('Logo brodé', item.cap.logoName || 'Aucun');
+    }
+    if (item.tassel) {
+      rows += row('Gland', labelOf(cat.TASSEL_STYLES, item.tassel.style)) +
+        row('Année de promotion', item.tassel.year || 'Aucune');
+    }
+    if (item.hood) {
+      rows += row('Écharpe', labelOf(cat.HOOD_STYLES, item.hood.style)) +
+        row('Broderie de l’écharpe', item.hood.emb || 'Aucune');
+    }
+
+    rows += row('Couleurs', 'À définir avec le client — voir note d’atelier');
+    return '<dl class="ad-rows">' + rows + '</dl>';
   }
 
+  /* Seules les mesures relevées pour cette pièce : une casquette n'a
+     qu'un tour de tête, inutile d'afficher huit cases vides. */
   function measureTable(item) {
     const measures = item.measures || {};
-    return '<div class="ad-measures">' + cat.MEASUREMENTS.map((m) => {
+    const fields = cat.MEASUREMENTS.filter((m) => measures[m.id] !== undefined);
+    if (!fields.length) return '<p class="ad-note">Aucune mesure pour cet article.</p>';
+
+    return '<div class="ad-measures">' + fields.map((m) => {
       const value = measures[m.id];
       return '<div class="ad-measure' + (value ? '' : ' is-missing') + '">' +
         '<span class="ad-measure__label">' + esc(m.label) + '</span>' +
@@ -611,16 +627,27 @@
     return (item.files || []).find((f) => String(f.id) === parts.slice(1).join(':')) || null;
   }
 
-  /* Une tenue complète, repliable quand la commande en compte plusieurs. */
+  /* Le nom que porte l'article dans l'atelier : ce qui doit être brodé
+     dessus, sinon un repère neutre. */
+  function itemTag(item) {
+    if (item.robe && item.robe.emb && item.robe.emb.text) return item.robe.emb.text;
+    if (item.cap && item.cap.emb) return item.cap.emb;
+    if (item.hood && item.hood.emb) return item.hood.emb;
+    return 'Sans broderie';
+  }
+
+  /* Un article de la commande — une robe, une casquette ou une écharpe. */
   function itemBlock(item, index, total) {
-    const emb = ((item.robe || {}).emb || {});
+    const product = item.product ? cat.product(item.product) : null;
+    const name = product ? product.label : 'Tenue complète';
     const title = total > 1
-      ? 'Tenue ' + (index + 1) + ' sur ' + total
-      : 'La tenue';
+      ? (index + 1) + '. ' + name
+      : name;
+    const price = Number(item.price) ? ' · ' + cat.price(Number(item.price)) : '';
     return '<section class="ad-item">' +
       '<header class="ad-item__head">' +
-        '<h3 class="ad-item__title">' + esc(title) + '</h3>' +
-        '<span class="ad-item__tag">' + esc(emb.text || 'Sans broderie') + '</span>' +
+        '<h3 class="ad-item__title">' + esc(title + price) + '</h3>' +
+        '<span class="ad-item__tag">' + esc(itemTag(item)) + '</span>' +
       '</header>' +
       '<h4 class="ad-item__sub">Fichiers de production</h4>' +
       filesBlock(item, index) +
@@ -691,7 +718,7 @@
             (manual ? ' · <span class="ad-head__origin">saisie atelier</span>' : '') + '</p>' +
           '<h2 class="ad-head__name">' + esc(client.name || 'Client sans nom') + '</h2>' +
           '<p class="ad-head__sub">Reçue le ' + esc(formatDateTime(order.createdAt)) +
-            ' · ' + items.length + ' tenue' + (items.length > 1 ? 's' : '') + '</p>' +
+            ' · ' + items.length + ' article' + (items.length > 1 ? 's' : '') + '</p>' +
         '</div>' +
         (flag ? '<span class="ad-flag ad-flag--' + flag.tone + ' ad-flag--lg">' + esc(flag.text) + '</span>' : '') +
       '</header>' +
@@ -720,7 +747,7 @@
 
       (items.length
         ? items.map((item, index) => itemBlock(item, index, items.length)).join('')
-        : '<section class="ad-block"><p class="ad-note">Cette commande ne contient aucune tenue.</p></section>') +
+        : '<section class="ad-block"><p class="ad-note">Cette commande ne contient aucun article.</p></section>') +
 
       machineBlock(order) +
 
@@ -814,7 +841,8 @@
       'Statut : ' + statusOf(order.status).label,
       'Reçue le : ' + formatDateTime(order.createdAt),
       'Origine : ' + ((order.config || {}).source === 'manual' ? 'saisie atelier' : 'site'),
-      'Tenues : ' + items.length,
+      'Articles : ' + items.length,
+      'Total : ' + cat.price(items.reduce((sum, i) => sum + (Number(i.price) || 0), 0)),
       '',
       '— CLIENT —',
       'Nom : ' + (client.name || '—'),
@@ -827,29 +855,41 @@
     ];
 
     items.forEach((item, index) => {
-      const robe = item.robe || {};
-      const emb = robe.emb || {};
-      const hood = item.hood || {};
-      const cap = item.cap || {};
-      const tassel = item.tassel || {};
       const measures = item.measures || {};
-      lines.push('', '════ TENUE ' + (index + 1) + ' sur ' + items.length + ' ════');
+      const product = item.product ? cat.product(item.product) : null;
+      lines.push('', '════ ' + (index + 1) + '/' + items.length + ' — ' +
+        (product ? product.label.toUpperCase() : 'TENUE COMPLÈTE') +
+        (Number(item.price) ? ' — ' + cat.price(Number(item.price)) : '') + ' ════');
       lines.push('Fichiers : ' + ((item.files || []).length
         ? item.files.map((f) => f.name + ' (' + f.label + ')').join(', ') : '—'));
-      lines.push('Manches : ' + labelOf(cat.SLEEVES, robe.sleeve));
-      lines.push('Col : ' + labelOf(cat.COLLARS, robe.collar));
-      lines.push('Bordure : ' + labelOf(cat.TRIM_STYLES, robe.trim));
-      lines.push('Texte à broder : ' + (emb.text || '—'));
-      lines.push('Logo université : ' + (emb.uniLogoName || '—'));
-      lines.push('Capuche : ' + labelOf(cat.HOOD_STYLES, hood.style) +
-        (hood.emb ? ' · broderie : ' + hood.emb : ''));
-      lines.push('Mortier : ' + labelOf(cat.CAP_STYLES, cap.style) +
-        ' / ' + labelOf(cat.CAP_MATERIALS, cap.material) +
-        (cap.emb ? ' · broderie : ' + cap.emb : ''));
-      lines.push('Gland : ' + labelOf(cat.TASSEL_STYLES, tassel.style) +
-        (tassel.year ? ' / ' + tassel.year : ''));
+
+      if (item.robe) {
+        const emb = item.robe.emb || {};
+        lines.push('Manches : ' + labelOf(cat.SLEEVES, item.robe.sleeve));
+        lines.push('Col : ' + labelOf(cat.COLLARS, item.robe.collar));
+        lines.push('Bordure : ' + labelOf(cat.TRIM_STYLES, item.robe.trim));
+        lines.push('Texte à broder : ' + (emb.text || '—'));
+        lines.push('Logo université : ' + (emb.uniLogoName || '—'));
+      }
+      if (item.cap) {
+        lines.push('Casquette : ' + labelOf(cat.CAP_STYLES, item.cap.style) +
+          ' / ' + labelOf(cat.CAP_MATERIALS, item.cap.material) +
+          (item.cap.emb ? ' · broderie : ' + item.cap.emb : ''));
+        lines.push('Logo brodé : ' + (item.cap.logoName || '—'));
+      }
+      if (item.tassel) {
+        lines.push('Gland : ' + labelOf(cat.TASSEL_STYLES, item.tassel.style) +
+          (item.tassel.year ? ' / ' + item.tassel.year : ''));
+      }
+      if (item.hood) {
+        lines.push('Écharpe : ' + labelOf(cat.HOOD_STYLES, item.hood.style) +
+          (item.hood.emb ? ' · broderie : ' + item.hood.emb : ''));
+      }
+
       lines.push('— Mesures —');
-      cat.MEASUREMENTS.forEach((m) => {
+      const fields = cat.MEASUREMENTS.filter((m) => measures[m.id] !== undefined);
+      if (!fields.length) lines.push('  —');
+      fields.forEach((m) => {
         lines.push('  ' + m.label + ' : ' + (measures[m.id] || '—') + ' ' + m.unit);
       });
     });
@@ -903,12 +943,13 @@
 
   function exportCsv() {
     if (!orders.length) { toast('Aucune commande à exporter.'); return; }
-    /* Une ligne par tenue : une commande de trois tenues donne trois
+    /* Une ligne par article : une commande de trois pièces donne trois
        lignes partageant la même référence et le même client, ce qui
-       reste exploitable dans un tableur. */
-    const columns = ['Référence', 'Statut', 'Origine', 'Reçue le', 'Tenue', 'Sur', 'Client', 'WhatsApp',
-      'E-mail', 'Région', 'Université', 'Soutenance', 'Robe', 'Broderie', 'Capuche', 'Mortier',
-      'Gland', 'Fichiers', 'Note'];
+       reste exploitable dans un tableur. La colonne « Composition »
+       décrit la pièce de la ligne, quelle qu'elle soit. */
+    const columns = ['Référence', 'Statut', 'Origine', 'Reçue le', 'Article', 'Sur', 'Pièce', 'Prix',
+      'Client', 'WhatsApp', 'E-mail', 'Région', 'Université', 'Soutenance',
+      'Composition', 'Broderie', 'Mesures', 'Fichiers', 'Note'];
     const cell = (value) => '"' + String(value == null ? '' : value).replace(/"/g, '""') + '"';
 
     const rows = [];
@@ -917,11 +958,36 @@
       const items = itemsOf(order);
       const list = items.length ? items : [{}];
       list.forEach((item, index) => {
-        const robe = item.robe || {};
-        const emb = robe.emb || {};
-        const hood = item.hood || {};
-        const cap = item.cap || {};
-        const tassel = item.tassel || {};
+        const product = item.product ? cat.product(item.product) : null;
+        const spec = [];
+        const emb = [];
+
+        if (item.robe) {
+          spec.push(labelOf(cat.SLEEVES, item.robe.sleeve) + ' / ' +
+            labelOf(cat.COLLARS, item.robe.collar) + ' / ' +
+            labelOf(cat.TRIM_STYLES, item.robe.trim));
+          if (item.robe.emb && item.robe.emb.text) emb.push(item.robe.emb.text);
+        }
+        if (item.cap) {
+          spec.push(labelOf(cat.CAP_STYLES, item.cap.style) + ' / ' +
+            labelOf(cat.CAP_MATERIALS, item.cap.material));
+          if (item.cap.emb) emb.push(item.cap.emb);
+        }
+        if (item.tassel) {
+          spec.push(labelOf(cat.TASSEL_STYLES, item.tassel.style) +
+            (item.tassel.year ? ' / ' + item.tassel.year : ''));
+        }
+        if (item.hood) {
+          spec.push(labelOf(cat.HOOD_STYLES, item.hood.style));
+          if (item.hood.emb) emb.push(item.hood.emb);
+        }
+
+        const measures = item.measures || {};
+        const measureText = cat.MEASUREMENTS
+          .filter((m) => measures[m.id])
+          .map((m) => m.label + ' ' + measures[m.id] + m.unit)
+          .join(' | ');
+
         rows.push([
           order.ref,
           statusOf(order.status).label,
@@ -929,17 +995,17 @@
           formatDateTime(order.createdAt),
           index + 1,
           list.length,
+          product ? product.label : 'Tenue complète',
+          Number(item.price) || '',
           client.name,
           client.whatsapp,
           client.email,
           client.region,
           client.university,
           client.date,
-          labelOf(cat.SLEEVES, robe.sleeve) + ' / ' + labelOf(cat.COLLARS, robe.collar),
-          emb.text,
-          labelOf(cat.HOOD_STYLES, hood.style),
-          labelOf(cat.CAP_STYLES, cap.style) + ' / ' + labelOf(cat.CAP_MATERIALS, cap.material),
-          labelOf(cat.TASSEL_STYLES, tassel.style) + (tassel.year ? ' / ' + tassel.year : ''),
+          spec.join(' · '),
+          emb.join(' · '),
+          measureText,
           (item.files || []).map((f) => f.name).join(' | '),
           order.adminNote,
         ].map(cell).join(';'));
@@ -1027,19 +1093,38 @@
       '</select>';
   }
 
+  /* Les produits auxquels une mesure sert : le tour de tête ne concerne
+     que la casquette, la longueur de robe que la robe. */
+  function measureOwners(measureId) {
+    return cat.PRODUCTS
+      .filter((p) => p.measures.indexOf(measureId) > -1)
+      .map((p) => p.id).join(' ');
+  }
+
   function newItemMarkup(index) {
     const years = [];
     const thisYear = new Date().getFullYear();
     for (let y = thisYear; y <= thisYear + 3; y += 1) years.push(String(y));
 
-    return '<article class="ad-new__item" data-new-item="' + index + '">' +
+    const group = (product, inner) =>
+      '<div class="ad-new__grid" data-new-group="' + product + '">' + inner + '</div>';
+
+    return '<article class="ad-new__item" data-new-item="' + index + '" data-product="robe">' +
       '<header class="ad-new__itemHead">' +
-        '<h4>Tenue <span data-new-item-num>' + (index + 1) + '</span></h4>' +
+        '<h4>Article <span data-new-item-num>' + (index + 1) + '</span></h4>' +
         '<button type="button" class="ad-new__remove" data-new-item-remove' +
-          ' aria-label="Retirer cette tenue">×</button>' +
+          ' aria-label="Retirer cet article">×</button>' +
       '</header>' +
 
       '<div class="ad-new__grid">' +
+        '<label class="ad-new__field ad-new__field--wide"><span>Pièce commandée</span>' +
+          '<select class="ad-input" data-new-item-field="product" data-new-product>' +
+            cat.PRODUCTS.map((p) => '<option value="' + esc(p.id) + '">' +
+              esc(p.label) + ' — ' + esc(cat.price(p.price)) + '</option>').join('') +
+          '</select></label>' +
+      '</div>' +
+
+      group('robe',
         '<label class="ad-new__field ad-new__field--wide"><span>Texte à broder</span>' +
           '<input class="ad-input" type="text" data-new-item-field="emb" maxlength="40"' +
             ' placeholder="Ex : Dr Salhi Wafa"></label>' +
@@ -1048,12 +1133,15 @@
         '<label class="ad-new__field"><span>Col</span>' +
           selectField('collar', cat.COLLARS, 'v') + '</label>' +
         '<label class="ad-new__field"><span>Bordure</span>' +
-          selectField('trim', cat.TRIM_STYLES, 'double') + '</label>' +
-        '<label class="ad-new__field"><span>Capuche</span>' +
-          selectField('hood', cat.HOOD_STYLES, 'etole-droite') + '</label>' +
-        '<label class="ad-new__field"><span>Mortier</span>' +
+          selectField('trim', cat.TRIM_STYLES, 'double') + '</label>') +
+
+      group('casquette',
+        '<label class="ad-new__field ad-new__field--wide"><span>Broderie du plateau</span>' +
+          '<input class="ad-input" type="text" data-new-item-field="capEmb" maxlength="24"' +
+            ' placeholder="Ex : Promotion 2026"></label>' +
+        '<label class="ad-new__field"><span>Forme</span>' +
           selectField('cap', cat.CAP_STYLES, 'classique') + '</label>' +
-        '<label class="ad-new__field"><span>Matière du mortier</span>' +
+        '<label class="ad-new__field"><span>Matière</span>' +
           selectField('capMaterial', cat.CAP_MATERIALS, 'gabardine') + '</label>' +
         '<label class="ad-new__field"><span>Gland</span>' +
           selectField('tassel', cat.TASSEL_STYLES, 'noeud') + '</label>' +
@@ -1061,13 +1149,20 @@
           '<select class="ad-input" data-new-item-field="year">' +
             '<option value="">Aucune</option>' +
             years.map((y) => '<option value="' + y + '">' + y + '</option>').join('') +
-          '</select></label>' +
-      '</div>' +
+          '</select></label>') +
+
+      group('echarpe',
+        '<label class="ad-new__field ad-new__field--wide"><span>Broderie de l’écharpe</span>' +
+          '<input class="ad-input" type="text" data-new-item-field="hoodEmb" maxlength="40"' +
+            ' placeholder="Ex : Faculté de Médecine de Tunis"></label>' +
+        '<label class="ad-new__field"><span>Modèle</span>' +
+          selectField('hood', cat.HOOD_STYLES, 'etole-droite') + '</label>') +
 
       '<details class="ad-new__measures">' +
         '<summary>Mesures (facultatives)</summary>' +
         '<div class="ad-new__grid">' + cat.MEASUREMENTS.map((m) =>
-          '<label class="ad-new__field"><span>' + esc(m.label) + ' (' + m.unit + ')</span>' +
+          '<label class="ad-new__field" data-new-measure-for="' + measureOwners(m.id) + '">' +
+            '<span>' + esc(m.label) + ' (' + m.unit + ')</span>' +
             '<input class="ad-input" type="number" inputmode="decimal" step="0.5"' +
               ' data-new-measure="' + m.id + '" placeholder="' + m.placeholder + '"' +
               ' min="' + m.min + '" max="' + m.max + '"></label>').join('') +
@@ -1076,11 +1171,23 @@
     '</article>';
   }
 
+  /* N'affiche que les champs de la pièce choisie : l'atelier ne voit
+     pas les options de la robe en saisissant une casquette. */
+  function syncNewItem(node) {
+    const product = node.getAttribute('data-product') || 'robe';
+    node.querySelectorAll('[data-new-group]').forEach((group) => {
+      group.hidden = group.getAttribute('data-new-group') !== product;
+    });
+    node.querySelectorAll('[data-new-measure-for]').forEach((field) => {
+      field.hidden = field.getAttribute('data-new-measure-for').split(' ').indexOf(product) === -1;
+    });
+  }
+
   function renumberNewItems() {
     const items = document.querySelectorAll('[data-new-item]');
     items.forEach((node, index) => {
       node.querySelector('[data-new-item-num]').textContent = String(index + 1);
-      /* Une commande garde au moins une tenue. */
+      /* Une commande garde au moins un article. */
       node.querySelector('[data-new-item-remove]').hidden = items.length === 1;
     });
   }
@@ -1088,6 +1195,8 @@
   function addNewItem() {
     newItemSeq += 1;
     $('#adNewItems').insertAdjacentHTML('beforeend', newItemMarkup(newItemSeq - 1));
+    const node = $('#adNewItems').lastElementChild;
+    if (node) syncNewItem(node);
     renumberNewItems();
   }
 
@@ -1148,33 +1257,52 @@
     if (!client.date) return { error: 'Indiquez la date de soutenance.' };
 
     const nodes = Array.from(document.querySelectorAll('[data-new-item]'));
-    if (!nodes.length) return { error: 'Ajoutez au moins une tenue.' };
+    if (!nodes.length) return { error: 'Ajoutez au moins un article.' };
 
     const collected = nodes.map((node) => {
       const field = (name) => {
         const el = node.querySelector('[data-new-item-field="' + name + '"]');
         return el ? el.value : '';
       };
+      const product = cat.product(field('product'));
+
+      /* Comme sur le site, un article ne porte que ses propres mesures. */
       const measures = {};
-      cat.MEASUREMENTS.forEach((m) => {
+      cat.measuresFor(product.id).forEach((m) => {
         const el = node.querySelector('[data-new-measure="' + m.id + '"]');
         measures[m.id] = el ? el.value.trim() : '';
       });
-      return {
+
+      const item = {
         id: 'it' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+        product: product.id,
+        label: product.label,
+        price: product.price,
         addedAt: new Date().toISOString(),
         files: [],
-        robe: {
+        measures,
+      };
+
+      if (product.id === 'robe') {
+        item.robe = {
           sleeve: field('sleeve'),
           collar: field('collar'),
           trim: field('trim'),
           emb: { text: field('emb').trim(), uniLogo: null, uniLogoName: '' },
-        },
-        hood: { style: field('hood'), emb: '' },
-        cap: { style: field('cap'), material: field('capMaterial'), emb: '', logo: null, logoName: '' },
-        tassel: { style: field('tassel'), year: field('year') },
-        measures,
-      };
+        };
+      }
+      if (product.id === 'casquette') {
+        item.cap = {
+          style: field('cap'), material: field('capMaterial'),
+          emb: field('capEmb').trim(), logo: null, logoName: '',
+        };
+        item.tassel = { style: field('tassel'), year: field('year') };
+      }
+      if (product.id === 'echarpe') {
+        item.hood = { style: field('hood'), emb: field('hoodEmb').trim() };
+      }
+
+      return item;
     });
 
     const stamp = new Date();
@@ -1357,6 +1485,15 @@
         node.remove();
         renumberNewItems();
       }
+    });
+    /* Changer de pièce n'affiche que les champs qui la concernent. */
+    $('#adNewItems').addEventListener('change', (event) => {
+      const picker = event.target.closest('[data-new-product]');
+      if (!picker) return;
+      const node = picker.closest('[data-new-item]');
+      if (!node) return;
+      node.setAttribute('data-product', picker.value);
+      syncNewItem(node);
     });
     $('#adNewModal').addEventListener('click', (event) => {
       if (event.target.closest('[data-new-close]')) closeNewOrder();

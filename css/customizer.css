@@ -1404,3 +1404,109 @@ select.cz-input {
   .cz-body { background: var(--white); }
   .cz-preview { position: static; height: auto; }
 }
+
+/* ============================================================
+   PRIX & CONFIRMATION D'AJOUT AU PANIER
+   ============================================================ */
+.cz-tocart__price {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 0.85rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--line);
+  font-size: var(--fs-small);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.cz-tocart__price strong {
+  font-family: var(--serif);
+  font-size: 1.5rem;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* L'écran de confirmation remplace l'assistant : rail, navigation et
+   aperçu n'ont plus d'objet. */
+body.is-added .cz-rail,
+body.is-added .cz-nav,
+body.is-added .cz-preview { display: none; }
+
+.cz-added { text-align: center; }
+.cz-added__cart {
+  font-size: var(--fs-small);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-top: 0.75rem;
+}
+.cz-added__cart strong {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.cz-added__text {
+  color: var(--ink-soft);
+  font-size: var(--fs-small);
+  line-height: 1.7;
+  margin: 0.6rem auto 0;
+  max-width: 42ch;
+}
+
+.cz-added__grid {
+  display: grid;
+  gap: 0.75rem;
+  margin: clamp(1.5rem, 4vw, 2.25rem) 0;
+  text-align: left;
+}
+.cz-added__card {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  transition: border-color 0.3s var(--ease-lux), transform 0.3s var(--ease-lux);
+}
+@media (hover: hover) {
+  .cz-added__card:hover {
+    border-color: rgba(200, 168, 107, 0.6);
+    transform: translateY(-2px);
+  }
+}
+.cz-added__card:active { transform: scale(0.99); }
+
+.cz-added__thumb {
+  flex: 0 0 auto;
+  width: 62px;
+  aspect-ratio: 4 / 5;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #EDE6DC;
+}
+.cz-added__thumb img { width: 100%; height: 100%; object-fit: contain; }
+
+.cz-added__body { display: grid; gap: 0.15rem; min-width: 0; }
+.cz-added__body strong { font-size: 0.9375rem; font-weight: 500; }
+.cz-added__body small { font-size: var(--fs-small); color: var(--ink-faint); }
+
+.cz-added__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+.cz-added__actions .btn { flex: 1 1 200px; text-align: center; }
+
+@media (min-width: 640px) {
+  .cz-added__grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cz-added__card { transition: none; }
+}
+
+.cz-tocart__price strong,
+.cz-added__cart strong { font-variant-numeric: lining-nums tabular-nums; }

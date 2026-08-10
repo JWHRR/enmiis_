@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Essayage virtuel | ENMIIS</title>
+  <meta name="description" content="Visualisez votre tenue de soutenance ENMIIS sur vous avant de commander, à partir d’une simple photo.">
+  <meta name="theme-color" content="#FFFFFF">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/customizer.css">
+  <link rel="stylesheet" href="css/panier.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23111111'/%3E%3Ctext x='16' y='22' font-family='Georgia' font-size='18' fill='%23C8A86B' text-anchor='middle'%3EE%3C/text%3E%3C/svg%3E">
+</head>
+<body class="cz-body pn-body">
+
+  <a class="skip-link" href="#esMain">Aller à l’essayage</a>
+
+  <header class="cz-topbar">
+    <a class="cz-topbar__back" href="panier.html">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 5 8 12 15 19"/></svg>
+      <span>Panier</span>
+    </a>
+    <a class="cz-topbar__logo" href="index.html" aria-label="Accueil ENMIIS">
+      <img src="img/logo-enmiis.png" alt="ENMIIS">
+    </a>
+    <div class="cz-topbar__actions">
+      <span class="pn-count" id="esCount" aria-live="polite"></span>
+    </div>
+  </header>
+
+  <main class="pn-main" id="esMain">
+
+    <header class="pn-head">
+      <p class="pn-head__label">Essayage virtuel</p>
+      <h1 class="pn-head__title">Visualisez votre tenue ENMIIS</h1>
+      <p class="pn-head__sub">Découvrez votre tenue de soutenance sur vous avant de commander.</p>
+    </header>
+
+    <!-- ======================= PANIER VIDE ======================= -->
+    <section class="pn-empty" id="esEmpty" hidden>
+      <div class="pn-empty__art">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15l-1.9-4.1L5.5 9l4.6-1.4z" transform="translate(14 12) scale(1.6)"/>
+        </svg>
+      </div>
+      <h2 class="pn-empty__title">Rien à essayer pour l’instant</h2>
+      <p class="pn-empty__text">Configurez d’abord au moins une pièce : l’essayage se fait à partir
+        de la tenue exacte qui se trouve dans votre panier.</p>
+      <a class="btn btn--solid" href="soutenance.html">Composer ma tenue</a>
+    </section>
+
+    <!-- ======================= ESSAYAGE ======================= -->
+    <div class="es-layout" id="esLayout" hidden>
+
+      <!-- ---------- Colonne gauche : photo ---------- -->
+      <section class="es-upload" aria-labelledby="esUploadTitle">
+        <div class="cz-group">
+          <h2 class="pn-checkout__title" id="esUploadTitle">Votre photo</h2>
+          <p class="pn-checkout__note">Téléchargez une photo de vous pour visualiser votre tenue ENMIIS.
+            De face, en pied ou à mi-corps, sur un fond dégagé — c’est ce qui donne le meilleur rendu.</p>
+
+          <div class="cz-drop es-drop" id="esDrop" tabindex="0" role="button"
+               aria-label="Déposer ou choisir une photo">
+            <div class="cz-drop__ring"></div>
+            <svg class="cz-drop__icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 16V4"/><polyline points="7 9 12 4 17 9"/><path d="M4 20h16"/>
+            </svg>
+            <p class="cz-drop__title">Déposez votre photo ici</p>
+            <p class="cz-drop__sub">ou cliquez pour parcourir · 10 Mo maximum</p>
+            <div class="cz-drop__badges">
+              <span class="cz-badge">JPG</span>
+              <span class="cz-badge">JPEG</span>
+              <span class="cz-badge">PNG</span>
+              <span class="cz-badge">WEBP</span>
+            </div>
+            <input type="file" id="esFile" class="visually-hidden"
+                   accept="image/jpeg,image/png,image/webp">
+          </div>
+
+          <figure class="es-photo" id="esPhoto" hidden>
+            <img id="esPhotoImg" alt="Votre photo, avant génération">
+            <figcaption>
+              <span id="esPhotoName"></span>
+              <button type="button" class="cz-file__btn cz-file__btn--danger" id="esPhotoClear">Retirer</button>
+            </figcaption>
+          </figure>
+
+          <p class="cz-error" id="esError" hidden></p>
+
+          <button type="button" class="btn btn--solid pn-submit" id="esGenerate" disabled>
+            Essayer avec l’IA
+          </button>
+          <p class="es-privacy">Votre photo sert uniquement à produire cette visualisation.
+            Elle n’est ni publiée ni jointe à votre commande.</p>
+        </div>
+      </section>
+
+      <!-- ---------- Colonne droite : sélection ---------- -->
+      <section class="es-selection" aria-labelledby="esSelTitle">
+        <div class="cz-group">
+          <h2 class="pn-checkout__title" id="esSelTitle">Votre sélection</h2>
+          <ul class="es-picks" id="esPicks"></ul>
+          <div class="pn-summary__row es-total">
+            <span>Total</span><strong id="esTotal">0 DT</strong>
+          </div>
+          <a class="btn btn--line es-selection__edit" href="panier.html">Modifier ma tenue</a>
+        </div>
+      </section>
+    </div>
+
+    <!-- ======================= RÉSULTAT ======================= -->
+    <section class="es-result" id="esResult" hidden aria-labelledby="esResultTitle">
+      <p class="pn-head__label">Généré pour vous</p>
+      <h2 class="es-result__title" id="esResultTitle">Votre look ENMIIS</h2>
+
+      <figure class="es-result__figure">
+        <img id="esResultImg" alt="Visualisation de votre tenue ENMIIS portée">
+      </figure>
+
+      <div class="es-result__panel">
+        <h3 class="es-result__sub">Votre sélection</h3>
+        <ul class="es-picks" id="esResultPicks"></ul>
+        <div class="pn-summary__row es-total">
+          <span>Total</span><strong id="esResultTotal">0 DT</strong>
+        </div>
+
+        <div class="es-result__actions">
+          <a class="btn btn--solid" href="panier.html#pnForm">Commander</a>
+          <a class="btn btn--line" href="panier.html">Modifier ma tenue</a>
+          <button type="button" class="btn btn--line" id="esRetry">Essayer une autre photo</button>
+        </div>
+
+        <p class="es-disclaimer">Visualisation générée par IA. Le rendu peut légèrement différer
+          du produit réel.</p>
+        <p class="es-back"><a href="panier.html">Retour au panier</a></p>
+      </div>
+    </section>
+
+    <!-- ======================= ATTENTE ======================= -->
+    <div class="es-wait" id="esWait" hidden aria-live="polite">
+      <div class="es-wait__ring" aria-hidden="true"></div>
+      <p class="es-wait__title">Composition de votre tenue…</p>
+      <p class="es-wait__text">Cela prend une vingtaine de secondes. Ne fermez pas cette page.</p>
+    </div>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/main.js" defer></script>
+  <script src="js/cz-catalog.js" defer></script>
+  <script src="js/cz-store.js" defer></script>
+  <script src="js/essayage.js" defer></script>
+</body>
+</html>
