@@ -226,7 +226,7 @@
   /* Précharge la photo de l’étape suivante pour une bascule sans attente. */
   const preloaded = {};
   function preloadNext(stepId) {
-    const order = cat.STEPS.map((s) => s.id);
+    const order = cat.stepsFor(CZ.store.at('product')).map((s) => s.id);
     const next = order[order.indexOf(stepId) + 1];
     const shot = PHOTOS[STEP_SHOT[next]];
     if (shot && !preloaded[shot.src]) {

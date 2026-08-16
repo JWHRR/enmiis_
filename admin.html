@@ -46,6 +46,7 @@
       </div>
       <div class="ad-topbar__actions">
         <button class="btn btn--solid ad-topbar__new" id="adNew" type="button">+ Nouvelle commande</button>
+        <button class="btn btn--line ad-topbar__btn" id="adClients" type="button">Clients</button>
         <button class="btn btn--line ad-topbar__btn" id="adRefresh" type="button">Actualiser</button>
         <button class="btn btn--line ad-topbar__btn" id="adImport" type="button">Importer</button>
         <button class="btn btn--line ad-topbar__btn" id="adExport" type="button">Exporter</button>
@@ -120,6 +121,20 @@
   </div>
 
   <!-- ======================= NOUVELLE COMMANDE (saisie atelier) ======================= -->
+  <!-- ======================= CLIENTS INSCRITS ======================= -->
+  <div class="ad-modal ad-modal--wide" id="adClientsModal" aria-hidden="true" role="dialog" aria-modal="true"
+       aria-labelledby="adClientsTitle">
+    <div class="ad-modal__backdrop" data-clients-close></div>
+    <div class="ad-modal__panel">
+      <button type="button" class="ad-modal__close" data-clients-close aria-label="Fermer">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
+      </button>
+      <h2 class="ad-modal__title" id="adClientsTitle">Clients</h2>
+      <p class="ad-note" id="adClientsCount"></p>
+      <div class="ad-modal__body" id="adClientsBody"></div>
+    </div>
+  </div>
+
   <div class="ad-modal ad-modal--wide" id="adNewModal" aria-hidden="true" role="dialog" aria-modal="true"
        aria-labelledby="adNewTitle">
     <div class="ad-modal__backdrop" data-new-close></div>

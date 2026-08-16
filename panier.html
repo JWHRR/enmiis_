@@ -22,9 +22,9 @@
 
   <!-- ======================= TOPBAR ======================= -->
   <header class="cz-topbar">
-    <a class="cz-topbar__back" href="customizer.html">
+    <a class="cz-topbar__back" href="soutenance.html">
       <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 5 8 12 15 19"/></svg>
-      <span>Configurateur</span>
+      <span>Soutenances</span>
     </a>
     <a class="cz-topbar__logo" href="index.html" aria-label="Accueil ENMIIS">
       <img src="img/logo-enmiis.png" alt="ENMIIS">
@@ -43,6 +43,19 @@
       <p class="pn-expiry" id="pnExpiry" hidden></p>
     </header>
 
+    <!-- Invitation, pas une obligation : la commande reste possible sans compte. -->
+    <aside class="pn-account" id="pnAccount" hidden>
+      <div class="pn-account__body">
+        <p class="pn-account__title" id="pnAccountTitle">Gardez votre panier</p>
+        <p class="pn-account__text" id="pnAccountText">Sans compte, il s’efface au bout de 24 h.
+          Avec, vous le retrouvez sur tous vos appareils.</p>
+      </div>
+      <div class="pn-account__actions" id="pnAccountActions">
+        <a class="btn btn--solid" href="compte.html">Créer mon compte</a>
+        <a class="btn btn--line" href="compte.html?mode=login">Me connecter</a>
+      </div>
+    </aside>
+
     <!-- ======================= PANIER VIDE ======================= -->
     <section class="pn-empty" id="pnEmpty" hidden>
       <div class="pn-empty__art">
@@ -51,26 +64,41 @@
         </svg>
       </div>
       <h2 class="pn-empty__title">Votre panier est vide</h2>
-      <p class="pn-empty__text">Composez votre tenue de soutenance dans le configurateur : elle viendra
-        se ranger ici, et vous pourrez en ajouter plusieurs avant de commander.</p>
-      <a class="btn btn--solid" href="customizer.html">Composer ma tenue</a>
+      <p class="pn-empty__text">Configurez votre robe, votre casquette ou votre écharpe : chaque pièce
+        viendra se ranger ici, et vous commanderez le tout en une seule fois.</p>
+      <a class="btn btn--solid" href="soutenance.html">Composer ma tenue</a>
     </section>
 
     <!-- ======================= CONTENU ======================= -->
     <div class="pn-layout" id="pnLayout" hidden>
 
-      <section class="pn-items" aria-label="Tenues du panier">
+      <section class="pn-items" aria-label="Articles du panier">
         <ul id="pnList"></ul>
-        <a class="pn-add" href="customizer.html">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Ajouter une autre tenue
-        </a>
+
+        <div class="pn-more">
+          <p class="pn-more__title">Compléter votre tenue</p>
+          <div class="pn-more__row">
+            <a class="pn-add" href="customizer.html?produit=robe">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Robe
+            </a>
+            <a class="pn-add" href="customizer.html?produit=casquette">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Casquette
+            </a>
+            <a class="pn-add" href="customizer.html?produit=echarpe">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Écharpe
+            </a>
+          </div>
+        </div>
+
       </section>
 
       <section class="pn-checkout" aria-label="Vos coordonnées">
         <div class="cz-group">
           <h2 class="pn-checkout__title">Vos coordonnées</h2>
-          <p class="pn-checkout__note">Renseignées une seule fois — elles valent pour toutes les tenues
+          <p class="pn-checkout__note">Renseignées une seule fois — elles valent pour tous les articles
             de ce panier.</p>
 
           <div class="cz-form" id="pnForm">
@@ -108,6 +136,12 @@
               <p class="cz-error" data-client-error="date" hidden></p>
             </div>
             <div class="cz-field cz-field--wide">
+              <label class="cz-field__label" for="pn_promo">Code promo</label>
+              <input class="cz-input" id="pn_promo" type="text" data-client="promo"
+                     placeholder="Si vous en avez un" autocomplete="off" spellcheck="false">
+              <p class="cz-hint" id="pnPromoOk" hidden>Code appliqué.</p>
+            </div>
+            <div class="cz-field cz-field--wide">
               <label class="cz-field__label" for="pn_notes">Remarques</label>
               <textarea class="cz-input" id="pn_notes" data-client="notes" rows="3"
                         placeholder="Couleurs souhaitées, contraintes de délai, précisions de broderie…"></textarea>
@@ -116,8 +150,11 @@
         </div>
 
         <div class="pn-summary">
+          <div class="pn-summary__line">
+            <span>Articles</span><span id="pnSummaryCount">0</span>
+          </div>
           <div class="pn-summary__row">
-            <span>Tenues</span><strong id="pnSummaryCount">0</strong>
+            <span>Total</span><strong id="pnTotal">0 DT</strong>
           </div>
           <p class="pn-summary__note">Le devis est confirmé par l’atelier après vérification des mesures
             et de la broderie.</p>
@@ -144,7 +181,7 @@
         possible — par sécurité, envoyez aussi votre référence par WhatsApp.</p>
       <div class="cz-done__actions">
         <button type="button" class="btn btn--solid" id="pnPdf">Télécharger le récapitulatif</button>
-        <a class="btn btn--line" href="customizer.html">Composer une autre tenue</a>
+        <a class="btn btn--line" href="soutenance.html">Composer une autre tenue</a>
       </div>
     </section>
   </main>
@@ -154,6 +191,7 @@
   <script src="js/main.js" defer></script>
   <script src="js/cz-catalog.js" defer></script>
   <script src="js/cz-store.js" defer></script>
+  <script src="js/account.js" defer></script>
   <script src="js/panier.js" defer></script>
 </body>
 </html>

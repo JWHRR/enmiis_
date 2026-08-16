@@ -427,6 +427,28 @@
     const chips = Array.from(filterBar.querySelectorAll('button'));
     const cards = Array.from(document.querySelectorAll('.work-card'));
 
+    /* Chaque catégorie configurable a son propre configurateur : le
+       bouton sous la liste ouvre celui de la pièce filtrée, pour la
+       cliente qui préfère téléverser son modèle plutôt que d'en
+       choisir un. Sur « Tout », Box ou Décoration il n'y a pas de
+       pièce unique : le bouton disparaît. */
+    const OWN = {
+      toges:     { produit: 'robe',      label: 'Téléverser mon propre modèle de robe' },
+      echarpes:  { produit: 'echarpe',   label: 'Téléverser mon propre modèle d’écharpe' },
+      mortiers:  { produit: 'casquette', label: 'Téléverser mon propre modèle de mortier' },
+    };
+    const own = document.getElementById('worksOwn');
+    const ownCta = document.getElementById('worksOwnCta');
+
+    function syncOwn(filter) {
+      if (!own || !ownCta) return;
+      const entry = OWN[filter];
+      own.hidden = !entry;
+      if (!entry) return;
+      ownCta.href = 'customizer.html?produit=' + entry.produit;
+      ownCta.textContent = entry.label;
+    }
+
     chips.forEach((chip) => {
       chip.addEventListener('click', () => {
         chips.forEach((c) => {
@@ -438,8 +460,11 @@
           const show = filter === 'all' || card.dataset.category === filter;
           card.classList.toggle('is-hidden', !show);
         });
+        syncOwn(filter);
       });
     });
+
+    syncOwn((chips.find((c) => c.classList.contains('is-active')) || {}).dataset?.filter || 'all');
   }
 
   /* ----------------------------------------------------------
@@ -508,14 +533,17 @@
   const modelModalHighlights = document.getElementById('modelModalHighlights');
   const modelModalChooseBtn = document.getElementById('modelModalChooseBtn');
 
-  function openModelModal(id) {
+  function openModelModal(id, chooseUrl) {
     const data = MODELS_DATA[id] || MODELS_DATA['1'];
     if (!modelModal) return;
     modelModalImg.src = data.img;
     modelModalTitle.textContent = data.title;
     modelModalCategory.textContent = data.category;
     modelModalDesc.textContent = data.desc;
-    modelModalChooseBtn.href = data.presetUrl;
+    /* Plusieurs cartes partagent la même fiche : le bouton « Choisir »
+       suit la carte réellement ouverte, pour arriver sur le
+       configurateur de sa pièce (robe, casquette ou écharpe). */
+    modelModalChooseBtn.href = chooseUrl || data.presetUrl;
     modelModalHighlights.innerHTML = data.highlights.map(h => '<li><span>✓</span> ' + h + '</li>').join('');
 
     modelModal.classList.add('is-open');
@@ -534,7 +562,8 @@
     btn.addEventListener('click', (e) => {
       e.preventDefault();
       const id = btn.getAttribute('data-open-modal');
-      openModelModal(id);
+      const choose = btn.closest('.work-card')?.querySelector('.work-card__btn-choose');
+      openModelModal(id, choose?.getAttribute('href'));
     });
   });
 

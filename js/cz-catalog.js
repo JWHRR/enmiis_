@@ -226,24 +226,103 @@
     },
   ];
 
-  /* Ordre des étapes de l’assistant */
+  /* Ordre de référence des étapes. Chaque produit n’en retient que
+     celles qui le concernent — voir PRODUCTS et stepsFor() plus bas. */
   const STEPS = [
     { id: 'upload',  title: 'Vos fichiers',   phase: 'Production', sub: 'Téléversez les designs à broder ou imprimer.' },
-    { id: 'robe',    title: 'La Robe',        phase: 'Tenue',      sub: 'Coupe des manches, col, bordure et broderie personnalisée.' },
-    { id: 'hood',    title: 'La Capuche',     phase: 'Tenue',      sub: 'Choisissez le modèle : chaque forme est illustrée.' },
-    { id: 'cap',     title: 'Le Mortier',     phase: 'Tenue',      sub: 'Forme du plateau, matière, broderie et logo.' },
-    { id: 'tassel',  title: 'Le Gland',       phase: 'Tenue',      sub: 'Style du gland et année de promotion.' },
+    { id: 'robe',    title: 'La Robe',        phase: 'Modèle',     sub: 'Coupe des manches, col, bordure et broderie personnalisée.' },
+    { id: 'hood',    title: 'L’Écharpe',      phase: 'Modèle',     sub: 'Choisissez le modèle : chaque forme est illustrée.' },
+    { id: 'cap',     title: 'La Casquette',   phase: 'Modèle',     sub: 'Forme du plateau, matière, broderie et logo.' },
+    { id: 'tassel',  title: 'Le Gland',       phase: 'Modèle',     sub: 'Style du gland et année de promotion.' },
     { id: 'measure', title: 'Vos Mesures',    phase: 'Atelier',    sub: 'Chaque mesure est accompagnée de son guide.' },
-    /* Dernière étape du configurateur : la tenue rejoint le panier.
-       Les coordonnées et l'envoi de la commande se font au panier,
-       une seule fois pour toutes les tenues. */
-    { id: 'review',  title: 'Votre tenue',    phase: 'Validation', sub: 'Vérifiez, puis ajoutez cette tenue au panier.' },
+    /* Dernière étape : la pièce rejoint le panier. Les coordonnées et
+       l'envoi de la commande se font au panier, une seule fois pour
+       toutes les pièces. */
+    { id: 'review',  title: 'Récapitulatif',  phase: 'Validation', sub: 'Vérifiez, puis ajoutez cette pièce au panier.' },
   ];
+
+  /* ---------- Les trois pièces de soutenance ----------
+     Chacune est un produit indépendant : son propre configurateur,
+     sa propre ligne au panier, son propre prix. Les mesures demandées
+     se limitent à celles que l'atelier utilise réellement pour la
+     pièce — inutile de relever neuf mesures pour une casquette. */
+  const PRODUCTS = [
+    {
+      id: 'robe',
+      label: 'Robe',
+      the: 'la robe',
+      cta: 'Configurer la robe',
+      price: 120,
+      photo: 'img/soutenance/1.png',
+      tagline: 'Toge de soutenance',
+      desc: 'Gabardine de laine noble, coupe sur mesure et broderie personnalisée au fil d’or.',
+      steps: ['upload', 'robe', 'measure', 'review'],
+      measures: ['height', 'weight', 'chest', 'waist', 'hip', 'shoulder', 'sleeve', 'gown'],
+      /* La broderie de la robe est obligatoire : son design doit être fourni. */
+      fileRequired: true,
+    },
+    {
+      id: 'casquette',
+      label: 'Casquette',
+      the: 'la casquette',
+      cta: 'Configurer la casquette',
+      price: 35,
+      photo: 'img/cap.webp',
+      tagline: 'Mortier de diplômé',
+      desc: 'Plateau carré parfaitement plan, gland assorti et broderie du plateau.',
+      steps: ['upload', 'cap', 'tassel', 'measure', 'review'],
+      measures: ['head'],
+      fileRequired: false,
+    },
+    {
+      id: 'echarpe',
+      label: 'Écharpe',
+      the: 'l’écharpe',
+      cta: 'Configurer l’écharpe',
+      price: 25,
+      photo: 'img/hood.webp',
+      tagline: 'Étole de félicitations',
+      desc: 'Satin doublé, pans brodés à votre nom, à votre faculté ou à votre mention.',
+      steps: ['upload', 'hood', 'measure', 'review'],
+      measures: ['height'],
+      fileRequired: false,
+    },
+  ];
+
+  function product(id) {
+    return PRODUCTS.find((p) => p.id === id) || PRODUCTS[0];
+  }
+
+  /* Étapes résolues d'un produit, dans l'ordre, prêtes à afficher. */
+  function stepsFor(productId) {
+    const def = product(productId);
+    return def.steps.map((stepId) => STEPS.find((s) => s.id === stepId));
+  }
+
+  /* Mesures demandées pour un produit, dans l'ordre de la planche. */
+  function measuresFor(productId) {
+    const wanted = product(productId).measures;
+    return MEASUREMENTS.filter((m) => wanted.indexOf(m.id) > -1);
+  }
+
+  const price = (value) => value + ' DT';
 
   const REGIONS = ['Ariana', 'Béja', 'Ben Arous', 'Bizerte', 'Gabès', 'Gafsa', 'Jendouba',
     'Kairouan', 'Kasserine', 'Kébili', 'Le Kef', 'Mahdia', 'La Manouba', 'Médenine',
     'Monastir', 'Nabeul', 'Sfax', 'Sidi Bouzid', 'Siliana', 'Sousse', 'Tataouine',
     'Tozeur', 'Tunis', 'Zaghouan'];
+
+  /* ---------- Codes promo ----------
+     Ils ne servent pas à afficher une remise : ils indiquent à
+     l'atelier par quel canal la cliente est arrivée. Le montant
+     éventuel se règle de vive voix à la confirmation. */
+  const PROMO_CODES = ['IHEC_CARTHAGE'];
+
+  const normalizePromo = (raw) => String(raw || '').trim().toUpperCase().replace(/\s+/g, '_');
+
+  function isPromo(raw) {
+    return PROMO_CODES.indexOf(normalizePromo(raw)) > -1;
+  }
 
   /* Recherche d’un élément par identifiant, avec repli sur le premier. */
   function find(list, id) {
@@ -255,6 +334,8 @@
     COLLARS, TRIM_STYLES, SLEEVES,
     HOOD_STYLES, CAP_STYLES, CAP_MATERIALS, TASSEL_STYLES,
     MEASUREMENTS, STEPS, REGIONS,
+    PRODUCTS, product, stepsFor, measuresFor, price,
+    PROMO_CODES, isPromo, normalizePromo,
     find,
   };
 })(window);

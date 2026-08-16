@@ -32,6 +32,12 @@
      définies par l'atelier lors de la confirmation. Le client ne choisit
      que les modèles, illustrés un à un. */
   const DEFAULTS = {
+    /* Le configurateur ne compose qu'une pièce à la fois : robe,
+       casquette ou écharpe. Chacune part au panier séparément. */
+    product: 'robe',
+    /* Identifiant de la ligne de panier en cours de modification
+       (bouton « Modifier » du panier), sinon null pour un ajout. */
+    editing: null,
     step: 0,
     files: [],
     robe: {
@@ -50,9 +56,12 @@
     },
   };
 
-  /* Coordonnées et articles : renseignés au panier, pas dans la tenue. */
+  /* Coordonnées et articles : renseignés au panier, pas dans la tenue.
+     `promo` sert à repérer d'où vient la cliente — il n'ouvre aucune
+     réduction affichée sur le site. */
   const EMPTY_CLIENT = {
-    name: '', whatsapp: '', email: '', region: '', university: '', date: '', notes: '',
+    name: '', whatsapp: '', email: '', region: '', university: '', date: '',
+    promo: '', notes: '',
   };
 
   const clone = (value) => JSON.parse(JSON.stringify(value));
@@ -190,10 +199,15 @@
 
   function canUndo() { return history.length > 0; }
 
+  /* Repart d'une configuration vierge en restant sur la même pièce :
+     le bouton « réinitialiser » ne renvoie pas le client vers la robe
+     alors qu'il configurait sa casquette. */
   function reset() {
+    const product = state.product;
     history.length = 0;
     fileRegistry.clear();
     state = clone(DEFAULTS);
+    state.product = product;
     save();
   }
 
@@ -233,11 +247,17 @@
     return errors;
   }
 
-  /* Une étape est franchissable si ses données obligatoires sont valides. */
+  /* Une étape est franchissable si ses données obligatoires sont valides.
+     Les règles dépendent de la pièce en cours : seule la robe exige un
+     fichier de production et un texte à broder, et chaque pièce ne
+     demande que ses propres mesures. */
   function stepErrors(stepId) {
     const catalog = CZ.catalog;
+    const product = catalog.product(state.product);
+
     if (stepId === 'upload') {
-      return state.files.length ? [] : ['Ajoutez au moins un fichier de production.'];
+      if (!product.fileRequired) return [];
+      return state.files.length ? [] : ['Ajoutez le design à broder sur votre robe.'];
     }
     if (stepId === 'robe') {
       /* La broderie est comprise dans la commande : on demande à tous
@@ -247,12 +267,24 @@
         : ['Indiquez le texte à broder sur la robe.'];
     }
     if (stepId === 'measure') {
-      const missing = catalog.MEASUREMENTS
+      const missing = catalog.measuresFor(state.product)
         .filter((field) => measureError(field, state.measures[field.id]))
         .map((field) => field.label);
       return missing.length ? ['Mesures à compléter : ' + missing.join(', ') + '.'] : [];
     }
     return [];
+  }
+
+  /* Change de pièce : le configurateur repart de son écran d'accueil,
+     sans toucher au panier déjà constitué. */
+  function setProduct(productId) {
+    const known = CZ.catalog.product(productId).id;
+    if (state.product === known) return;
+    history.length = 0;
+    fileRegistry.clear();
+    state = clone(DEFAULTS);
+    state.product = known;
+    save();
   }
 
   function isComplete(stepId) { return stepErrors(stepId).length === 0; }
@@ -266,18 +298,74 @@
     return 'ENM-' + stamp + '-' + rand;
   }
 
-  /* Une tenue prête à rejoindre le panier : les aperçus d'image sont
-     conservés pour l'atelier, les formats vectoriels propriétaires
-     (AI, EPS, CDR) n'ayant pas de rendu navigateur. */
+  /* Une pièce prête à rejoindre le panier. On ne conserve que les
+     réglages qui la concernent — une casquette ne porte pas les
+     options de la robe — ainsi que ses seules mesures utiles.
+     Les aperçus d'image sont gardés pour l'atelier ; les formats
+     vectoriels propriétaires (AI, EPS, CDR) n'ont pas de rendu
+     navigateur et ne sont référencés que par leur nom. */
   function buildItem() {
-    const item = clone(state);
-    delete item.step;
-    item.id = 'it' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    item.addedAt = new Date().toISOString();
-    item.files = state.files.map((file) => ({
-      id: file.id, name: file.name, size: file.size, ext: file.ext, label: file.label,
-      preview: file.previewable ? file.dataUrl : '',
-    }));
+    const catalog = CZ.catalog;
+    const product = catalog.product(state.product);
+
+    const item = {
+      id: 'it' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      product: product.id,
+      label: product.label,
+      price: product.price,
+      addedAt: new Date().toISOString(),
+      measures: {},
+      files: state.files.map((file) => ({
+        id: file.id, name: file.name, size: file.size, ext: file.ext, label: file.label,
+        preview: file.previewable ? file.dataUrl : '',
+      })),
+    };
+
+    catalog.measuresFor(product.id).forEach((field) => {
+      item.measures[field.id] = state.measures[field.id];
+    });
+
+    if (product.id === 'robe') item.robe = clone(state.robe);
+    if (product.id === 'casquette') {
+      item.cap = clone(state.cap);
+      item.tassel = clone(state.tassel);
+    }
+    if (product.id === 'echarpe') item.hood = clone(state.hood);
+
+    return item;
+  }
+
+  /* Recharge une ligne du panier dans le configurateur (bouton
+     « Modifier »). Les fichiers reviennent avec leur aperçu : le
+     contenu binaire d'origine n'ayant pas été conservé, c'est cet
+     aperçu qui repart à l'atelier si le client ne les remplace pas. */
+  function loadCartItem(id) {
+    const item = readCart().items.find((entry) => entry.id === id);
+    if (!item) return null;
+
+    history.length = 0;
+    fileRegistry.clear();
+
+    const draft = clone(DEFAULTS);
+    draft.product = CZ.catalog.product(item.product).id;
+    draft.editing = item.id;
+    mergeInto(draft.measures, item.measures);
+    if (item.robe) mergeInto(draft.robe, item.robe);
+    if (item.cap) mergeInto(draft.cap, item.cap);
+    if (item.tassel) mergeInto(draft.tassel, item.tassel);
+    if (item.hood) mergeInto(draft.hood, item.hood);
+
+    draft.files = (item.files || []).map((file) => {
+      const restored = {
+        id: file.id, name: file.name, size: file.size, ext: file.ext,
+        label: file.label, previewable: Boolean(file.preview), dataUrl: file.preview || '',
+      };
+      fileRegistry.set(restored.id, restored);
+      return restored;
+    });
+
+    state = draft;
+    save();
     return item;
   }
 
@@ -306,6 +394,10 @@
   function writeCart(cart) {
     cart.savedAt = Date.now();
     localStorage.setItem(CART_KEY, JSON.stringify(cart));
+    /* Si la cliente a un compte, js/account.js écoute cet évènement
+       pour que son panier la suive d'un appareil à l'autre. */
+    try { document.dispatchEvent(new CustomEvent('enmiis:cart')); }
+    catch (err) { /* environnement sans DOM : rien à notifier */ }
     return cart;
   }
 
@@ -318,12 +410,29 @@
 
   function cartCount() { return readCart().items.length; }
 
-  /* Ajoute la tenue en cours au panier. Si le quota du navigateur est
-     atteint, on retente sans les aperçus d'image plutôt que d'échouer. */
+  /* Total du panier, en dinars. */
+  function cartTotal() {
+    return readCart().items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
+  }
+
+  /* Ajoute la pièce en cours au panier — ou remplace celle qu'on est en
+     train de modifier, à sa place dans la liste. Si le quota du
+     navigateur est atteint, on retente sans les aperçus d'image plutôt
+     que d'échouer. */
   function addToCart() {
     const cart = readCart();
     const item = buildItem();
-    cart.items.push(item);
+    const editing = state.editing;
+    const index = editing ? cart.items.findIndex((entry) => entry.id === editing) : -1;
+
+    if (index > -1) {
+      /* On garde l'identifiant d'origine : le panier ne bouge pas. */
+      item.id = editing;
+      cart.items.splice(index, 1, item);
+    } else {
+      cart.items.push(item);
+    }
+
     try {
       writeCart(cart);
     } catch (err) {
@@ -351,10 +460,19 @@
 
   function clearCart() {
     try { localStorage.removeItem(CART_KEY); } catch (err) { /* rien à effacer */ }
+    /* La commande est partie : le compte ne doit pas garder l'ancien
+       panier en réserve. */
+    try { document.dispatchEvent(new CustomEvent('enmiis:cart')); }
+    catch (err) { /* environnement sans DOM */ }
   }
 
-  /* Une commande = un client + une ou plusieurs tenues. */
+  /* Une commande = un client + un ou plusieurs articles. */
   function buildOrder(cart) {
+    const client = clone(cart.client);
+    /* Le code est mis en forme une fois pour toutes : l'atelier n'a
+       pas à deviner entre « ihec carthage » et « IHEC_CARTHAGE ». */
+    client.promo = CZ.catalog.normalizePromo(client.promo);
+
     return {
       ref: reference(),
       createdAt: new Date().toISOString(),
@@ -362,7 +480,7 @@
       adminNote: '',
       config: {
         source: 'web',
-        client: clone(cart.client),
+        client,
         items: clone(cart.items),
         machineFiles: [],
       },
@@ -497,9 +615,9 @@
     get, at, set, type, commit,
     addFiles, replaceFile, removeFile,
     undo, canUndo, reset,
-    measureError, clientErrors, stepErrors, isComplete,
+    measureError, clientErrors, stepErrors, isComplete, setProduct,
     readCart, addToCart, removeCartItem, setCartClient, clearCart,
-    cartCount, cartExpiresIn,
+    loadCartItem, cartCount, cartTotal, cartExpiresIn,
     submitCart, readOrders,
   };
 })(window);

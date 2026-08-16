@@ -934,3 +934,76 @@ select.ad-input {
   padding-top: 1.25rem;
   border-top: 1px solid var(--line);
 }
+
+/* Saisie atelier : les champs qui ne concernent pas la pièce choisie
+   sont masqués. Sans cette règle, `display: grid`/`flex` l'emporterait
+   sur l'attribut `hidden`. */
+.ad-new__grid[hidden],
+.ad-new__field[hidden] { display: none; }
+
+/* ============================================================
+   CODE PROMO — repérer d'un coup d'œil les commandes qui viennent
+   d'un canal identifié.
+   ============================================================ */
+/* La carte reprend la bordure gauche qu'elle a déjà, en doré. */
+.ad-card.is-promo {
+  border-color: rgba(200, 168, 107, 0.75);
+  border-left-color: var(--gold);
+  background:
+    linear-gradient(180deg, rgba(200, 168, 107, 0.15), transparent 60%),
+    var(--white);
+}
+
+.ad-promo {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6B5220;
+  background: rgba(200, 168, 107, 0.28);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.ad-row.is-promo dd { display: flex; }
+
+/* ============================================================
+   CLIENTS
+   ============================================================ */
+.ad-clients { display: grid; gap: 0.5rem; }
+
+.ad-client {
+  display: grid;
+  gap: 0.2rem 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--ad-line, #E6E6E6);
+  border-radius: 12px;
+  font-size: 0.8125rem;
+}
+.ad-client__id { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.ad-client__id strong { font-size: 0.9375rem; font-weight: 600; }
+.ad-client__tag {
+  padding: 0.12rem 0.45rem;
+  font-size: 0.5625rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6B5220;
+  background: rgba(200, 168, 107, 0.25);
+  border-radius: 999px;
+}
+.ad-client__phone {
+  font-variant-numeric: lining-nums tabular-nums;
+  color: inherit;
+  border-bottom: 1px solid transparent;
+}
+.ad-client__phone:hover { border-color: currentColor; }
+.ad-client__meta,
+.ad-client__orders { color: var(--ad-faint, #8A8A8A); }
+
+@media (min-width: 720px) {
+  .ad-client {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.7fr) minmax(0, 1.2fr) minmax(0, 0.8fr);
+    align-items: center;
+  }
+}

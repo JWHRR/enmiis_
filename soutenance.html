@@ -49,7 +49,7 @@
           <button class="icon-btn" id="searchBtn" type="button" aria-label="Rechercher">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
           </button>
-          <a class="icon-btn icon-btn--disabled header-account" href="#" aria-label="Compte (bientôt disponible)" aria-disabled="true" tabindex="-1">
+          <a class="icon-btn header-account" id="accountBtn" href="compte.html" aria-label="Mon compte">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
           </a>
           <a class="icon-btn header-wishlist" id="wishlistBtn" href="favoris.html" aria-label="Voir mes favoris">
@@ -153,6 +153,7 @@
       <button type="button" class="is-active" data-filter="all" aria-pressed="true">Tout</button>
       <button type="button" data-filter="toges" aria-pressed="false">Toges</button>
       <button type="button" data-filter="echarpes" aria-pressed="false">Écharpes</button>
+      <button type="button" data-filter="mortiers" aria-pressed="false">Mortiers</button>
       <button type="button" data-filter="box" aria-pressed="false">Box &amp; Cadeaux</button>
       <button type="button" data-filter="decor" aria-pressed="false">Décoration</button>
     </div>
@@ -175,7 +176,7 @@
             <p class="work-card__desc">Gabardine de laine noble, broderies d'or héraldiques et écusson sur mesure.</p>
             <div class="work-card__actions">
               <button type="button" class="work-card__btn-zoom" data-open-modal="1">🔍 Aperçu &amp; Détails</button>
-              <a href="customizer.html?preset=1" class="work-card__btn-choose">Choisir cette tenue</a>
+              <a href="customizer.html?produit=robe&amp;preset=1" class="work-card__btn-choose">Choisir cette tenue</a>
             </div>
           </div>
 
@@ -192,7 +193,7 @@
             <p class="work-card__desc">Finition velours noir, mortier ajusté et écharpe brodée fil d'or.</p>
             <div class="work-card__actions">
               <button type="button" class="work-card__btn-zoom" data-open-modal="2">🔍 Aperçu &amp; Détails</button>
-              <a href="customizer.html?preset=2" class="work-card__btn-choose">Choisir cette tenue</a>
+              <a href="customizer.html?produit=robe&amp;preset=2" class="work-card__btn-choose">Choisir cette tenue</a>
             </div>
           </div>
 
@@ -225,7 +226,7 @@
             <h3 class="work-card__title">Écharpe « Félicitations Dr »</h3>
             <div class="work-card__actions">
               <button type="button" class="work-card__btn-zoom" data-open-modal="1">🔍 Aperçu &amp; Détails</button>
-              <a href="customizer.html?preset=1" class="work-card__btn-choose">Choisir cette tenue</a>
+              <a href="customizer.html?produit=echarpe&amp;preset=1" class="work-card__btn-choose">Choisir cette tenue</a>
             </div>
           </div>
 
@@ -240,7 +241,7 @@
             <h3 class="work-card__title">Écharpe Nom &amp; Date</h3>
             <div class="work-card__actions">
               <button type="button" class="work-card__btn-zoom" data-open-modal="2">🔍 Aperçu &amp; Détails</button>
-              <a href="customizer.html?preset=2" class="work-card__btn-choose">Choisir cette tenue</a>
+              <a href="customizer.html?produit=echarpe&amp;preset=2" class="work-card__btn-choose">Choisir cette tenue</a>
             </div>
           </div>
 
@@ -300,7 +301,7 @@
             <h3 class="work-card__title">Toge Marine &amp; Mortier Assorti</h3>
             <div class="work-card__actions">
               <button type="button" class="work-card__btn-zoom" data-open-modal="3">🔍 Aperçu &amp; Détails</button>
-              <a href="customizer.html?preset=3" class="work-card__btn-choose">Choisir cette tenue</a>
+              <a href="customizer.html?produit=robe&amp;preset=3" class="work-card__btn-choose">Choisir cette tenue</a>
             </div>
           </div>
 
@@ -337,12 +338,48 @@
             <h3 class="work-card__title">Table « Docteur » &amp; Cake Topper</h3>
           </a>
 
+
+          <div class="work-card" data-category="mortiers" data-reveal>
+            <div class="work-card__media">
+              <img src="img/cap.webp" alt="Mortier Classique — Gland Assorti" loading="lazy" decoding="async">
+              <button class="work-card__wishlist" type="button" aria-label="Ajouter aux favoris" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5l-8-7.5c-2.2-2-2.2-5.4 0-7.4 2-1.9 5.2-1.9 7.2 0l.8.8.8-.8c2-1.9 5.2-1.9 7.2 0 2.2 2 2.2 5.4 0 7.4l-8 7.5z"/></svg>
+              </button>
+            </div>
+            <p class="work-card__label">Mortiers</p>
+            <h3 class="work-card__title">Mortier Classique — Gland Assorti</h3>
+            <p class="work-card__desc">Plateau carré parfaitement plan, gland tombant à droite et broderie du plateau.</p>
+            <div class="work-card__actions">
+              <button type="button" class="work-card__btn-zoom" data-open-modal="1">🔍 Aperçu &amp; Détails</button>
+              <a href="customizer.html?produit=casquette&amp;preset=1" class="work-card__btn-choose">Choisir cette tenue</a>
+            </div>
+          </div>
+
+          <div class="work-card" data-category="mortiers" data-reveal>
+            <div class="work-card__media">
+              <img src="img/tassel.webp" alt="Mortier & Gland Personnalisé" loading="lazy" decoding="async">
+              <button class="work-card__wishlist" type="button" aria-label="Ajouter aux favoris" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5l-8-7.5c-2.2-2-2.2-5.4 0-7.4 2-1.9 5.2-1.9 7.2 0l.8.8.8-.8c2-1.9 5.2-1.9 7.2 0 2.2 2 2.2 5.4 0 7.4l-8 7.5z"/></svg>
+              </button>
+            </div>
+            <p class="work-card__label">Mortiers</p>
+            <h3 class="work-card__title">Mortier &amp; Gland Personnalisé</h3>
+            <p class="work-card__desc">Gland au choix, breloque de promotion et logo brodé sur le plateau.</p>
+            <div class="work-card__actions">
+              <button type="button" class="work-card__btn-zoom" data-open-modal="2">🔍 Aperçu &amp; Détails</button>
+              <a href="customizer.html?produit=casquette&amp;preset=2" class="work-card__btn-choose">Choisir cette tenue</a>
+            </div>
+          </div>
         </div>
 
         <!-- ======================= CTA ======================= -->
         <div class="works-cta" data-reveal>
           <p class="section-head__label" style="margin-bottom: 1rem;">Envie de la vôtre ?</p>
           <a href="customizer.html" class="btn btn--solid">Personnaliser ma tenue</a>
+        </div>
+
+        <div class="works-own" id="worksOwn" hidden>
+          <a class="btn btn--line" id="worksOwnCta" href="customizer.html?produit=robe">Téléverser mon propre modèle</a>
         </div>
       </div>
     </section>

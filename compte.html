@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Mon compte | ENMIIS</title>
+  <meta name="description" content="Créez votre compte ENMIIS pour retrouver votre panier sur tous vos appareils.">
+  <meta name="theme-color" content="#FFFFFF">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/customizer.css">
+  <link rel="stylesheet" href="css/panier.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23111111'/%3E%3Ctext x='16' y='22' font-family='Georgia' font-size='18' fill='%23C8A86B' text-anchor='middle'%3EE%3C/text%3E%3C/svg%3E">
+</head>
+<body class="cz-body pn-body">
+
+  <a class="skip-link" href="#acMain">Aller à mon compte</a>
+
+  <header class="cz-topbar">
+    <a class="cz-topbar__back" href="soutenance.html">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 5 8 12 15 19"/></svg>
+      <span>Soutenances</span>
+    </a>
+    <a class="cz-topbar__logo" href="index.html" aria-label="Accueil ENMIIS">
+      <img src="img/logo-enmiis.png" alt="ENMIIS">
+    </a>
+    <div class="cz-topbar__actions">
+      <a class="pn-count" href="panier.html" id="acCartLink" hidden></a>
+    </div>
+  </header>
+
+  <main class="pn-main ac-main" id="acMain">
+
+    <!-- ======================= CHARGEMENT ======================= -->
+    <p class="ac-loading" id="acLoading">Chargement…</p>
+
+    <!-- ======================= CONNECTÉ ======================= -->
+    <section class="ac-panel" id="acProfile" hidden>
+      <header class="pn-head">
+        <p class="pn-head__label">Mon compte</p>
+        <h1 class="pn-head__title" id="acName">—</h1>
+        <p class="pn-head__sub">Votre panier vous suit sur tous vos appareils.</p>
+      </header>
+
+      <div class="cz-group">
+        <dl class="ac-facts" id="acFacts"></dl>
+        <div class="ac-actions">
+          <a class="btn btn--solid" href="panier.html">Voir mon panier</a>
+          <button type="button" class="btn btn--line" id="acLogout">Se déconnecter</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= VISITEUR ======================= -->
+    <section class="ac-panel" id="acGuest" hidden>
+      <header class="pn-head">
+        <p class="pn-head__label">Mon compte</p>
+        <h1 class="pn-head__title" id="acTitle">Créer mon compte</h1>
+        <p class="pn-head__sub" id="acSub">Pour que votre panier ne se perde pas, et que vous le
+          retrouviez depuis n’importe quel appareil.</p>
+      </header>
+
+      <div class="cz-group ac-card">
+
+        <div class="ac-switch" role="tablist" aria-label="Compte">
+          <button type="button" id="acTabRegister" class="ac-switch__btn is-active"
+                  role="tab" aria-selected="true">Créer un compte</button>
+          <button type="button" id="acTabLogin" class="ac-switch__btn"
+                  role="tab" aria-selected="false">J’ai déjà un compte</button>
+        </div>
+
+        <!-- ---------- Inscription ---------- -->
+        <form class="cz-form ac-form" id="acRegisterForm">
+          <div class="cz-field cz-field--wide">
+            <label class="cz-field__label" for="ac_name">Nom &amp; prénom *</label>
+            <input class="cz-input" id="ac_name" type="text" autocomplete="name"
+                   placeholder="Ex : Salhi Wafa" required>
+          </div>
+          <div class="cz-field">
+            <label class="cz-field__label" for="ac_phone">Numéro de téléphone *</label>
+            <input class="cz-input" id="ac_phone" type="tel" autocomplete="tel"
+                   placeholder="Ex : 22 123 456" required>
+          </div>
+          <div class="cz-field">
+            <label class="cz-field__label" for="ac_origin">Vous êtes d’où ? *</label>
+            <select class="cz-input" id="ac_origin" required></select>
+          </div>
+          <div class="cz-field cz-field--wide">
+            <label class="cz-field__label" for="ac_address">Adresse *</label>
+            <input class="cz-input" id="ac_address" type="text" autocomplete="street-address"
+                   placeholder="Ex : 12 rue de la République, Ariana" required>
+          </div>
+          <div class="cz-field cz-field--wide">
+            <label class="cz-field__label" for="ac_password">Mot de passe *</label>
+            <input class="cz-input" id="ac_password" type="password" autocomplete="new-password"
+                   placeholder="6 caractères minimum" required>
+          </div>
+          <div class="cz-field cz-field--wide">
+            <p class="cz-error" id="acRegisterError" hidden></p>
+            <button type="submit" class="btn btn--solid pn-submit" id="acRegisterBtn">Créer mon compte</button>
+          </div>
+        </form>
+
+        <!-- ---------- Connexion ---------- -->
+        <form class="cz-form ac-form" id="acLoginForm" hidden>
+          <div class="cz-field cz-field--wide">
+            <label class="cz-field__label" for="ac_login_phone">Numéro de téléphone</label>
+            <input class="cz-input" id="ac_login_phone" type="tel" autocomplete="tel"
+                   placeholder="Ex : 22 123 456" required>
+          </div>
+          <div class="cz-field cz-field--wide">
+            <label class="cz-field__label" for="ac_login_password">Mot de passe</label>
+            <input class="cz-input" id="ac_login_password" type="password"
+                   autocomplete="current-password" required>
+          </div>
+          <div class="cz-field cz-field--wide">
+            <p class="cz-error" id="acLoginError" hidden></p>
+            <button type="submit" class="btn btn--solid pn-submit" id="acLoginBtn">Se connecter</button>
+          </div>
+        </form>
+
+        <p class="ac-skip">Vous pouvez aussi <a href="panier.html">commander sans compte</a> —
+          votre panier reste alors 24 h sur cet appareil.</p>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/main.js" defer></script>
+  <script src="js/cz-catalog.js" defer></script>
+  <script src="js/cz-store.js" defer></script>
+  <script src="js/account.js" defer></script>
+  <script src="js/compte.js" defer></script>
+</body>
+</html>

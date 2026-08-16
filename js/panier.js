@@ -24,49 +24,85 @@
 
   const label = (list, id) => (cat.find(list, id) || {}).label || '—';
 
-  /* ---------- Résumé d'une tenue ---------- */
+  /* ---------- Résumé d'un article ---------- */
 
-  function itemLines(item) {
-    return [
-      { label: 'Manches', value: label(cat.SLEEVES, item.robe.sleeve) },
-      { label: 'Col', value: label(cat.COLLARS, item.robe.collar) },
-      { label: 'Bordure', value: label(cat.TRIM_STYLES, item.robe.trim) },
-      { label: 'Broderie', value: (item.robe.emb.text || '—') },
-      { label: 'Capuche', value: label(cat.HOOD_STYLES, item.hood.style) },
-      { label: 'Mortier', value: label(cat.CAP_STYLES, item.cap.style) + ' · ' +
-        label(cat.CAP_MATERIALS, item.cap.material) },
-      { label: 'Gland', value: label(cat.TASSEL_STYLES, item.tassel.style) +
-        (item.tassel.year ? ' · ' + item.tassel.year : '') },
-    ];
+  /* Chaque ligne du panier est une pièce indépendante. Les paniers
+     composés avant la séparation en trois produits portaient toutes
+     les pièces à la fois : ils restent lisibles ici. */
+  function productOf(item) {
+    return item.product ? cat.product(item.product) : null;
   }
 
-  /* Vignette : le design envoyé par le client, sinon la photo de robe. */
+  function itemName(item) {
+    const product = productOf(item);
+    if (!product) return 'Tenue de soutenance';
+    if (product.id === 'robe') return item.robe.emb.text.trim() || 'Robe de soutenance';
+    if (product.id === 'casquette') return item.cap.emb.trim() || 'Casquette de diplômé';
+    return item.hood.emb.trim() || 'Écharpe de félicitations';
+  }
+
+  function itemLines(item) {
+    const rows = [];
+    if (item.robe) {
+      rows.push({ label: 'Manches', value: label(cat.SLEEVES, item.robe.sleeve) });
+      rows.push({ label: 'Col', value: label(cat.COLLARS, item.robe.collar) });
+      rows.push({ label: 'Bordure', value: label(cat.TRIM_STYLES, item.robe.trim) });
+      rows.push({ label: 'Broderie', value: item.robe.emb.text || '—' });
+    }
+    if (item.cap) {
+      rows.push({ label: 'Forme', value: label(cat.CAP_STYLES, item.cap.style) });
+      rows.push({ label: 'Matière', value: label(cat.CAP_MATERIALS, item.cap.material) });
+      if (item.cap.emb) rows.push({ label: 'Broderie', value: item.cap.emb });
+    }
+    if (item.tassel) {
+      rows.push({ label: 'Gland', value: label(cat.TASSEL_STYLES, item.tassel.style) +
+        (item.tassel.year ? ' · ' + item.tassel.year : '') });
+    }
+    if (item.hood) {
+      rows.push({ label: 'Modèle', value: label(cat.HOOD_STYLES, item.hood.style) });
+      if (item.hood.emb) rows.push({ label: 'Broderie', value: item.hood.emb });
+    }
+    return rows;
+  }
+
+  /* Vignette : le design envoyé par le client, sinon la photo produit. */
   function itemThumb(item) {
     const shot = (item.files || []).find((f) => f.preview);
-    return shot
-      ? '<img src="' + esc(shot.preview) + '" alt="" loading="lazy" decoding="async">'
-      : '<img src="img/robe.webp" alt="" loading="lazy" decoding="async">';
+    const product = productOf(item);
+    const src = shot ? shot.preview : (product ? product.photo : 'img/robe.webp');
+    return '<img src="' + esc(src) + '" alt="" loading="lazy" decoding="async">';
   }
 
   function renderItems(cart) {
-    $('#pnList').innerHTML = cart.items.map((item, index) =>
-      '<li class="pn-item" data-item="' + esc(item.id) + '">' +
-        '<span class="pn-item__num">Tenue ' + (index + 1) + '</span>' +
+    $('#pnList').innerHTML = cart.items.map((item) => {
+      const product = productOf(item);
+      const measures = Object.keys(item.measures || {}).length;
+      const files = (item.files || []).length;
+      const meta = [
+        measures + ' mesure' + (measures > 1 ? 's' : ''),
+        files ? files + ' fichier' + (files > 1 ? 's' : '') : 'aucun fichier',
+      ].join(' · ');
+
+      return '<li class="pn-item" data-item="' + esc(item.id) + '">' +
+        '<span class="pn-item__num">' + esc(product ? product.label : 'Tenue complète') + '</span>' +
         '<div class="pn-item__thumb">' + itemThumb(item) + '</div>' +
         '<div class="pn-item__body">' +
-          '<p class="pn-item__name">' + esc(item.robe.emb.text || 'Tenue de soutenance') + '</p>' +
+          '<p class="pn-item__name">' + esc(itemName(item)) + '</p>' +
           '<dl class="pn-item__spec">' + itemLines(item).map((row) =>
             '<div><dt>' + esc(row.label) + '</dt><dd>' + esc(row.value) + '</dd></div>').join('') +
           '</dl>' +
-          '<p class="pn-item__files">' + (item.files || []).length + ' fichier(s) · ' +
-            '9 mesures</p>' +
+          '<p class="pn-item__files">' + esc(meta) + '</p>' +
+          '<div class="pn-item__foot">' +
+            '<span class="pn-item__price">' + esc(cat.price(Number(item.price) || 0)) + '</span>' +
+            (product
+              ? '<a class="pn-item__edit" href="customizer.html?edit=' + esc(item.id) + '">Modifier</a>'
+              : '') +
+            '<button type="button" class="pn-item__edit pn-item__edit--danger"' +
+              ' data-remove="' + esc(item.id) + '">Supprimer</button>' +
+          '</div>' +
         '</div>' +
-        '<button type="button" class="pn-item__remove" data-remove="' + esc(item.id) + '"' +
-          ' aria-label="Retirer la tenue ' + (index + 1) + '">' +
-          '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-          '<line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>' +
-        '</button>' +
-      '</li>').join('');
+      '</li>';
+    }).join('');
   }
 
   /* ---------- Compte à rebours de la session ---------- */
@@ -83,16 +119,74 @@
       : 'Votre panier expire dans ' + minutes + ' min — pensez à valider votre commande.';
   }
 
+  /* ---------- Compte ----------
+     Le compte n'est jamais imposé : on explique seulement ce qu'il
+     évite — perdre son panier au bout de 24 h. */
+
+  function renderAccount(client) {
+    const box = $('#pnAccount');
+    if (!box) return;
+    /* Rien à proposer si le panier est vide. */
+    if (!store.cartCount()) { box.hidden = true; return; }
+    box.hidden = false;
+
+    if (client) {
+      box.classList.add('is-known');
+      $('#pnAccountTitle').textContent = 'Panier enregistré · ' + client.name;
+      $('#pnAccountText').textContent = 'Vous le retrouverez sur tous vos appareils.';
+      $('#pnAccountActions').innerHTML =
+        '<a class="btn btn--line" href="compte.html">Mon compte</a>';
+    } else {
+      box.classList.remove('is-known');
+      $('#pnAccountTitle').textContent = 'Gardez votre panier';
+      $('#pnAccountText').textContent = 'Sans compte, il s’efface au bout de 24 h. ' +
+        'Avec, vous le retrouvez sur tous vos appareils.';
+      $('#pnAccountActions').innerHTML =
+        '<a class="btn btn--solid" href="compte.html">Créer mon compte</a>' +
+        '<a class="btn btn--line" href="compte.html?mode=login">Me connecter</a>';
+    }
+  }
+
+  /* Pré-remplit les coordonnées avec celles du compte, pour que la
+     cliente n'ait pas à les retaper à chaque commande. */
+  function prefillFromAccount(client) {
+    if (!client) return;
+    const cart = store.readCart();
+    const set = (key, value) => {
+      const field = document.querySelector('[data-client="' + key + '"]');
+      if (field && !String(cart.client[key] || '').trim() && value) field.value = value;
+    };
+    set('name', client.name);
+    set('whatsapp', client.phone);
+    set('region', client.origin);
+    store.setCartClient(readForm());
+  }
+
+  /* ---------- Code promo ----------
+     Le site ne dit jamais ce que le code donne : il sert à l'atelier
+     à reconnaître d'où vient la cliente. */
+
+  function renderPromo() {
+    const field = $('#pn_promo');
+    const okNode = $('#pnPromoOk');
+    if (!field || !okNode) return;
+    const valid = cat.isPromo(field.value);
+    okNode.hidden = !valid;
+    field.classList.toggle('is-valid', valid);
+  }
+
   /* ---------- Rendu global ---------- */
 
   function render() {
     const cart = store.readCart();
     const count = cart.items.length;
+    const total = store.cartTotal();
 
-    $('#pnCount').textContent = count ? count + ' tenue' + (count > 1 ? 's' : '') : '';
+    $('#pnCount').textContent = count ? count + ' article' + (count > 1 ? 's' : '') : '';
     $('#pnSummaryCount').textContent = String(count);
+    $('#pnTotal').textContent = cat.price(total);
     $('#pnSub').textContent = count
-      ? 'Vérifiez vos tenues, puis renseignez vos coordonnées une seule fois.'
+      ? 'Vérifiez vos pièces, puis renseignez vos coordonnées une seule fois.'
       : '';
 
     $('#pnEmpty').hidden = count > 0;
@@ -104,6 +198,9 @@
     } else {
       $('#pnExpiry').hidden = true;
     }
+
+    const account = global.enmiisAccount;
+    renderAccount(account ? account.current() : null);
   }
 
   /* ---------- Formulaire client ---------- */
@@ -163,11 +260,13 @@
   function summaryText(order) {
     const c = order.config.client;
     const items = order.config.items || [];
+    const total = items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
     const lines = [
       'ENMIIS — Dossier de fabrication',
       'Référence : ' + order.ref,
       'Date : ' + new Date(order.createdAt).toLocaleString('fr-FR'),
-      'Tenues : ' + items.length,
+      'Articles : ' + items.length,
+      'Total : ' + cat.price(total),
       '',
       '— CLIENT —',
       'Nom : ' + c.name,
@@ -180,23 +279,41 @@
     ];
 
     items.forEach((item, index) => {
-      lines.push('', '════ TENUE ' + (index + 1) + ' ════');
+      const product = productOf(item);
+      lines.push('', '════ ' + (index + 1) + '. ' +
+        (product ? product.label.toUpperCase() : 'TENUE COMPLÈTE') +
+        ' — ' + cat.price(Number(item.price) || 0) + ' ════');
       lines.push('Fichiers : ' + ((item.files || []).length
         ? item.files.map((f) => f.name).join(', ') : '—'));
-      lines.push('Manches : ' + label(cat.SLEEVES, item.robe.sleeve));
-      lines.push('Col : ' + label(cat.COLLARS, item.robe.collar));
-      lines.push('Bordure : ' + label(cat.TRIM_STYLES, item.robe.trim));
-      lines.push('Texte à broder : ' + (item.robe.emb.text || '—'));
-      lines.push('Logo université : ' + (item.robe.emb.uniLogoName || '—'));
-      lines.push('Capuche : ' + label(cat.HOOD_STYLES, item.hood.style));
-      lines.push('Mortier : ' + label(cat.CAP_STYLES, item.cap.style) +
-        ' / ' + label(cat.CAP_MATERIALS, item.cap.material));
-      lines.push('Gland : ' + label(cat.TASSEL_STYLES, item.tassel.style) +
-        (item.tassel.year ? ' / ' + item.tassel.year : ''));
+
+      if (item.robe) {
+        lines.push('Manches : ' + label(cat.SLEEVES, item.robe.sleeve));
+        lines.push('Col : ' + label(cat.COLLARS, item.robe.collar));
+        lines.push('Bordure : ' + label(cat.TRIM_STYLES, item.robe.trim));
+        lines.push('Texte à broder : ' + (item.robe.emb.text || '—'));
+        lines.push('Logo université : ' + (item.robe.emb.uniLogoName || '—'));
+      }
+      if (item.cap) {
+        lines.push('Casquette : ' + label(cat.CAP_STYLES, item.cap.style) +
+          ' / ' + label(cat.CAP_MATERIALS, item.cap.material));
+        lines.push('Broderie du plateau : ' + (item.cap.emb || '—'));
+        lines.push('Logo brodé : ' + (item.cap.logoName || '—'));
+      }
+      if (item.tassel) {
+        lines.push('Gland : ' + label(cat.TASSEL_STYLES, item.tassel.style) +
+          (item.tassel.year ? ' / ' + item.tassel.year : ''));
+      }
+      if (item.hood) {
+        lines.push('Écharpe : ' + label(cat.HOOD_STYLES, item.hood.style));
+        lines.push('Broderie de l’écharpe : ' + (item.hood.emb || '—'));
+      }
+
       lines.push('— Mesures —');
-      cat.MEASUREMENTS.forEach((m) => {
-        lines.push('  ' + m.label + ' : ' + (item.measures[m.id] || '—') + ' ' + m.unit);
-      });
+      cat.MEASUREMENTS
+        .filter((m) => item.measures && item.measures[m.id] !== undefined)
+        .forEach((m) => {
+          lines.push('  ' + m.label + ' : ' + (item.measures[m.id] || '—') + ' ' + m.unit);
+        });
     });
 
     lines.push('', 'Couleurs : à définir avec l’atelier à la confirmation.');
@@ -266,8 +383,8 @@
 
     const count = (order.config.items || []).length;
     $('#pnDoneText').textContent = 'Conservez cette référence : elle identifie votre dossier auprès de ' +
-      'l’atelier. ' + count + ' tenue' + (count > 1 ? 's ont' : ' a') + ' été transmise' +
-      (count > 1 ? 's' : '') + '. Notre équipe confirme les mesures, la broderie et les couleurs avant ' +
+      'l’atelier. ' + count + ' article' + (count > 1 ? 's ont' : ' a') + ' été transmis' +
+      (count > 1 ? '' : '') + '. Notre équipe confirme les mesures, la broderie et les couleurs avant ' +
       'lancement de la fabrication.';
     $('#pnDoneOffline').hidden = order.synced !== false;
 
@@ -298,6 +415,7 @@
       if (!field) return;
       showError(field.getAttribute('data-client'), false);
       store.setCartClient(readForm());
+      if (field.id === 'pn_promo') renderPromo();
     });
     form.addEventListener('change', (event) => {
       const field = event.target.closest('select[data-client]');
@@ -317,6 +435,18 @@
     fillForm(cart);
     bind();
     render();
+    renderPromo();
+
+    /* La session met un aller-retour réseau à se rétablir : on
+       réaffiche dès qu'elle est connue, sans faire attendre la page. */
+    const account = global.enmiisAccount;
+    if (account) {
+      account.whenReady((client) => {
+        renderAccount(client);
+        prefillFromAccount(client);
+      });
+    }
+
     /* Le compte à rebours reste juste sans recharger la page. */
     setInterval(renderExpiry, 60000);
   }

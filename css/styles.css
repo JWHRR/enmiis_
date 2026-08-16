@@ -2116,3 +2116,13 @@ svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width:
   [data-reveal] { opacity: 1; transform: none; }
   .hero__label, .hero__title, .hero__slide .btn { opacity: 1; transform: none; }
 }
+
+/* Sous la galerie filtrée : configurer la pièce à partir de son propre
+   modèle plutôt que d'en choisir un dans la liste. Le bouton n'apparaît
+   que sur une catégorie configurable (toges, écharpes, mortiers). */
+.works-own {
+  display: flex;
+  justify-content: center;
+  margin-top: clamp(2rem, 5vw, 3rem);
+}
+.works-own[hidden] { display: none; }
