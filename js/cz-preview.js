@@ -46,15 +46,11 @@
 
   function chipList(state) {
     if (currentStep === 'robe') {
-      const chips = [
+      return [
         { label: 'Manches', value: label(cat.SLEEVES, state.robe.sleeve) },
         { label: 'Col', value: label(cat.COLLARS, state.robe.collar) },
         { label: 'Bordure', value: label(cat.TRIM_STYLES, state.robe.trim) },
       ];
-      /* La broderie est obligatoire : la pastille apparaît dès la saisie. */
-      const text = state.robe.emb.text.trim();
-      if (text) chips.push({ label: 'Broderie', value: text });
-      return chips;
     }
     if (currentStep === 'hood') {
       const chips = [{ label: 'Modèle', value: label(cat.HOOD_STYLES, state.hood.style) }];

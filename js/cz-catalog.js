@@ -252,7 +252,6 @@
       label: 'Robe',
       the: 'la robe',
       cta: 'Configurer la robe',
-      price: 120,
       photo: 'img/soutenance/1.png',
       tagline: 'Toge de soutenance',
       desc: 'Gabardine de laine noble, coupe sur mesure et broderie personnalisée au fil d’or.',
@@ -266,7 +265,6 @@
       label: 'Casquette',
       the: 'la casquette',
       cta: 'Configurer la casquette',
-      price: 35,
       photo: 'img/cap.webp',
       tagline: 'Mortier de diplômé',
       desc: 'Plateau carré parfaitement plan, gland assorti et broderie du plateau.',
@@ -279,7 +277,6 @@
       label: 'Écharpe',
       the: 'l’écharpe',
       cta: 'Configurer l’écharpe',
-      price: 25,
       photo: 'img/hood.webp',
       tagline: 'Étole de félicitations',
       desc: 'Satin doublé, pans brodés à votre nom, à votre faculté ou à votre mention.',
@@ -304,8 +301,6 @@
     const wanted = product(productId).measures;
     return MEASUREMENTS.filter((m) => wanted.indexOf(m.id) > -1);
   }
-
-  const price = (value) => value + ' DT';
 
   const REGIONS = ['Ariana', 'Béja', 'Ben Arous', 'Bizerte', 'Gabès', 'Gafsa', 'Jendouba',
     'Kairouan', 'Kasserine', 'Kébili', 'Le Kef', 'Mahdia', 'La Manouba', 'Médenine',
@@ -334,7 +329,7 @@
     COLLARS, TRIM_STYLES, SLEEVES,
     HOOD_STYLES, CAP_STYLES, CAP_MATERIALS, TASSEL_STYLES,
     MEASUREMENTS, STEPS, REGIONS,
-    PRODUCTS, product, stepsFor, measuresFor, price,
+    PRODUCTS, product, stepsFor, measuresFor,
     PROMO_CODES, isPromo, normalizePromo,
     find,
   };

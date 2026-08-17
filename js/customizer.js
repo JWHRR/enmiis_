@@ -157,16 +157,6 @@
         setTimeout(() => drop.classList.remove('is-shake'), 500);
       }
     }
-    if (def.id === 'robe') {
-      /* La broderie est obligatoire : on pointe le champ manquant. */
-      const error = screensRoot.querySelector('[data-emb-error]');
-      const input = screensRoot.querySelector('[data-type="robe.emb.text"]');
-      if (error) error.hidden = false;
-      if (input) {
-        input.focus();
-        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }
     if (def.id === 'measure') {
       let first = null;
       measureFields().forEach((m) => {
@@ -637,12 +627,7 @@
       store.type(input.getAttribute('data-type'), input.value);
       preview.render();
       syncUndo();
-      /* Le rappel « texte à broder » disparaît dès la première frappe. */
-      if (input.getAttribute('data-type') === 'robe.emb.text') {
-        const error = screensRoot.querySelector('[data-emb-error]');
-        if (error && input.value.trim()) error.hidden = true;
-        renderRail();
-      }
+      renderRail();
     });
 
     railRoot.addEventListener('click', (event) => {
@@ -719,7 +704,7 @@
     if (!screen) return;
     const id = screen.getAttribute('data-screen');
     if (id === 'upload') bindUpload(screen);
-    if (id === 'robe' || id === 'cap') bindLogos(screen);
+    if (id === 'cap') bindLogos(screen);
     if (id === 'measure') bindMeasure(screen);
     if (id === 'review') bindReview(screen);
   }

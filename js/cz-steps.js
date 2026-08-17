@@ -376,26 +376,8 @@
         field('Col', optionCards('robe.collar', cat.COLLARS)) +
         field('Bordure (contour)', optionCards('robe.trim', cat.TRIM_STYLES)) +
       '</div>' +
-      /* La broderie fait partie de la commande : plus d'interrupteur,
-         le texte à broder est demandé à tous. */
-      '<div class="cz-group">' +
-        '<div class="cz-switch cz-switch--static">' +
-          '<span class="cz-switch__text"><strong>Broderie personnalisée</strong>' +
-          '<small>Ce qui sera brodé sur votre robe.</small></span>' +
-          '<span class="cz-badge cz-badge--required">Obligatoire</span>' +
-        '</div>' +
-        '<div class="cz-embed">' +
-          field('Texte à broder *',
-            textInput('robe.emb.text', { maxlength: 40, placeholder: 'Ex : Dr Salhi Wafa' }),
-            'Nom, titre ou mention — exactement comme vous souhaitez le lire.') +
-          '<p class="cz-error" data-emb-error hidden>Indiquez le texte à broder sur la robe.</p>' +
-          field('Logo de votre université',
-            uploadSlot('robe.emb.uniLogo', 'robe.emb.uniLogoName', 'Ajouter le logo', 'PNG · JPG · SVG'),
-            'Facultatif — vous pouvez aussi le joindre à l’étape « Vos fichiers ».') +
-        '</div>' +
-      '</div>' +
-      '<p class="cz-help cz-help--workshop">Police, emplacement de la broderie et couleurs sont arrêtés avec ' +
-      'vous par l’atelier à la confirmation de la commande.</p>';
+      '<p class="cz-help cz-help--workshop">Broderie et couleurs sont arrêtées avec vous par ' +
+      'l’atelier à la confirmation de la commande.</p>';
     },
   };
 
@@ -512,9 +494,6 @@
             { label: 'Coupe des manches', value: labelOf(cat.SLEEVES, s.robe.sleeve) },
             { label: 'Col', value: labelOf(cat.COLLARS, s.robe.collar) },
             { label: 'Bordure', value: labelOf(cat.TRIM_STYLES, s.robe.trim) },
-            { label: 'Texte à broder', value: s.robe.emb.text.trim() || '— à compléter —',
-              warn: !s.robe.emb.text.trim() },
-            { label: 'Logo d’université', value: s.robe.emb.uniLogoName || 'Aucun' },
           ],
         });
       }
@@ -592,8 +571,6 @@
         '<p class="cz-help cz-help--workshop">Les couleurs de chaque pièce sont arrêtées avec vous par ' +
         'l’atelier avant la mise en fabrication.</p>' +
         '<div class="cz-tocart">' +
-          '<div class="cz-tocart__price"><span>' + esc(product.label) + '</span>' +
-            '<strong>' + esc(cat.price(product.price)) + '</strong></div>' +
           '<button type="button" class="btn btn--solid cz-tocart__cta" id="czAddToCart">' +
             (editing ? 'Enregistrer les modifications' : 'Ajouter ' + esc(product.the) + ' au panier') +
           '</button>' +
@@ -614,10 +591,10 @@
   const added = {
     html(productId) {
       const product = cat.product(productId);
-      const others = cat.PRODUCTS.filter((p) => p.id !== product.id);
       const count = store.cartCount();
-      const total = store.cartTotal();
 
+      /* On confirme l'ajout, sans souffler à la cliente ce qu'elle
+         devrait commander ensuite : elle sait ce dont elle a besoin. */
       return '<div class="cz-added">' +
         '<div class="cz-done__burst">' +
           '<svg viewBox="0 0 64 64" aria-hidden="true">' +
@@ -628,20 +605,7 @@
         '<p class="cz-done__label">Ajouté au panier</p>' +
         '<h2 class="cz-done__title">' + esc(product.label) + ' ajoutée au panier</h2>' +
         '<p class="cz-added__cart">' + count + ' article' + (count > 1 ? 's' : '') +
-          ' · <strong>' + esc(cat.price(total)) + '</strong></p>' +
-        '<p class="cz-added__text">Complétez votre tenue, ou passez directement à la commande.</p>' +
-        '<div class="cz-added__grid">' +
-          others.map((other) =>
-            '<a class="cz-added__card" href="customizer.html?produit=' + esc(other.id) + '">' +
-              '<span class="cz-added__thumb">' +
-                '<img src="' + esc(other.photo) + '" alt="" loading="lazy" decoding="async">' +
-              '</span>' +
-              '<span class="cz-added__body">' +
-                '<strong>' + esc(other.cta) + '</strong>' +
-                '<small>' + esc(other.tagline) + ' · ' + esc(cat.price(other.price)) + '</small>' +
-              '</span>' +
-            '</a>').join('') +
-        '</div>' +
+          ' dans votre panier</p>' +
         '<div class="cz-added__actions">' +
           '<a class="btn btn--solid" href="panier.html">Voir mon panier</a>' +
           '<a class="btn btn--line" href="soutenance.html">Continuer mes achats</a>' +

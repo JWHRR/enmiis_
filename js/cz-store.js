@@ -40,13 +40,7 @@
     editing: null,
     step: 0,
     files: [],
-    robe: {
-      sleeve: 'cloche', collar: 'v', trim: 'double',
-      /* La broderie fait partie de la commande : le texte à broder est
-         demandé à tous. Police et emplacement sont arrêtés par l'atelier,
-         comme les couleurs. */
-      emb: { text: '', uniLogo: null, uniLogoName: '' },
-    },
+    robe: { sleeve: 'cloche', collar: 'v', trim: 'double' },
     hood: { style: 'etole-droite', emb: '' },
     cap: { style: 'classique', material: 'gabardine', emb: '', logo: null, logoName: '' },
     tassel: { style: 'noeud', year: '' },
@@ -259,13 +253,6 @@
       if (!product.fileRequired) return [];
       return state.files.length ? [] : ['Ajoutez le design à broder sur votre robe.'];
     }
-    if (stepId === 'robe') {
-      /* La broderie est comprise dans la commande : on demande à tous
-         ce qui doit être brodé (nom, titre, mention…). */
-      return state.robe.emb.text.trim()
-        ? []
-        : ['Indiquez le texte à broder sur la robe.'];
-    }
     if (stepId === 'measure') {
       const missing = catalog.measuresFor(state.product)
         .filter((field) => measureError(field, state.measures[field.id]))
@@ -312,7 +299,6 @@
       id: 'it' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
       product: product.id,
       label: product.label,
-      price: product.price,
       addedAt: new Date().toISOString(),
       measures: {},
       files: state.files.map((file) => ({
@@ -409,11 +395,6 @@
   }
 
   function cartCount() { return readCart().items.length; }
-
-  /* Total du panier, en dinars. */
-  function cartTotal() {
-    return readCart().items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
-  }
 
   /* Ajoute la pièce en cours au panier — ou remplace celle qu'on est en
      train de modifier, à sa place dans la liste. Si le quota du
@@ -617,7 +598,7 @@
     undo, canUndo, reset,
     measureError, clientErrors, stepErrors, isComplete, setProduct,
     readCart, addToCart, removeCartItem, setCartClient, clearCart,
-    loadCartItem, cartCount, cartTotal, cartExpiresIn,
+    loadCartItem, cartCount, cartExpiresIn,
     submitCart, readOrders,
   };
 })(window);

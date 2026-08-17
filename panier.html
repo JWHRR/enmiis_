@@ -75,22 +75,10 @@
       <section class="pn-items" aria-label="Articles du panier">
         <ul id="pnList"></ul>
 
-        <div class="pn-more">
+        <div class="pn-more" id="pnMore" hidden>
           <p class="pn-more__title">Compléter votre tenue</p>
-          <div class="pn-more__row">
-            <a class="pn-add" href="customizer.html?produit=robe">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Robe
-            </a>
-            <a class="pn-add" href="customizer.html?produit=casquette">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Casquette
-            </a>
-            <a class="pn-add" href="customizer.html?produit=echarpe">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Écharpe
-            </a>
-          </div>
+          <div class="pn-more__row" id="pnMoreRow"></div>
+        </div>
         </div>
 
       </section>
@@ -150,11 +138,8 @@
         </div>
 
         <div class="pn-summary">
-          <div class="pn-summary__line">
-            <span>Articles</span><span id="pnSummaryCount">0</span>
-          </div>
           <div class="pn-summary__row">
-            <span>Total</span><strong id="pnTotal">0 DT</strong>
+            <span>Articles</span><strong id="pnSummaryCount">0</strong>
           </div>
           <p class="pn-summary__note">Le devis est confirmé par l’atelier après vérification des mesures
             et de la broderie.</p>

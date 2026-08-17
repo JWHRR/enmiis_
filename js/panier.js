@@ -36,7 +36,7 @@
   function itemName(item) {
     const product = productOf(item);
     if (!product) return 'Tenue de soutenance';
-    if (product.id === 'robe') return item.robe.emb.text.trim() || 'Robe de soutenance';
+    if (product.id === 'robe') return 'Robe de soutenance';
     if (product.id === 'casquette') return item.cap.emb.trim() || 'Casquette de diplômé';
     return item.hood.emb.trim() || 'Écharpe de félicitations';
   }
@@ -47,7 +47,6 @@
       rows.push({ label: 'Manches', value: label(cat.SLEEVES, item.robe.sleeve) });
       rows.push({ label: 'Col', value: label(cat.COLLARS, item.robe.collar) });
       rows.push({ label: 'Bordure', value: label(cat.TRIM_STYLES, item.robe.trim) });
-      rows.push({ label: 'Broderie', value: item.robe.emb.text || '—' });
     }
     if (item.cap) {
       rows.push({ label: 'Forme', value: label(cat.CAP_STYLES, item.cap.style) });
@@ -93,7 +92,6 @@
           '</dl>' +
           '<p class="pn-item__files">' + esc(meta) + '</p>' +
           '<div class="pn-item__foot">' +
-            '<span class="pn-item__price">' + esc(cat.price(Number(item.price) || 0)) + '</span>' +
             (product
               ? '<a class="pn-item__edit" href="customizer.html?edit=' + esc(item.id) + '">Modifier</a>'
               : '') +
@@ -117,6 +115,28 @@
     node.textContent = hours >= 1
       ? 'Votre panier est conservé encore ' + hours + ' h ' + String(minutes).padStart(2, '0') + ' sur cet appareil.'
       : 'Votre panier expire dans ' + minutes + ' min — pensez à valider votre commande.';
+  }
+
+  /* ---------- Compléter la tenue ----------
+     La proposition n'a de sens que s'il reste une pièce à ajouter :
+     une cliente qui a déjà sa robe, sa casquette et son écharpe n'a
+     rien à compléter. */
+
+  function renderMore(cart) {
+    const box = $('#pnMore');
+    if (!box) return;
+    const owned = new Set(cart.items.map((item) => item.product).filter(Boolean));
+    const missing = cat.PRODUCTS.filter((p) => !owned.has(p.id));
+    box.hidden = missing.length === 0;
+    if (!missing.length) return;
+
+    /* On ne propose que ce qui manque, sans insister sur le reste. */
+    $('#pnMoreRow').innerHTML = missing.map((product) =>
+      '<a class="pn-add" href="customizer.html?produit=' + esc(product.id) + '">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+        '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+        esc(product.label) +
+      '</a>').join('');
   }
 
   /* ---------- Compte ----------
@@ -180,11 +200,9 @@
   function render() {
     const cart = store.readCart();
     const count = cart.items.length;
-    const total = store.cartTotal();
 
     $('#pnCount').textContent = count ? count + ' article' + (count > 1 ? 's' : '') : '';
     $('#pnSummaryCount').textContent = String(count);
-    $('#pnTotal').textContent = cat.price(total);
     $('#pnSub').textContent = count
       ? 'Vérifiez vos pièces, puis renseignez vos coordonnées une seule fois.'
       : '';
@@ -194,6 +212,7 @@
 
     if (count) {
       renderItems(cart);
+      renderMore(cart);
       renderExpiry();
     } else {
       $('#pnExpiry').hidden = true;
@@ -260,13 +279,11 @@
   function summaryText(order) {
     const c = order.config.client;
     const items = order.config.items || [];
-    const total = items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
     const lines = [
       'ENMIIS — Dossier de fabrication',
       'Référence : ' + order.ref,
       'Date : ' + new Date(order.createdAt).toLocaleString('fr-FR'),
       'Articles : ' + items.length,
-      'Total : ' + cat.price(total),
       '',
       '— CLIENT —',
       'Nom : ' + c.name,
@@ -281,8 +298,7 @@
     items.forEach((item, index) => {
       const product = productOf(item);
       lines.push('', '════ ' + (index + 1) + '. ' +
-        (product ? product.label.toUpperCase() : 'TENUE COMPLÈTE') +
-        ' — ' + cat.price(Number(item.price) || 0) + ' ════');
+        (product ? product.label.toUpperCase() : 'TENUE COMPLÈTE') + ' ════');
       lines.push('Fichiers : ' + ((item.files || []).length
         ? item.files.map((f) => f.name).join(', ') : '—'));
 
@@ -290,8 +306,6 @@
         lines.push('Manches : ' + label(cat.SLEEVES, item.robe.sleeve));
         lines.push('Col : ' + label(cat.COLLARS, item.robe.collar));
         lines.push('Bordure : ' + label(cat.TRIM_STYLES, item.robe.trim));
-        lines.push('Texte à broder : ' + (item.robe.emb.text || '—'));
-        lines.push('Logo université : ' + (item.robe.emb.uniLogoName || '—'));
       }
       if (item.cap) {
         lines.push('Casquette : ' + label(cat.CAP_STYLES, item.cap.style) +

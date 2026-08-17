@@ -549,13 +549,9 @@
     let rows = '';
 
     if (item.robe) {
-      const robe = item.robe;
-      const emb = robe.emb || {};
-      rows += row('Manches', labelOf(cat.SLEEVES, robe.sleeve)) +
-        row('Col', labelOf(cat.COLLARS, robe.collar)) +
-        row('Bordure', labelOf(cat.TRIM_STYLES, robe.trim)) +
-        row('Texte à broder', emb.text || '—') +
-        row('Logo d’université', emb.uniLogoName || 'Aucun');
+      rows += row('Manches', labelOf(cat.SLEEVES, item.robe.sleeve)) +
+        row('Col', labelOf(cat.COLLARS, item.robe.collar)) +
+        row('Bordure', labelOf(cat.TRIM_STYLES, item.robe.trim));
     }
     if (item.cap) {
       rows += row('Casquette', labelOf(cat.CAP_STYLES, item.cap.style) + ' · ' +
@@ -615,10 +611,8 @@
 
   /* Visuels brodés joints à une tenue (logos université / mortier). */
   function artworkList(item) {
-    const emb = (item.robe || {}).emb || {};
     const cap = item.cap || {};
     return [
-      { id: 'uni', src: emb.uniLogo, name: emb.uniLogoName, role: 'Logo université' },
       { id: 'cap', src: cap.logo, name: cap.logoName, role: 'Logo mortier' },
     ].filter((entry) => entry.src);
   }
@@ -659,7 +653,6 @@
   /* Le nom que porte l'article dans l'atelier : ce qui doit être brodé
      dessus, sinon un repère neutre. */
   function itemTag(item) {
-    if (item.robe && item.robe.emb && item.robe.emb.text) return item.robe.emb.text;
     if (item.cap && item.cap.emb) return item.cap.emb;
     if (item.hood && item.hood.emb) return item.hood.emb;
     return 'Sans broderie';
@@ -672,10 +665,9 @@
     const title = total > 1
       ? (index + 1) + '. ' + name
       : name;
-    const price = Number(item.price) ? ' · ' + cat.price(Number(item.price)) : '';
     return '<section class="ad-item">' +
       '<header class="ad-item__head">' +
-        '<h3 class="ad-item__title">' + esc(title + price) + '</h3>' +
+        '<h3 class="ad-item__title">' + esc(title) + '</h3>' +
         '<span class="ad-item__tag">' + esc(itemTag(item)) + '</span>' +
       '</header>' +
       '<h4 class="ad-item__sub">Fichiers de production</h4>' +
@@ -980,7 +972,6 @@
       'Reçue le : ' + formatDateTime(order.createdAt),
       'Origine : ' + ((order.config || {}).source === 'manual' ? 'saisie atelier' : 'site'),
       'Articles : ' + items.length,
-      'Total : ' + cat.price(items.reduce((sum, i) => sum + (Number(i.price) || 0), 0)),
       '',
       '— CLIENT —',
       'Nom : ' + (client.name || '—'),
@@ -996,18 +987,14 @@
       const measures = item.measures || {};
       const product = item.product ? cat.product(item.product) : null;
       lines.push('', '════ ' + (index + 1) + '/' + items.length + ' — ' +
-        (product ? product.label.toUpperCase() : 'TENUE COMPLÈTE') +
-        (Number(item.price) ? ' — ' + cat.price(Number(item.price)) : '') + ' ════');
+        (product ? product.label.toUpperCase() : 'TENUE COMPLÈTE') + ' ════');
       lines.push('Fichiers : ' + ((item.files || []).length
         ? item.files.map((f) => f.name + ' (' + f.label + ')').join(', ') : '—'));
 
       if (item.robe) {
-        const emb = item.robe.emb || {};
         lines.push('Manches : ' + labelOf(cat.SLEEVES, item.robe.sleeve));
         lines.push('Col : ' + labelOf(cat.COLLARS, item.robe.collar));
         lines.push('Bordure : ' + labelOf(cat.TRIM_STYLES, item.robe.trim));
-        lines.push('Texte à broder : ' + (emb.text || '—'));
-        lines.push('Logo université : ' + (emb.uniLogoName || '—'));
       }
       if (item.cap) {
         lines.push('Casquette : ' + labelOf(cat.CAP_STYLES, item.cap.style) +
@@ -1085,7 +1072,7 @@
        lignes partageant la même référence et le même client, ce qui
        reste exploitable dans un tableur. La colonne « Composition »
        décrit la pièce de la ligne, quelle qu'elle soit. */
-    const columns = ['Référence', 'Statut', 'Origine', 'Reçue le', 'Article', 'Sur', 'Pièce', 'Prix',
+    const columns = ['Référence', 'Statut', 'Origine', 'Reçue le', 'Article', 'Sur', 'Pièce',
       'Client', 'WhatsApp', 'E-mail', 'Région', 'Université', 'Soutenance',
       'Composition', 'Broderie', 'Mesures', 'Fichiers', 'Note'];
     const cell = (value) => '"' + String(value == null ? '' : value).replace(/"/g, '""') + '"';
@@ -1104,7 +1091,6 @@
           spec.push(labelOf(cat.SLEEVES, item.robe.sleeve) + ' / ' +
             labelOf(cat.COLLARS, item.robe.collar) + ' / ' +
             labelOf(cat.TRIM_STYLES, item.robe.trim));
-          if (item.robe.emb && item.robe.emb.text) emb.push(item.robe.emb.text);
         }
         if (item.cap) {
           spec.push(labelOf(cat.CAP_STYLES, item.cap.style) + ' / ' +
@@ -1134,7 +1120,6 @@
           index + 1,
           list.length,
           product ? product.label : 'Tenue complète',
-          Number(item.price) || '',
           client.name,
           client.whatsapp,
           client.email,
@@ -1258,14 +1243,11 @@
         '<label class="ad-new__field ad-new__field--wide"><span>Pièce commandée</span>' +
           '<select class="ad-input" data-new-item-field="product" data-new-product>' +
             cat.PRODUCTS.map((p) => '<option value="' + esc(p.id) + '">' +
-              esc(p.label) + ' — ' + esc(cat.price(p.price)) + '</option>').join('') +
+              esc(p.label) + '</option>').join('') +
           '</select></label>' +
       '</div>' +
 
       group('robe',
-        '<label class="ad-new__field ad-new__field--wide"><span>Texte à broder</span>' +
-          '<input class="ad-input" type="text" data-new-item-field="emb" maxlength="40"' +
-            ' placeholder="Ex : Dr Salhi Wafa"></label>' +
         '<label class="ad-new__field"><span>Manches</span>' +
           selectField('sleeve', cat.SLEEVES, 'cloche') + '</label>' +
         '<label class="ad-new__field"><span>Col</span>' +
@@ -1415,7 +1397,6 @@
         id: 'it' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
         product: product.id,
         label: product.label,
-        price: product.price,
         addedAt: new Date().toISOString(),
         files: [],
         measures,
@@ -1426,7 +1407,6 @@
           sleeve: field('sleeve'),
           collar: field('collar'),
           trim: field('trim'),
-          emb: { text: field('emb').trim(), uniLogo: null, uniLogoName: '' },
         };
       }
       if (product.id === 'casquette') {
