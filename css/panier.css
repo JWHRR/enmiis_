@@ -472,3 +472,6 @@
 
 .ac-actions { display: flex; flex-wrap: wrap; gap: 0.7rem; }
 .ac-actions .btn { flex: 1 1 180px; text-align: center; }
+
+/* Code promo refusé : la bordure suit le message, comme les autres champs. */
+.cz-input.is-invalid { border-color: #B4342F; }

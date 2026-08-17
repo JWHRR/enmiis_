@@ -238,6 +238,11 @@
     if (!c.region) errors.region = 'Choisissez votre région.';
     if (!c.date) errors.date = 'Indiquez la date de soutenance.';
     else if (c.date < new Date().toISOString().slice(0, 10)) errors.date = 'La date doit être à venir.';
+    /* Le champ reste facultatif, mais un code saisi doit exister : sans
+       ce refus, la cliente croirait avoir un avantage qu'elle n'a pas. */
+    if (c.promo.trim() && !CZ.catalog.isPromo(c.promo)) {
+      errors.promo = 'Ce code promo n’existe pas. Vérifiez-le ou laissez le champ vide.';
+    }
     return errors;
   }
 

@@ -186,13 +186,26 @@
      Le site ne dit jamais ce que le code donne : il sert à l'atelier
      à reconnaître d'où vient la cliente. */
 
-  function renderPromo() {
+  function renderPromo(force) {
     const field = $('#pn_promo');
     const okNode = $('#pnPromoOk');
+    const errNode = document.querySelector('[data-client-error="promo"]');
     if (!field || !okNode) return;
-    const valid = cat.isPromo(field.value);
+
+    const typed = field.value.trim();
+    const valid = cat.isPromo(typed);
     okNode.hidden = !valid;
     field.classList.toggle('is-valid', valid);
+
+    /* « IHEC » n'est pas encore « IHEC_CARTHAGE » : afficher le refus
+       à chaque lettre le ferait clignoter pendant toute la frappe. On
+       attend que la cliente quitte le champ, ou qu'elle envoie. */
+    const bad = Boolean(typed) && !valid && Boolean(force);
+    field.classList.toggle('is-invalid', bad);
+    if (errNode) {
+      errNode.textContent = bad ? (store.clientErrors(readForm()).promo || '') : '';
+      errNode.hidden = !bad;
+    }
   }
 
   /* ---------- Rendu global ---------- */
@@ -437,6 +450,9 @@
       showError(field.getAttribute('data-client'), false);
       store.setCartClient(readForm());
     });
+    form.addEventListener('blur', (event) => {
+      if (event.target.id === 'pn_promo') renderPromo(true);
+    }, true);
 
     $('#pnSubmit').addEventListener('click', submit);
     $('#pnPdf').addEventListener('click', () => {
