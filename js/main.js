@@ -104,9 +104,22 @@
     if (open) setTimeout(() => searchInput.focus(), 350);
   }
 
+  /* Le champ de l'en-tête (desktop) renvoie vers la recherche plein
+     écran plutôt que d'ouvrir un second mécanisme : ce qui est tapé
+     avant l'ouverture est repris tel quel. */
+  function ouvrirDepuisEntete() {
+    const champ = document.getElementById('headerSearchInput');
+    const valeur = champ ? champ.value : '';
+    setSearch(true);
+    if (valeur && searchInput) searchInput.value = valeur;
+    if (champ) champ.value = '';
+  }
+
   if (searchOverlay) {
     document.getElementById('searchBtn')?.addEventListener('click', () => setSearch(true));
     document.getElementById('quickSearchBtn')?.addEventListener('click', () => setSearch(true));
+    document.getElementById('headerSearchBtn')?.addEventListener('click', ouvrirDepuisEntete);
+    document.getElementById('headerSearchInput')?.addEventListener('focus', ouvrirDepuisEntete);
     document.getElementById('searchClose')?.addEventListener('click', () => setSearch(false));
     scrim.addEventListener('click', () => {
       if (searchOverlay.classList.contains('is-open')) setSearch(false);
