@@ -36,6 +36,15 @@
     <div class="header-main">
       <div class="container header-main__inner">
 
+        <!-- Recherche visible en desktop : sur mobile c'est la loupe qui sert. -->
+        <form class="header-search" role="search" onsubmit="return false;">
+          <input class="header-search__input" id="headerSearchInput" type="search"
+                 placeholder="Que cherchez-vous ?" autocomplete="off" aria-label="Rechercher">
+          <button class="header-search__btn" id="headerSearchBtn" type="button" aria-label="Lancer la recherche">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+          </button>
+        </form>
+
         <div class="header-main__left">
           <button class="icon-btn header-burger" id="burgerBtn" type="button" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="mobileMenu">
             <span class="burger-lines"><span></span><span></span></span>

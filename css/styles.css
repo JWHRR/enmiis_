@@ -1706,15 +1706,22 @@ svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width:
   /* ---- En-tête : recherche à gauche, logo au centre, icônes à droite.
      `display: contents` sur le groupe de gauche fait remonter le logo
      au niveau de la grille, sans quoi il resterait collé au bord. ---- */
+  /* Le hero occupe toute la largeur. Plafonner le reste à 1440 px
+     laissait près de 280 px de vide de chaque côté sur un écran de
+     1920, et détachait l'en-tête comme les sections de l'image. Tout
+     suit désormais la largeur de la fenêtre, avec la même retombée. */
+  .container { max-width: none; padding-inline: clamp(1.5rem, 3vw, 3rem); }
+
+  /* La recherche et la lettre d'information restent des colonnes de
+     lecture : les étirer sur 1900 px les rendrait illisibles. */
+  .search-overlay__inner { max-width: 1100px; margin-inline: auto; }
+  .newsletter__inner { max-width: 900px; margin-inline: auto; }
+
   .header-main__inner {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
     gap: 1.5rem;
-    /* Le hero occupe toute la largeur : plafonner l'en-tête à 1440 px
-       le détacherait de l'image sur les grands écrans. */
-    max-width: none;
-    padding-inline: clamp(1.5rem, 3vw, 3rem);
   }
   .header-main__left { display: contents; }
   .header-burger { display: none; }
