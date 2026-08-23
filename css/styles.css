@@ -1754,8 +1754,15 @@ svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width:
 
   .main-nav { display: block; }
 
-  /* ---- Hero : texte à gauche sur blanc, image à droite ---- */
-  .hero { --hero-aspect: 4 / 3; --hero-max-h: 620px; }
+  /* ---- Hero : texte à gauche sur blanc, image à droite ----
+     La même retombée que les sections : l'image s'arrête donc au même
+     aplomb que la grille « Nos Univers », au lieu de filer jusqu'au
+     bord de la fenêtre. */
+  .hero {
+    --hero-aspect: 4 / 3;
+    --hero-max-h: 620px;
+    padding-inline: clamp(1.5rem, 3vw, 3rem);
+  }
 
   .hero__slide {
     display: grid;
