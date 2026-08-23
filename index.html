@@ -28,7 +28,7 @@
     <!-- Utility bar -->
     <div class="utility-bar">
       <div class="container utility-bar__inner">
-        <p class="utility-bar__note">Livraison dans toute la Tunisie — offerte dès 200 TND</p>
+        <p class="utility-bar__note">Livraison dans toute la Tunisie</p>
         <nav class="utility-bar__links" aria-label="Utilitaire">
           <a href="#">Boutiques</a>
           <a href="#">Services</a>
@@ -106,6 +106,18 @@
           <li><a href="customizer.html">Mortier</a></li>
         </ul>
       </div>
+    </div>
+  </div>
+
+  <!-- ======================= SCAN CAMÉRA ======================= -->
+  <div class="scan" id="scanOverlay" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Scanner un code">
+    <video class="scan__video" id="scanVideo" playsinline muted></video>
+    <div class="scan__mask" aria-hidden="true"><span class="scan__frame"></span></div>
+    <div class="scan__bar">
+      <p class="scan__hint" id="scanHint">Ouverture de la caméra…</p>
+      <button class="scan__close" id="scanClose" type="button" aria-label="Fermer le scan">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
+      </button>
     </div>
   </div>
 
@@ -203,14 +215,16 @@
 
     <!-- ======================= QUICK SEARCH + CATEGORIES (mobile) ======================= -->
     <section class="quick-shop" aria-label="Recherche et catégories">
-      <button class="quick-search" id="quickSearchBtn" type="button">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
-        <span class="quick-search__placeholder">Que cherchez-vous ?</span>
-        <span class="quick-search__scan" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M4 7v10M7.5 7v10M10 7v10M13.5 7v10M16 7v10M20 7v10"/></svg>
-          <svg viewBox="0 0 24 24"><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2L9 5h6l1.5 2h2A1.5 1.5 0 0 1 20 8.5v8a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 16.5v-8z"/><circle cx="12" cy="12.5" r="3.25"/></svg>
-        </span>
-      </button>
+      <div class="quick-search">
+        <button class="quick-search__field" id="quickSearchBtn" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+          <span class="quick-search__placeholder">Que cherchez-vous ?</span>
+        </button>
+        <button class="quick-search__scan" id="scanBtn" type="button" aria-label="Scanner un code avec la caméra">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7v10M7.5 7v10M10 7v10M13.5 7v10M16 7v10M20 7v10"/></svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2L9 5h6l1.5 2h2A1.5 1.5 0 0 1 20 8.5v8a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 16.5v-8z"/><circle cx="12" cy="12.5" r="3.25"/></svg>
+        </button>
+      </div>
       <nav class="category-grid" aria-label="Nos catégories">
         <a href="#" data-soon>Nouveautés</a>
         <a href="#" data-soon>Collections</a>
@@ -234,7 +248,7 @@
             </div>
             <div class="collection-card__body">
               <p class="collection-card__label">Le grand jour</p>
-              <h3 class="collection-card__title">Soutenances</h3>
+              <h3 class="collection-card__title">Soutenance</h3>
               <span class="collection-card__cta">Voir nos créations</span>
             </div>
           </a>

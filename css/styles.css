@@ -738,17 +738,26 @@ svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width:
    ============================================================ */
 .quick-shop { background: var(--white); }
 
+/* Le scan était un décor à l'intérieur du bouton de recherche : le
+   toucher ouvrait la recherche. C'est désormais un bouton à part —
+   d'où le conteneur, les deux boutons ne pouvant pas être imbriqués. */
 .quick-search {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.quick-search__field {
   display: flex;
   align-items: center;
   gap: 0.9rem;
-  width: 100%;
-  padding: 0.95rem var(--gutter);
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
+  flex: 1;
+  min-width: 0;
+  padding: 0.95rem 0.5rem 0.95rem var(--gutter);
   text-align: left;
 }
-.quick-search > svg { width: 20px; height: 20px; flex: none; color: var(--ink); }
+.quick-search__field > svg { width: 20px; height: 20px; flex: none; color: var(--ink); }
 .quick-search__placeholder {
   flex: 1;
   min-width: 0;
@@ -764,10 +773,75 @@ svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width:
   align-items: center;
   gap: 1.1rem;
   flex: none;
+  padding: 0.95rem var(--gutter) 0.95rem 0.5rem;
   color: var(--ink);
 }
 .quick-search__scan svg { width: 22px; height: 22px; }
-.quick-search:active { background: var(--off-white); }
+.quick-search__field:active,
+.quick-search__scan:active { background: var(--off-white); }
+
+/* ============================================================
+   SCAN CAMÉRA
+   ============================================================ */
+.scan {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: #000;
+  display: none;
+}
+.scan.is-open { display: block; }
+.scan__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* Le cadre découpe l'image sans masque supplémentaire : une ombre
+   portée démesurée assombrit tout ce qui l'entoure. */
+.scan__mask {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.scan__frame {
+  width: min(74vw, 320px);
+  aspect-ratio: 1.55;
+  border: 2px solid rgba(255, 255, 255, 0.92);
+  border-radius: 14px;
+  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.5);
+}
+.scan__bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem var(--gutter) calc(1.25rem + env(safe-area-inset-bottom));
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+}
+.scan__hint {
+  flex: 1;
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 300;
+  line-height: 1.45;
+}
+.scan__close {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 999px;
+  color: #fff;
+}
+.scan__close svg { width: 20px; height: 20px; }
 
 .category-grid {
   display: grid;

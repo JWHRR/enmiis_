@@ -113,8 +113,101 @@
     });
   }
 
+  /* ----------------------------------------------------------
+     Scan par la caméra
+
+     Le pictogramme code-barres était un décor : le toucher ouvrait la
+     recherche, rien de plus. Il ouvre maintenant la caméra arrière.
+
+     Deux limites tenaient au navigateur, pas au site : la caméra exige
+     une connexion sécurisée, et seul BarcodeDetector — présent sur
+     Chrome et Edge, absent de Safari et Firefox — sait décoder un code.
+     Plutôt qu'un bouton muet, on ouvre toujours la caméra, on décode
+     quand c'est possible, et on dit pourquoi quand ça ne l'est pas.
+     ---------------------------------------------------------- */
+  const scanOverlay = document.getElementById('scanOverlay');
+  const scanVideo = document.getElementById('scanVideo');
+  const scanHint = document.getElementById('scanHint');
+  let scanStream = null;
+  let scanTimer = null;
+
+  function scanStop() {
+    if (scanTimer) { clearInterval(scanTimer); scanTimer = null; }
+    /* Sans arrêt explicite des pistes, le voyant de la caméra reste
+       allumé après la fermeture. */
+    if (scanStream) { scanStream.getTracks().forEach((t) => t.stop()); scanStream = null; }
+    if (scanVideo) scanVideo.srcObject = null;
+    if (!scanOverlay) return;
+    scanOverlay.classList.remove('is-open');
+    scanOverlay.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('is-locked');
+  }
+
+  async function scanStart() {
+    if (!scanOverlay || !scanVideo) return;
+    scanOverlay.classList.add('is-open');
+    scanOverlay.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('is-locked');
+    scanHint.textContent = 'Ouverture de la caméra…';
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      scanHint.textContent = 'Ce navigateur ne donne pas accès à la caméra.';
+      return;
+    }
+
+    try {
+      scanStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' } },
+        audio: false,
+      });
+    } catch (err) {
+      const nom = err && err.name;
+      scanHint.textContent =
+        nom === 'NotAllowedError' ? 'Accès à la caméra refusé. Autorisez-le dans votre navigateur, puis réessayez.'
+        : !window.isSecureContext ? 'La caméra demande une connexion sécurisée (https).'
+        : nom === 'NotFoundError' ? 'Aucune caméra détectée sur cet appareil.'
+        : 'La caméra n’a pas pu démarrer.';
+      return;
+    }
+
+    scanVideo.srcObject = scanStream;
+    try { await scanVideo.play(); } catch (err) { /* iOS refuse parfois la lecture auto */ }
+
+    let detecteur = null;
+    try {
+      if ('BarcodeDetector' in window) detecteur = new window.BarcodeDetector();
+    } catch (err) { detecteur = null; }
+
+    if (!detecteur) {
+      scanHint.textContent = 'Lecture automatique indisponible sur ce navigateur — '
+        + 'cherchez plutôt le nom du produit.';
+      return;
+    }
+
+    scanHint.textContent = 'Visez le code : il sera lu automatiquement.';
+    scanTimer = setInterval(async () => {
+      if (!scanVideo.videoWidth) return;
+      let codes = [];
+      try { codes = await detecteur.detect(scanVideo); } catch (err) { return; }
+      if (!codes.length) return;
+      const valeur = (codes[0].rawValue || '').trim();
+      if (!valeur) return;
+      scanStop();
+      /* Le site n'associe aucun code à un produit : le résultat part
+         donc dans la recherche, seul endroit qui sache en faire
+         quelque chose. */
+      setSearch(true);
+      if (searchInput) searchInput.value = valeur;
+      showToast('Code lu : <em>' + valeur + '</em>');
+    }, 400);
+  }
+
+  document.getElementById('scanBtn')?.addEventListener('click', scanStart);
+  document.getElementById('scanClose')?.addEventListener('click', scanStop);
+
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
+    if (scanOverlay?.classList.contains('is-open')) scanStop();
     if (searchOverlay?.classList.contains('is-open')) setSearch(false);
     if (mobileMenu?.classList.contains('is-open')) setMenu(false);
   });
