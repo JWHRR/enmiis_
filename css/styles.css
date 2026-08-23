@@ -678,15 +678,34 @@ svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width:
   max-width: 24ch;
 }
 
+/* Le média peut être une vidéo : mêmes règles que l'image, sans le
+   travelling Ken Burns qui doublerait le mouvement du plan. */
+.hero__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.hero__text {
+  font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  max-width: 34ch;
+  margin: -0.7rem 0 1.6rem;
+}
+
 /* Slide content entrance */
-.hero__label, .hero__title, .hero__slide .btn {
+.hero__label, .hero__title, .hero__text, .hero__slide .btn {
   opacity: 0;
   transform: translateY(22px);
   transition: opacity 1s var(--ease-lux), transform 1s var(--ease-lux);
 }
 .hero__slide.is-active .hero__label { opacity: 1; transform: none; transition-delay: 0.3s; }
 .hero__slide.is-active .hero__title { opacity: 1; transform: none; transition-delay: 0.42s; }
-.hero__slide.is-active .btn { opacity: 1; transform: none; transition-delay: 0.56s; }
+.hero__slide.is-active .hero__text { opacity: 1; transform: none; transition-delay: 0.52s; }
+.hero__slide.is-active .btn { opacity: 1; transform: none; transition-delay: 0.64s; }
 
 /* Progress-bar dots below the content */
 .hero__dots {
@@ -953,13 +972,18 @@ svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width:
   background: var(--off-white);
 }
 .collection-card__media { overflow: hidden; height: 100%; }
-.collection-card__media img {
+/* Deux cartes portent une vidéo plutôt qu'une image : memes regles,
+   pour que le cadre et le survol se comportent à l’identique. */
+.collection-card__media img,
+.collection-card__video {
   width: 100%; height: 100%;
   object-fit: cover;
   aspect-ratio: 4 / 5;
   transition: transform 1.4s var(--ease-lux);
 }
-.collection-card:hover .collection-card__media img { transform: scale(1.05); }
+.collection-card__video { display: block; pointer-events: none; }
+.collection-card:hover .collection-card__media img,
+.collection-card:hover .collection-card__video { transform: scale(1.05); }
 
 .collection-card::after {
   content: "";
