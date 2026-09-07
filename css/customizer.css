@@ -297,9 +297,17 @@
   transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
   pointer-events: none;
 }
-.cz-spot.is-in { opacity: 1; transform: none; }
-.cz-spot__art { width: 44px; height: 50px; }
+.cz-spot__art { width: 44px; height: 50px; overflow: hidden; border-radius: 6px; }
 .cz-spot__art svg { width: 100%; height: 100%; }
+.cz-spot__art picture,
+.cz-spot__art img,
+.cz-spot__art .cz-option__pic,
+.cz-spot__art .cz-option__photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 .cz-spot__name { font-size: 0.75rem; font-weight: 500; max-width: 16ch; line-height: 1.25; }
 
 /* Vignettes des designs téléversés */
@@ -586,6 +594,113 @@ select.cz-input {
 }
 .cz-option__check svg { width: 12px; height: 12px; fill: none; stroke: var(--white); stroke-width: 2.6; }
 .cz-option.is-active .cz-option__check { opacity: 1; transform: scale(1); }
+
+/* ---------- Cartes d'options photographiques (ex : manches réelles) ---------- */
+.cz-options--sleeves,
+.cz-options--photos {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+@media (min-width: 600px) {
+  .cz-options--sleeves,
+  .cz-options--photos {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.85rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .cz-options--sleeves,
+  .cz-options--photos {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+}
+
+.cz-option--photo {
+  padding: 0.55rem 0.55rem 0.75rem;
+  align-items: center;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 16px;
+  border: 1.5px solid var(--line);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+}
+
+.cz-option--photo .cz-option__check {
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 3;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.cz-option--photo .cz-option__art--photo {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  max-height: none;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #F4EFEA;
+  margin-bottom: 0.45rem;
+  position: relative;
+  box-shadow: inset 0 0 0 1px rgba(17, 17, 17, 0.06);
+}
+
+.cz-option__pic {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.cz-option__photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (hover: hover) {
+  .cz-option--photo:hover {
+    transform: translateY(-3px) scale(1.02);
+    border-color: rgba(200, 168, 107, 0.6);
+    box-shadow: 0 14px 28px -12px rgba(17, 17, 17, 0.25);
+  }
+  .cz-option--photo:hover .cz-option__photo {
+    transform: scale(1.05);
+  }
+}
+
+.cz-option--photo.is-active {
+  border-color: var(--gold);
+  background: var(--white);
+  box-shadow: 0 0 0 1.5px var(--gold), 0 0 22px rgba(200, 168, 107, 0.35),
+              0 14px 30px -14px rgba(17, 17, 17, 0.3);
+}
+
+.cz-option--photo .cz-option__name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+  margin-top: 0.2rem;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .cz-option--photo {
+    padding: 0.7rem 0.7rem 0.9rem;
+  }
+  .cz-option--photo .cz-option__name {
+    font-size: 0.92rem;
+  }
+}
 
 /* Note atelier : les couleurs seront définies à la confirmation */
 .cz-help--workshop {

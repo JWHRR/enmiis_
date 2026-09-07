@@ -230,7 +230,16 @@
   }
 
   const ART = {
-    'robe.sleeve': (id) => gownArt({ sleeve: id, focus: 'sleeve' }),
+    'robe.sleeve': (id) => {
+      const item = (cat.SLEEVES || []).find((s) => s.id === id);
+      if (item && item.image) {
+        return '<picture class="cz-option__pic">' +
+          (item.imageWebp ? '<source srcset="' + esc(item.imageWebp) + '" type="image/webp">' : '') +
+          '<img class="cz-option__photo" src="' + esc(item.image) + '" alt="' + esc(item.label) + '" loading="lazy" decoding="async">' +
+          '</picture>';
+      }
+      return gownArt({ sleeve: id, focus: 'sleeve' });
+    },
     'robe.collar': (id) => gownArt({ collar: id, focus: 'collar' }),
     'robe.trim':   (id) => gownArt({ trim: id, focus: 'trim' }),
     'hood.style':  (id) => art(HOOD_ART[id]),
@@ -246,17 +255,34 @@
     const opts = options || {};
     const current = store.at(path);
     const artFn = ART[path];
-    return '<div class="cz-options' + (opts.wide ? ' cz-options--wide' : '') + '" role="group">' +
-      items.map((item) =>
-        '<button type="button" class="cz-option' + (current === item.id ? ' is-active' : '') + '"' +
-        ' data-set="' + path + '" data-value="' + item.id + '" aria-pressed="' + (current === item.id) + '">' +
-        (artFn ? '<span class="cz-option__art">' + artFn(item.id) + '</span>' : '') +
-        '<span class="cz-option__name">' + esc(item.label) + '</span>' +
-        (item.note ? '<span class="cz-option__note">' + esc(item.note) + '</span>' : '') +
-        (path === 'cap.style' ? capViews(item.id) : '') +
-        (item.ref ? '<span class="cz-option__ref">' + esc(item.ref) + '</span>' : '') +
-        '<span class="cz-option__check"><svg viewBox="0 0 24 24"><polyline points="5 13 10 18 19 7"/></svg></span>' +
-        '</button>').join('') + '</div>';
+    const isPhoto = items && items.some((i) => i.image);
+    const classes = [
+      'cz-options',
+      opts.wide ? 'cz-options--wide' : '',
+      opts.className || '',
+      isPhoto ? 'cz-options--photos' : '',
+    ].filter(Boolean).join(' ');
+
+    return '<div class="' + classes + '" role="group">' +
+      items.map((item) => {
+        const itemHasPhoto = Boolean(item.image);
+        const cardClasses = [
+          'cz-option',
+          opts.cardClass || '',
+          itemHasPhoto ? 'cz-option--photo' : '',
+          current === item.id ? 'is-active' : '',
+        ].filter(Boolean).join(' ');
+
+        return '<button type="button" class="' + cardClasses + '"' +
+          ' data-set="' + path + '" data-value="' + item.id + '" aria-pressed="' + (current === item.id) + '">' +
+          (artFn ? '<span class="cz-option__art' + (itemHasPhoto ? ' cz-option__art--photo' : '') + '">' + artFn(item.id) + '</span>' : '') +
+          (item.label ? '<span class="cz-option__name">' + esc(item.label) + '</span>' : '') +
+          (item.note ? '<span class="cz-option__note">' + esc(item.note) + '</span>' : '') +
+          (path === 'cap.style' ? capViews(item.id) : '') +
+          (item.ref ? '<span class="cz-option__ref">' + esc(item.ref) + '</span>' : '') +
+          '<span class="cz-option__check"><svg viewBox="0 0 24 24"><polyline points="5 13 10 18 19 7"/></svg></span>' +
+          '</button>';
+      }).join('') + '</div>';
   }
 
   function field(label, inner, help) {
@@ -371,8 +397,7 @@
   const robe = {
     html() {
       return '<div class="cz-group">' +
-        field('Coupe des manches', optionCards('robe.sleeve', cat.SLEEVES),
-          'La partie dorée montre la manche du modèle.') +
+        field('Coupe des manches', optionCards('robe.sleeve', cat.SLEEVES, { className: 'cz-options--sleeves' })) +
         field('Col', optionCards('robe.collar', cat.COLLARS)) +
         field('Bordure (contour)', optionCards('robe.trim', cat.TRIM_STYLES)) +
       '</div>' +

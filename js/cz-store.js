@@ -40,7 +40,7 @@
     editing: null,
     step: 0,
     files: [],
-    robe: { sleeve: 'cloche', collar: 'v', trim: 'double' },
+    robe: { sleeve: 'modele-1', collar: 'v', trim: 'double' },
     hood: { style: 'etole-droite', emb: '' },
     cap: { style: 'classique', material: 'gabardine', emb: '', logo: null, logoName: '' },
     tassel: { style: 'noeud', year: '' },
@@ -109,6 +109,12 @@
       mergeInto(merged, parsed);
       /* Les fichiers restaurés n’ont plus leur contenu : on repart à vide. */
       merged.files = [];
+      if (merged.robe && merged.robe.sleeve) {
+        const valid = ['modele-1', 'modele-2', 'modele-3', 'modele-4', 'modele-5', 'modele-6'];
+        if (!valid.includes(merged.robe.sleeve)) {
+          merged.robe.sleeve = DEFAULTS.robe.sleeve;
+        }
+      }
       state = merged;
     } catch (err) {
       state = clone(DEFAULTS);

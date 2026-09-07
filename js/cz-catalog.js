@@ -41,9 +41,12 @@
   ];
 
   const SLEEVES = [
-    { id: 'cloche',  label: 'Manche cloche',   note: 'Évasée, modèle américain' },
-    { id: 'pointe',  label: 'Manche pointue',  note: 'Modèle européen classique' },
-    { id: 'droite',  label: 'Manche droite',   note: 'Coupe nette et sobre' },
+    { id: 'modele-1', label: 'Modèle 1', image: 'configurateur/robe/manches/modele-1.jpeg', imageWebp: 'configurateur/robe/manches/modele-1.webp' },
+    { id: 'modele-2', label: 'Modèle 2', image: 'configurateur/robe/manches/modele-2.jpeg', imageWebp: 'configurateur/robe/manches/modele-2.webp' },
+    { id: 'modele-3', label: 'Modèle 3', image: 'configurateur/robe/manches/modele-3.jpeg', imageWebp: 'configurateur/robe/manches/modele-3.webp' },
+    { id: 'modele-4', label: 'Modèle 4', image: 'configurateur/robe/manches/modele-4.jpeg', imageWebp: 'configurateur/robe/manches/modele-4.webp' },
+    { id: 'modele-5', label: 'Modèle 5', image: 'configurateur/robe/manches/modele-5.jpeg', imageWebp: 'configurateur/robe/manches/modele-5.webp' },
+    { id: 'modele-6', label: 'Modèle 6', image: 'configurateur/robe/manches/modele-6.jpeg', imageWebp: 'configurateur/robe/manches/modele-6.webp' },
   ];
 
   /* ---------- Capuche / Étole (planche « CAPE ») ---------- */

@@ -1249,7 +1249,7 @@
 
       group('robe',
         '<label class="ad-new__field"><span>Manches</span>' +
-          selectField('sleeve', cat.SLEEVES, 'cloche') + '</label>' +
+          selectField('sleeve', cat.SLEEVES, 'modele-1') + '</label>' +
         '<label class="ad-new__field"><span>Col</span>' +
           selectField('collar', cat.COLLARS, 'v') + '</label>' +
         '<label class="ad-new__field"><span>Bordure</span>' +

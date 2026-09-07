@@ -743,11 +743,11 @@
   const PRESETS = {
     robe: {
       '1': { name: 'Modèle Toge d’Excellence #1 (Photo de référence)',
-             src: 'img/soutenance/1.png', apply: { sleeve: 'cloche', collar: 'v', trim: 'double' } },
+             src: 'img/soutenance/1.png', apply: { sleeve: 'modele-1', collar: 'v', trim: 'double' } },
       '2': { name: 'Modèle Toge de Prestance #2 (Photo de référence)',
-             src: 'img/soutenance/2.png', apply: { sleeve: 'cloche', collar: 'v', trim: 'simple' } },
+             src: 'img/soutenance/2.png', apply: { sleeve: 'modele-1', collar: 'v', trim: 'simple' } },
       '3': { name: 'Modèle Toge Marine #3 (Photo de référence)',
-             src: 'img/soutenance/3.png', apply: { sleeve: 'cloche', collar: 'v', trim: 'double' } },
+             src: 'img/soutenance/3.png', apply: { sleeve: 'modele-1', collar: 'v', trim: 'double' } },
     },
     casquette: {
       '1': { name: 'Mortier Classique (Photo de référence)',
