@@ -70,14 +70,28 @@
       if (state.tassel.year) chips.push({ label: 'Année', value: state.tassel.year });
       return chips;
     }
-    /* Vue d’ensemble (fichiers, mesures, récapitulatif, envoi) */
-    return [
-      { label: 'Manches', value: label(cat.SLEEVES, state.robe.sleeve) },
-      { label: 'Col', value: label(cat.COLLARS, state.robe.collar) },
-      { label: 'Capuche', value: label(cat.HOOD_STYLES, state.hood.style) },
-      { label: 'Mortier', value: label(cat.CAP_STYLES, state.cap.style) },
-      { label: 'Gland', value: label(cat.TASSEL_STYLES, state.tassel.style) },
-    ];
+    /* Vue d’ensemble (fichiers, mesures, récapitulatif, envoi).
+
+       Les pastilles ne listent que ce qui appartient reellement a la
+       piece en cours : une commande de robe n'a pas a afficher un
+       mortier et un gland, et une cape n'a aucune de ces options. */
+    const etapes = (cat.product(state.product) || {}).steps || [];
+    const chips = [];
+    if (etapes.indexOf('robe') > -1) {
+      chips.push({ label: 'Manches', value: label(cat.SLEEVES, state.robe.sleeve) });
+      chips.push({ label: 'Col', value: label(cat.COLLARS, state.robe.collar) });
+      chips.push({ label: 'Bordure', value: label(cat.TRIM_STYLES, state.robe.trim) });
+    }
+    if (etapes.indexOf('hood') > -1) {
+      chips.push({ label: 'Modèle', value: label(cat.HOOD_STYLES, state.hood.style) });
+    }
+    if (etapes.indexOf('cap') > -1) {
+      chips.push({ label: 'Forme', value: label(cat.CAP_STYLES, state.cap.style) });
+    }
+    if (etapes.indexOf('tassel') > -1) {
+      chips.push({ label: 'Gland', value: label(cat.TASSEL_STYLES, state.tassel.style) });
+    }
+    return chips;
   }
 
   /* ---------- Mode courant ----------
@@ -147,14 +161,16 @@
       el.piece.textContent = 'Votre design';
       el.style.textContent = file.name;
     } else {
-      const shot = PHOTOS[STEP_SHOT[currentStep] || 'robe'];
+      /* Hors d'une etape « modele », on montre la piece commandee, pas
+         une robe par defaut : une cape ou un bond miss n'a rien a voir
+         avec la silhouette de la robe. */
+      const produit = cat.product(state.product) || {};
+      const shot = PHOTOS[STEP_SHOT[currentStep]];
       el.frame.classList.remove('is-doc');
       el.doc.hidden = true;
-      setImage(shot.src);
-      el.piece.textContent = STEP_SHOT[currentStep] ? shot.piece : 'Votre tenue';
-      el.style.textContent = STEP_SHOT[currentStep]
-        ? ''
-        : label(cat.SLEEVES, state.robe.sleeve) + ' · ' + label(cat.COLLARS, state.robe.collar);
+      setImage(shot ? shot.src : (produit.photo || 'img/robe.webp'));
+      el.piece.textContent = shot ? shot.piece : (produit.label || 'Votre tenue');
+      el.style.textContent = shot ? '' : (produit.tagline || '');
     }
 
     el.spec.innerHTML = chipList(state).map((chip) =>

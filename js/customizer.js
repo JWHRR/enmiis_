@@ -579,17 +579,19 @@
         /* Après une modification, le client revient à son panier ;
            après un ajout, on lui propose de compléter sa tenue. */
         if (wasEditing) {
+          file.vider();
           global.location.href = 'panier.html';
           return;
         }
-        showAdded(addedProduct);
+        const reste = file.retirer(addedProduct);
+        showAdded(addedProduct, reste[0] || null);
       }
     });
   }
 
   /* Écran de confirmation : la pièce est au panier, on propose les
      deux autres. Le rail et la navigation n'ont plus lieu d'être. */
-  function showAdded(addedProduct) {
+  function showAdded(addedProduct, suivante) {
     document.body.dataset.preview = 'off';
     document.body.classList.add('is-added');
     $('#czPhase').textContent = 'Panier';
@@ -598,7 +600,7 @@
     $('#czStepCount').textContent = '';
     $('#czProgressBar').style.width = '100%';
     screensRoot.innerHTML = '<div class="cz-screen is-in" data-screen="added">' +
-      steps.added.html(addedProduct) + '</div>';
+      steps.added.html(addedProduct, suivante) + '</div>';
     global.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -812,6 +814,40 @@
   /* ----------------------------------------------------------
      Démarrage
      ---------------------------------------------------------- */
+  /* ----------------------------------------------------------
+     File des pièces à configurer
+
+     La cliente peut cocher plusieurs pièces avant d'entrer ici. On les
+     retient dans une file : chaque ajout au panier retire la pièce
+     traitée et propose la suivante, jusqu'à épuisement. La file vit
+     dans le stockage local pour survivre au rechargement complet que
+     provoque le passage d'une pièce à l'autre.
+     ---------------------------------------------------------- */
+  const FILE_KEY = 'enmiis-file-pieces-v1';
+
+  const file = {
+    lire() {
+      try {
+        const brut = JSON.parse(global.localStorage.getItem(FILE_KEY) || '[]');
+        if (!Array.isArray(brut)) return [];
+        /* Une pièce retirée du catalogue ne doit pas bloquer la file. */
+        return brut.filter((id) => cat.PRODUCTS.some((p) => p.id === id));
+      } catch (err) { return []; }
+    },
+    ecrire(ids) {
+      try {
+        if (!ids || !ids.length) global.localStorage.removeItem(FILE_KEY);
+        else global.localStorage.setItem(FILE_KEY, JSON.stringify(ids));
+      } catch (err) { /* stockage plein ou refusé : la file est un confort */ }
+    },
+    retirer(id) {
+      const reste = this.lire().filter((x) => x !== id);
+      this.ecrire(reste);
+      return reste;
+    },
+    vider() { this.ecrire([]); },
+  };
+
   function init() {
     preview.init();
     bindModals();
@@ -828,9 +864,23 @@
 
     if (!editing) {
       const preset = params.get('preset') || params.get('model') || params.get('photo');
-      /* Sans pièce précisée (ancien lien, menu générique), on ouvre la
-         robe : c'est la pièce d'entrée de la tenue. */
-      store.setProduct(params.get('produit') || params.get('product') || (preset ? 'robe' : productId()));
+
+      /* Arrivée depuis le choix des pièces : on installe la file et on
+         ouvre la première. Un lien direct vers une seule pièce vide la
+         file, sinon la cliente se verrait proposer une suite qu'elle
+         n'a pas demandée. */
+      const liste = (params.get('pieces') || '')
+        .split(',').map((x) => x.trim()).filter(Boolean)
+        .filter((id) => cat.PRODUCTS.some((p) => p.id === id));
+
+      if (liste.length) {
+        file.ecrire(liste);
+        store.setProduct(liste[0]);
+      } else {
+        const demande = params.get('produit') || params.get('product');
+        if (demande) file.vider();
+        store.setProduct(demande || (preset ? 'robe' : productId()));
+      }
       if (preset) applyPresetModel(preset);
     }
 

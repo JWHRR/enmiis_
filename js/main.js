@@ -538,10 +538,16 @@
        cliente qui préfère téléverser son modèle plutôt que d'en
        choisir un. Sur « Tout », Box ou Décoration il n'y a pas de
        pièce unique : le bouton disparaît. */
+    /* Le filtre porte le nom de la piece ; l'identifiant produit reste
+       celui du catalogue, inchange pour ne pas rompre les commandes
+       deja enregistrees. */
     const OWN = {
-      toges:     { produit: 'robe',      label: 'Téléverser mon propre modèle de robe' },
-      echarpes:  { produit: 'echarpe',   label: 'Téléverser mon propre modèle d’écharpe' },
-      mortiers:  { produit: 'casquette', label: 'Téléverser mon propre modèle de mortier' },
+      'robe':            { produit: 'robe',            label: 'Téléverser mon propre modèle de robe' },
+      'chapeau':         { produit: 'casquette',       label: 'Téléverser mon propre modèle de chapeau' },
+      'cache-col':       { produit: 'echarpe',         label: 'Téléverser mon propre modèle de cache-col' },
+      'cape':            { produit: 'cape',            label: 'Téléverser mon propre modèle de cape' },
+      'cape-americaine': { produit: 'cape-americaine', label: 'Téléverser mon propre modèle de cape américaine' },
+      'bond-miss':       { produit: 'bond-miss',       label: 'Téléverser mon propre modèle de bond miss' },
     };
     const own = document.getElementById('worksOwn');
     const ownCta = document.getElementById('worksOwnCta');
@@ -571,6 +577,62 @@
     });
 
     syncOwn((chips.find((c) => c.classList.contains('is-active')) || {}).dataset?.filter || 'all');
+  }
+
+  /* ----------------------------------------------------------
+     Choix des pièces à configurer
+
+     La cliente coche ce qu'elle veut composer ; le configurateur les
+     enchaîne ensuite dans l'ordre du catalogue. On passe la liste par
+     l'URL : aucune donnée à conserver ici, et un lien reste partageable.
+     ---------------------------------------------------------- */
+  const pieceDialog = document.getElementById('pieceDialog');
+  if (pieceDialog) {
+    const cases = Array.from(pieceDialog.querySelectorAll('input[type="checkbox"]'));
+    const compteur = document.getElementById('pieceCount');
+    const erreur = document.getElementById('pieceError');
+    const ouvrir = document.getElementById('startCustom');
+    let dernierFocus = null;
+
+    function coches() { return cases.filter((c) => c.checked).map((c) => c.value); }
+
+    function majCompteur() {
+      const n = coches().length;
+      compteur.textContent = n === 0
+        ? 'Aucune pièce sélectionnée'
+        : n + ' pièce' + (n > 1 ? 's' : '') + ' sélectionnée' + (n > 1 ? 's' : '');
+      if (n) { erreur.hidden = true; }
+    }
+
+    function basculer(ouvert) {
+      pieceDialog.classList.toggle('is-open', ouvert);
+      pieceDialog.setAttribute('aria-hidden', String(!ouvert));
+      document.body.classList.toggle('is-locked', ouvert);
+      if (ouvert) {
+        dernierFocus = document.activeElement;
+        majCompteur();
+        setTimeout(() => cases[0].focus(), 60);
+      } else if (dernierFocus) {
+        dernierFocus.focus();
+        dernierFocus = null;
+      }
+    }
+
+    ouvrir?.addEventListener('click', () => basculer(true));
+    document.getElementById('pieceClose')?.addEventListener('click', () => basculer(false));
+    pieceDialog.addEventListener('click', (e) => { if (e.target === pieceDialog) basculer(false); });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && pieceDialog.classList.contains('is-open')) basculer(false);
+    });
+    cases.forEach((c) => c.addEventListener('change', majCompteur));
+
+    document.getElementById('pieceGo')?.addEventListener('click', () => {
+      const choix = coches();
+      /* Sans piece cochee il n'y a rien a configurer : on le dit plutot
+         que d'ouvrir un configurateur vide. */
+      if (!choix.length) { erreur.hidden = false; return; }
+      window.location.href = 'customizer.html?pieces=' + encodeURIComponent(choix.join(','));
+    });
   }
 
   /* ----------------------------------------------------------

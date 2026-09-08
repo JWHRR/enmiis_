@@ -67,7 +67,11 @@
   /* Silhouette de robe ; `focus` désigne la partie soulignée à l’or. */
   function gownArt(options) {
     const o = options || {};
-    const sleeve = SLEEVE_PATHS[o.sleeve || 'cloche'];
+    /* Les manches sont désormais des photographies : leurs identifiants
+       (modele-1…) n'ont plus de tracé ici. Le repli doit donc porter sur
+       le résultat de la recherche, pas sur l'identifiant — sinon un id
+       inconnu renvoie undefined et la silhouette lève une exception. */
+    const sleeve = SLEEVE_PATHS[o.sleeve] || SLEEVE_PATHS.cloche;
     const sleeveClass = o.focus === 'sleeve' ? 'a-goldf' : 'a-ink';
     const collar = o.focus === 'collar'
       ? COLLAR_PATHS[o.collar || 'v']
@@ -525,7 +529,7 @@
 
       if (product.id === 'casquette') {
         blocks.push({
-          step: 'cap', title: 'La Casquette', rows: [
+          step: 'cap', title: 'Le Chapeau', rows: [
             { label: 'Forme', value: labelOf(cat.CAP_STYLES, s.cap.style) },
             { label: 'Matière', value: labelOf(cat.CAP_MATERIALS, s.cap.material) },
             { label: 'Broderie', value: s.cap.emb.trim() || 'Aucune' },
@@ -542,7 +546,7 @@
 
       if (product.id === 'echarpe') {
         blocks.push({
-          step: 'hood', title: 'L’Écharpe', rows: [
+          step: 'hood', title: 'Le Cache-col', rows: [
             { label: 'Modèle', value: labelOf(cat.HOOD_STYLES, s.hood.style) },
             { label: 'Broderie', value: s.hood.emb.trim() || 'Aucune' },
           ],
@@ -614,12 +618,26 @@
      Écran de confirmation — après l’ajout au panier
      ========================================================== */
   const added = {
-    html(productId) {
+    html(productId, suivante) {
       const product = cat.product(productId);
       const count = store.cartCount();
+      const next = suivante ? cat.product(suivante) : null;
 
-      /* On confirme l'ajout, sans souffler à la cliente ce qu'elle
-         devrait commander ensuite : elle sait ce dont elle a besoin. */
+      /* Quand la cliente a coché plusieurs pièces, on enchaîne : le
+         bouton principal ouvre la suivante. Sinon on confirme sans lui
+         souffler ce qu'elle devrait commander ensuite. */
+      const actions = next
+        ? '<a class="btn btn--solid" href="customizer.html?produit=' + esc(next.id) + '&suite=1">' +
+            esc(next.cta) + '</a>' +
+          '<a class="btn btn--line" href="panier.html">Voir mon panier</a>'
+        : '<a class="btn btn--solid" href="panier.html">Voir mon panier</a>' +
+          '<a class="btn btn--line" href="soutenance.html">Continuer mes achats</a>';
+
+      const suite = next
+        ? '<p class="cz-added__next">Pièce suivante de votre sélection : <strong>' +
+            esc(next.label) + '</strong></p>'
+        : '';
+
       return '<div class="cz-added">' +
         '<div class="cz-done__burst">' +
           '<svg viewBox="0 0 64 64" aria-hidden="true">' +
@@ -628,13 +646,12 @@
           '</svg>' +
         '</div>' +
         '<p class="cz-done__label">Ajouté au panier</p>' +
-        '<h2 class="cz-done__title">' + esc(product.label) + ' ajoutée au panier</h2>' +
+        '<h2 class="cz-done__title">' + esc(product.label) + ' ajouté' +
+          (/^[aeiouyàâéèêîôû]/i.test(product.label) ? 'e' : '') + ' au panier</h2>' +
         '<p class="cz-added__cart">' + count + ' article' + (count > 1 ? 's' : '') +
           ' dans votre panier</p>' +
-        '<div class="cz-added__actions">' +
-          '<a class="btn btn--solid" href="panier.html">Voir mon panier</a>' +
-          '<a class="btn btn--line" href="soutenance.html">Continuer mes achats</a>' +
-        '</div>' +
+        suite +
+        '<div class="cz-added__actions">' + actions + '</div>' +
       '</div>';
     },
   };

@@ -234,8 +234,8 @@
   const STEPS = [
     { id: 'upload',  title: 'Vos fichiers',   phase: 'Production', sub: 'Téléversez les designs à broder ou imprimer.' },
     { id: 'robe',    title: 'La Robe',        phase: 'Modèle',     sub: 'Coupe des manches, col, bordure et broderie personnalisée.' },
-    { id: 'hood',    title: 'L’Écharpe',      phase: 'Modèle',     sub: 'Choisissez le modèle : chaque forme est illustrée.' },
-    { id: 'cap',     title: 'La Casquette',   phase: 'Modèle',     sub: 'Forme du plateau, matière, broderie et logo.' },
+    { id: 'hood',    title: 'Le Cache-col',      phase: 'Modèle',     sub: 'Choisissez le modèle : chaque forme est illustrée.' },
+    { id: 'cap',     title: 'Le Chapeau',   phase: 'Modèle',     sub: 'Forme du plateau, matière, broderie et logo.' },
     { id: 'tassel',  title: 'Le Gland',       phase: 'Modèle',     sub: 'Style du gland et année de promotion.' },
     { id: 'measure', title: 'Vos Mesures',    phase: 'Atelier',    sub: 'Chaque mesure est accompagnée de son guide.' },
     /* Dernière étape : la pièce rejoint le panier. Les coordonnées et
@@ -249,6 +249,10 @@
      sa propre ligne au panier, son propre prix. Les mesures demandées
      se limitent à celles que l'atelier utilise réellement pour la
      pièce — inutile de relever neuf mesures pour une casquette. */
+  /* Les identifiants ne bougent pas : ils sont inscrits dans les
+     commandes deja enregistrees. Seuls les libelles changent quand
+     l'atelier renomme une piece — « casquette » s'affiche « Chapeau »,
+     « echarpe » s'affiche « Cache-col ». */
   const PRODUCTS = [
     {
       id: 'robe',
@@ -265,9 +269,9 @@
     },
     {
       id: 'casquette',
-      label: 'Casquette',
-      the: 'la casquette',
-      cta: 'Configurer la casquette',
+      label: 'Chapeau',
+      the: 'le chapeau',
+      cta: 'Configurer le chapeau',
       photo: 'img/cap.webp',
       tagline: 'Mortier de diplômé',
       desc: 'Plateau carré parfaitement plan, gland assorti et broderie du plateau.',
@@ -277,13 +281,53 @@
     },
     {
       id: 'echarpe',
-      label: 'Écharpe',
-      the: 'l’écharpe',
-      cta: 'Configurer l’écharpe',
+      label: 'Cache-col',
+      the: 'le cache-col',
+      cta: 'Configurer le cache-col',
       photo: 'img/hood.webp',
       tagline: 'Étole de félicitations',
       desc: 'Satin doublé, pans brodés à votre nom, à votre faculté ou à votre mention.',
       steps: ['upload', 'hood', 'measure', 'review'],
+      measures: ['height'],
+      fileRequired: false,
+    },
+    /* Les trois pieces ci-dessous n'ont pas encore de planche d'options :
+       l'atelier les realise sur la reference fournie par la cliente. Leur
+       parcours saute donc l'etape « modele » et va du fichier aux
+       mesures. Une seule mesure suffit : la stature. */
+    {
+      id: 'cape',
+      label: 'Cape',
+      the: 'la cape',
+      cta: 'Configurer la cape',
+      photo: 'img/soutenance/2.png',
+      tagline: 'Cape de cérémonie',
+      desc: 'Drapé long, doublure contrastée et finitions brodées selon votre modèle.',
+      steps: ['upload', 'measure', 'review'],
+      measures: ['height'],
+      fileRequired: false,
+    },
+    {
+      id: 'cape-americaine',
+      label: 'Cape américaine',
+      the: 'la cape américaine',
+      cta: 'Configurer la cape américaine',
+      photo: 'img/soutenance/3.png',
+      tagline: 'Coupe américaine',
+      desc: 'Tombé court et épaules marquées, dans l’esprit des remises de diplôme américaines.',
+      steps: ['upload', 'measure', 'review'],
+      measures: ['height'],
+      fileRequired: false,
+    },
+    {
+      id: 'bond-miss',
+      label: 'Bond miss',
+      the: 'le bond miss',
+      cta: 'Configurer le bond miss',
+      photo: 'img/soutenance/1.png',
+      tagline: 'Bande d’honneur',
+      desc: 'Bande portée en écharpe, brodée à votre nom, votre promotion ou votre mention.',
+      steps: ['upload', 'measure', 'review'],
       measures: ['height'],
       fileRequired: false,
     },

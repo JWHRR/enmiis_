@@ -554,7 +554,7 @@
         row('Bordure', labelOf(cat.TRIM_STYLES, item.robe.trim));
     }
     if (item.cap) {
-      rows += row('Casquette', labelOf(cat.CAP_STYLES, item.cap.style) + ' · ' +
+      rows += row('Chapeau', labelOf(cat.CAP_STYLES, item.cap.style) + ' · ' +
           labelOf(cat.CAP_MATERIALS, item.cap.material)) +
         row('Broderie du plateau', item.cap.emb || 'Aucune') +
         row('Logo brodé', item.cap.logoName || 'Aucun');
@@ -564,7 +564,7 @@
         row('Année de promotion', item.tassel.year || 'Aucune');
     }
     if (item.hood) {
-      rows += row('Écharpe', labelOf(cat.HOOD_STYLES, item.hood.style)) +
+      rows += row('Cache-col', labelOf(cat.HOOD_STYLES, item.hood.style)) +
         row('Broderie de l’écharpe', item.hood.emb || 'Aucune');
     }
 
@@ -997,7 +997,7 @@
         lines.push('Bordure : ' + labelOf(cat.TRIM_STYLES, item.robe.trim));
       }
       if (item.cap) {
-        lines.push('Casquette : ' + labelOf(cat.CAP_STYLES, item.cap.style) +
+        lines.push('Chapeau : ' + labelOf(cat.CAP_STYLES, item.cap.style) +
           ' / ' + labelOf(cat.CAP_MATERIALS, item.cap.material) +
           (item.cap.emb ? ' · broderie : ' + item.cap.emb : ''));
         lines.push('Logo brodé : ' + (item.cap.logoName || '—'));
@@ -1007,7 +1007,7 @@
           (item.tassel.year ? ' / ' + item.tassel.year : ''));
       }
       if (item.hood) {
-        lines.push('Écharpe : ' + labelOf(cat.HOOD_STYLES, item.hood.style) +
+        lines.push('Cache-col : ' + labelOf(cat.HOOD_STYLES, item.hood.style) +
           (item.hood.emb ? ' · broderie : ' + item.hood.emb : ''));
       }
 

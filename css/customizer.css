@@ -1625,3 +1625,12 @@ body.is-added .cz-preview { display: none; }
 
 .cz-tocart__price strong,
 .cz-added__cart strong { font-variant-numeric: lining-nums tabular-nums; }
+
+/* Enchaînement des pièces : rappel de la suivante sur l'écran d'ajout. */
+.cz-added__next {
+  margin-top: 0.4rem;
+  font-size: 0.9375rem;
+  font-weight: 300;
+  color: var(--ink-soft);
+}
+.cz-added__next strong { font-weight: 500; color: var(--ink); }
