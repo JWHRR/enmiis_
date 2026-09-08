@@ -47,6 +47,7 @@
     { id: 'modele-4', label: 'Modèle 4', image: 'configurateur/robe/manches/modele-4.jpeg', imageWebp: 'configurateur/robe/manches/modele-4.webp' },
     { id: 'modele-5', label: 'Modèle 5', image: 'configurateur/robe/manches/modele-5.jpeg', imageWebp: 'configurateur/robe/manches/modele-5.webp' },
     { id: 'modele-6', label: 'Modèle 6', image: 'configurateur/robe/manches/modele-6.jpeg', imageWebp: 'configurateur/robe/manches/modele-6.webp' },
+    { id: 'modele-7', label: 'Modèle 7', image: 'configurateur/robe/manches/modele-7.jpeg', imageWebp: 'configurateur/robe/manches/modele-7.webp' },
   ];
 
   /* ---------- Capuche / Étole (planche « CAPE ») ---------- */
@@ -97,11 +98,24 @@
   ];
 
   /* ---------- Gland (planche tassel) ---------- */
+  /* Les glands sont des photographies de l'atelier, comme les manches :
+     aucune description, la piece se choisit a l'oeil. */
   const TASSEL_STYLES = [
-    { id: 'noeud',    label: 'Gland à nœud',     note: 'Tête ornée d’un nœud décoratif',  ref: 'Planche gland — modèle 1' },
-    { id: 'cannele',  label: 'Gland cannelé',    note: 'Tête à torsade bouillonnée',      ref: 'Planche gland — modèle 2' },
-    { id: 'lisse',    label: 'Gland lisse',      note: 'Tête nette, franges longues',     ref: 'Planche gland — modèle 3' },
-    { id: 'fin',      label: 'Gland fin',        note: 'Version fine et légère',          ref: 'Planche gland — modèle 4' },
+    { id: 'modele-1', label: 'Modèle 1', image: 'configurateur/chapeaux/supplements/modele-1.jpeg', imageWebp: 'configurateur/chapeaux/supplements/modele-1.webp' },
+    { id: 'modele-2', label: 'Modèle 2', image: 'configurateur/chapeaux/supplements/modele-2.jpeg', imageWebp: 'configurateur/chapeaux/supplements/modele-2.webp' },
+    { id: 'modele-3', label: 'Modèle 3', image: 'configurateur/chapeaux/supplements/modele-3.jpeg', imageWebp: 'configurateur/chapeaux/supplements/modele-3.webp' },
+    { id: 'modele-4', label: 'Modèle 4', image: 'configurateur/chapeaux/supplements/modele-4.jpeg', imageWebp: 'configurateur/chapeaux/supplements/modele-4.webp' },
+    { id: 'modele-5', label: 'Modèle 5', image: 'configurateur/chapeaux/supplements/modele-5.jpeg', imageWebp: 'configurateur/chapeaux/supplements/modele-5.webp' },
+    { id: 'modele-6', label: 'Modèle 6', image: 'configurateur/chapeaux/supplements/modele-6.jpeg', imageWebp: 'configurateur/chapeaux/supplements/modele-6.webp' },
+    { id: 'modele-7', label: 'Modèle 7', image: 'configurateur/chapeaux/supplements/modele-7.jpeg', imageWebp: 'configurateur/chapeaux/supplements/modele-7.webp' },
+    { id: 'modele-8', label: 'Modèle 8', image: 'configurateur/chapeaux/supplements/modele-8.jpeg', imageWebp: 'configurateur/chapeaux/supplements/modele-8.webp' },
+    { id: 'modele-9', label: 'Modèle 9', image: 'configurateur/chapeaux/supplements/modele-9.jpeg', imageWebp: 'configurateur/chapeaux/supplements/modele-9.webp' },
+    { id: 'modele-10', label: 'Modèle 10', image: 'configurateur/chapeaux/supplements/modele-10.jpeg', imageWebp: 'configurateur/chapeaux/supplements/modele-10.webp' },
+    { id: 'modele-11', label: 'Modèle 11', image: 'configurateur/chapeaux/supplements/modele-11.jpeg', imageWebp: 'configurateur/chapeaux/supplements/modele-11.webp' },
+    { id: 'modele-12', label: 'Modèle 12', image: 'configurateur/chapeaux/supplements/modele-12.jpeg', imageWebp: 'configurateur/chapeaux/supplements/modele-12.webp' },
+    { id: 'modele-13', label: 'Modèle 13', image: 'configurateur/chapeaux/supplements/modele-13.jpeg', imageWebp: 'configurateur/chapeaux/supplements/modele-13.webp' },
+    { id: 'modele-14', label: 'Modèle 14', image: 'configurateur/chapeaux/supplements/modele-14.jpeg', imageWebp: 'configurateur/chapeaux/supplements/modele-14.webp' },
+    { id: 'modele-15', label: 'Modèle 15', image: 'configurateur/chapeaux/supplements/modele-15.jpeg', imageWebp: 'configurateur/chapeaux/supplements/modele-15.webp' },
   ];
 
   /* ---------- Mesures (repères 1 à 6 de la planche « ROBE ») ---------- */

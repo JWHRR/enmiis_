@@ -233,23 +233,32 @@
     );
   }
 
+  /* Une option illustree par une vraie photographie plutot que par un
+     trace : meme balisage pour les manches et les glands, le WebP servi
+     en premier et le JPEG en repli. */
+  function photoArt(item) {
+    if (!item || !item.image) return null;
+    return '<picture class="cz-option__pic">' +
+      (item.imageWebp ? '<source srcset="' + esc(item.imageWebp) + '" type="image/webp">' : '') +
+      '<img class="cz-option__photo" src="' + esc(item.image) + '" alt="' + esc(item.label) + '"' +
+      ' loading="lazy" decoding="async">' +
+      '</picture>';
+  }
+
   const ART = {
     'robe.sleeve': (id) => {
       const item = (cat.SLEEVES || []).find((s) => s.id === id);
-      if (item && item.image) {
-        return '<picture class="cz-option__pic">' +
-          (item.imageWebp ? '<source srcset="' + esc(item.imageWebp) + '" type="image/webp">' : '') +
-          '<img class="cz-option__photo" src="' + esc(item.image) + '" alt="' + esc(item.label) + '" loading="lazy" decoding="async">' +
-          '</picture>';
-      }
-      return gownArt({ sleeve: id, focus: 'sleeve' });
+      return photoArt(item) || gownArt({ sleeve: id, focus: 'sleeve' });
     },
     'robe.collar': (id) => gownArt({ collar: id, focus: 'collar' }),
     'robe.trim':   (id) => gownArt({ trim: id, focus: 'trim' }),
     'hood.style':  (id) => art(HOOD_ART[id]),
     'cap.style':   (id) => capArt(id),
     'cap.material': (id) => fabricArt(id),
-    'tassel.style': (id) => tasselArt(id),
+    'tassel.style': (id) => {
+      const item = (cat.TASSEL_STYLES || []).find((t) => t.id === id);
+      return photoArt(item) || tasselArt(id);
+    },
   };
 
   /* ==========================================================
@@ -452,10 +461,10 @@
       const thisYear = new Date().getFullYear();
       for (let y = thisYear; y <= thisYear + 3; y += 1) years.push(String(y));
       const current = store.at('tassel.year');
-      return '<div class="cz-screen__intro"><p>Les quatre têtes de gland de la planche, chacune avec sa ' +
-        'pastille de détail en gros plan.</p></div>' +
+      return '<div class="cz-screen__intro"><p>Chaque gland est photographié dans notre atelier. ' +
+        'Choisissez la couleur et la breloque qui accompagneront votre chapeau.</p></div>' +
         '<div class="cz-group">' +
-        field('Style du gland', optionCards('tassel.style', cat.TASSEL_STYLES, { wide: true })) +
+        field('Style du gland', optionCards('tassel.style', cat.TASSEL_STYLES, { className: 'cz-options--sleeves' })) +
         field('Année de promotion (breloque)', '<div class="cz-pills">' +
           '<button type="button" class="cz-pill' + (!current ? ' is-active' : '') + '"' +
           ' data-set="tassel.year" data-value="" aria-pressed="' + (!current) + '">Aucune</button>' +

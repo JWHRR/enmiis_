@@ -43,7 +43,7 @@
     robe: { sleeve: 'modele-1', collar: 'v', trim: 'double' },
     hood: { style: 'etole-droite', emb: '' },
     cap: { style: 'classique', material: 'gabardine', emb: '', logo: null, logoName: '' },
-    tassel: { style: 'noeud', year: '' },
+    tassel: { style: 'modele-1', year: '' },
     measures: {
       height: '', weight: '', head: '', chest: '', waist: '',
       hip: '', shoulder: '', sleeve: '', gown: '',
@@ -109,12 +109,19 @@
       mergeInto(merged, parsed);
       /* Les fichiers restaurés n’ont plus leur contenu : on repart à vide. */
       merged.files = [];
-      if (merged.robe && merged.robe.sleeve) {
-        const valid = ['modele-1', 'modele-2', 'modele-3', 'modele-4', 'modele-5', 'modele-6'];
-        if (!valid.includes(merged.robe.sleeve)) {
-          merged.robe.sleeve = DEFAULTS.robe.sleeve;
-        }
-      }
+      /* Les planches evoluent : un choix enregistre avant l'arrivee des
+         photographies ne correspond plus a aucune option. On revient au
+         defaut plutot que d'afficher une carte vide. La liste est lue
+         dans le catalogue — la figer ici, c'est casser au prochain
+         modele ajoute. */
+      const rattraper = (objet, cle, liste, defaut) => {
+        if (!objet || !objet[cle]) return;
+        const connus = (liste || []).map((o) => o.id);
+        if (connus.length && connus.indexOf(objet[cle]) === -1) objet[cle] = defaut;
+      };
+      const catalogue = CZ.catalog || {};
+      rattraper(merged.robe, 'sleeve', catalogue.SLEEVES, DEFAULTS.robe.sleeve);
+      rattraper(merged.tassel, 'style', catalogue.TASSEL_STYLES, DEFAULTS.tassel.style);
       state = merged;
     } catch (err) {
       state = clone(DEFAULTS);
