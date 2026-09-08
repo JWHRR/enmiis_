@@ -592,7 +592,20 @@
 
       const editing = Boolean(s.editing);
       const count = store.cartCount();
-      return '<section class="cz-recap">' +
+
+      /* Parcours multi-pieces : tant qu'il reste une piece a regler, le
+         recapitulatif enchaine au lieu de renvoyer au panier. La cliente
+         a choisi de composer une tenue entiere — l'interrompre a chaque
+         piece pour lui annoncer un ajout casse le fil. */
+      const file = CZ.file;
+      const suite = (!editing && file) ? file.suivante() : null;
+      const rang = (!editing && file) ? file.rang() : null;
+
+      const etape = rang && rang.total > 1
+        ? '<p class="cz-recap__rang">Pièce ' + rang.index + ' sur ' + rang.total + '</p>'
+        : '';
+
+      return etape + '<section class="cz-recap">' +
           '<header class="cz-recap__head"><h3>Vos fichiers</h3>' +
           '<button type="button" class="btn btn--line cz-recap__edit" data-goto="upload">Modifier</button>' +
           '</header>' + filesBlock +
@@ -601,15 +614,23 @@
         'l’atelier avant la mise en fabrication.</p>' +
         '<div class="cz-tocart">' +
           '<button type="button" class="btn btn--solid cz-tocart__cta" id="czAddToCart">' +
-            (editing ? 'Enregistrer les modifications' : 'Ajouter ' + esc(product.the) + ' au panier') +
+            (editing
+              ? 'Enregistrer les modifications'
+              : suite
+                ? 'Continuer vers ' + esc(suite.the)
+                : 'Ajouter ' + esc(product.the) + ' au panier') +
           '</button>' +
           '<p class="cz-tocart__note">' + (editing
             ? 'Vos modifications remplaceront cette ligne dans le panier.'
-            : count
-              ? 'Votre panier contient déjà ' + count + ' article' + (count > 1 ? 's' : '') +
-                '. Vos coordonnées sont demandées une seule fois, au panier.'
-              : 'Vous pourrez ensuite ajouter une autre pièce ou passer commande. ' +
-                'Vos coordonnées sont demandées une seule fois, au panier.') + '</p>' +
+            : suite
+              ? 'Votre ' + esc(product.label.toLowerCase()) + ' est prêt' +
+                (/^[aeiouy]/i.test(product.label) ? 'e' : (product.the.indexOf('la ') === 0 ? 'e' : '')) +
+                '. Vous réglerez ' + esc(suite.the) + ', puis vous commanderez le tout en une seule fois.'
+              : count
+                ? 'Votre panier contient déjà ' + count + ' article' + (count > 1 ? 's' : '') +
+                  '. Vos coordonnées sont demandées une seule fois, au panier.'
+                : 'Vous pourrez ensuite ajouter une autre pièce ou passer commande. ' +
+                  'Vos coordonnées sont demandées une seule fois, au panier.') + '</p>' +
         '</div>';
     },
   };

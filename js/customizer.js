@@ -583,8 +583,23 @@
           global.location.href = 'panier.html';
           return;
         }
+        /* Tant qu'il reste une piece, on enchaine directement : pas
+           d'ecran « ajoute au panier » entre deux pieces, la cliente
+           compose une tenue d'un seul tenant. */
         const reste = file.retirer(addedProduct);
-        showAdded(addedProduct, reste[0] || null);
+        const suivante = reste[0] || null;
+        if (suivante) {
+          store.setProduct(suivante);
+          current = 0;
+          document.title = product().label + ' — Configurateur | ENMIIS';
+          renderScreen();
+          toast(cat.product(addedProduct).label + ' enregistré' +
+            (/^[aeiouy]/i.test(cat.product(addedProduct).label) ? 'e' : '') +
+            ' — au tour ' + cat.product(suivante).the + '.');
+          global.scrollTo({ top: 0, behavior: 'smooth' });
+          return;
+        }
+        showAdded(addedProduct, null);
       }
     });
   }
@@ -825,28 +840,60 @@
      ---------------------------------------------------------- */
   const FILE_KEY = 'enmiis-file-pieces-v1';
 
+  const connue = (id) => cat.PRODUCTS.some((p) => p.id === id);
+
   const file = {
+    /* On garde la liste complete a cote du reste a traiter : sans elle
+       on ne peut pas afficher « Piece 2 sur 3 », et la cliente perd le
+       fil de son propre parcours. */
     lire() {
       try {
-        const brut = JSON.parse(global.localStorage.getItem(FILE_KEY) || '[]');
-        if (!Array.isArray(brut)) return [];
-        /* Une pièce retirée du catalogue ne doit pas bloquer la file. */
-        return brut.filter((id) => cat.PRODUCTS.some((p) => p.id === id));
-      } catch (err) { return []; }
+        const brut = JSON.parse(global.localStorage.getItem(FILE_KEY) || 'null');
+        if (!brut || !Array.isArray(brut.toutes)) return null;
+        const toutes = brut.toutes.filter(connue);
+        if (!toutes.length) return null;
+        return { toutes, reste: (brut.reste || []).filter(connue) };
+      } catch (err) { return null; }
     },
-    ecrire(ids) {
+    ecrire(etat) {
       try {
-        if (!ids || !ids.length) global.localStorage.removeItem(FILE_KEY);
-        else global.localStorage.setItem(FILE_KEY, JSON.stringify(ids));
-      } catch (err) { /* stockage plein ou refusé : la file est un confort */ }
+        if (!etat || !etat.toutes || !etat.toutes.length) global.localStorage.removeItem(FILE_KEY);
+        else global.localStorage.setItem(FILE_KEY, JSON.stringify(etat));
+      } catch (err) { /* stockage plein ou refuse : la file est un confort */ }
+    },
+    demarrer(ids) {
+      const toutes = ids.filter(connue);
+      this.ecrire({ toutes, reste: toutes.slice() });
+      return toutes;
+    },
+    /* La piece qui suit celle en cours, ou null si c'est la derniere. */
+    suivante() {
+      const f = this.lire();
+      if (!f) return null;
+      const courant = store.at('product');
+      const i = f.reste.indexOf(courant);
+      const id = i > -1 ? f.reste[i + 1] : null;
+      return id ? cat.product(id) : null;
+    },
+    rang() {
+      const f = this.lire();
+      if (!f) return null;
+      const i = f.toutes.indexOf(store.at('product'));
+      return i > -1 ? { index: i + 1, total: f.toutes.length } : null;
     },
     retirer(id) {
-      const reste = this.lire().filter((x) => x !== id);
-      this.ecrire(reste);
+      const f = this.lire();
+      if (!f) return [];
+      const reste = f.reste.filter((x) => x !== id);
+      if (reste.length) this.ecrire({ toutes: f.toutes, reste });
+      else this.vider();
       return reste;
     },
-    vider() { this.ecrire([]); },
+    vider() { this.ecrire(null); },
   };
+
+  /* Les ecrans lisent la file pour savoir s'il reste une piece a regler. */
+  CZ.file = file;
 
   function init() {
     preview.init();
@@ -874,7 +921,7 @@
         .filter((id) => cat.PRODUCTS.some((p) => p.id === id));
 
       if (liste.length) {
-        file.ecrire(liste);
+        file.demarrer(liste);
         store.setProduct(liste[0]);
       } else {
         const demande = params.get('produit') || params.get('product');
