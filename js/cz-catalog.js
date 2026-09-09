@@ -119,6 +119,69 @@
   ];
 
   /* ---------- Mesures (repères 1 à 6 de la planche « ROBE ») ---------- */
+  /* ---------- Tissus ----------
+     Communs a la robe, au chapeau et au cache-col : l'atelier travaille
+     les memes matieres, seule la piece change. Les illustrations de
+     tissage existent deja dans cz-steps (WEAVES) et suivent ces ids. */
+  const FABRICS = [
+    { id: 'gabardine', label: 'Gabardine', note: 'Tenue nette, tombé structuré' },
+    { id: 'crepe',     label: 'Crêpe',     note: 'Souple, légèrement grainé' },
+    { id: 'satin',     label: 'Satin',     note: 'Reflet soutenu' },
+    { id: 'velours',   label: 'Velours',   note: 'Profondeur mate' },
+    { id: 'taffetas',  label: 'Taffetas',  note: 'Léger craquant, belle tenue' },
+  ];
+
+  /* ---------- Palette ----------
+     Chaque teinte porte un code : c'est lui que l'atelier lit sur la
+     fiche de fabrication. Une couleur vue sur un ecran mal calibre ne
+     suffit pas a commander un rouleau. */
+  const FABRIC_COLORS = [
+    { id: 'noir',     label: 'Noir',        code: 'ENM-01', hex: '#141414' },
+    { id: 'marine',   label: 'Bleu marine', code: 'ENM-02', hex: '#1B2A4A' },
+    { id: 'roi',      label: 'Bleu roi',    code: 'ENM-03', hex: '#1D3FA8' },
+    { id: 'bordeaux', label: 'Bordeaux',    code: 'ENM-04', hex: '#6E1420' },
+    { id: 'rouge',    label: 'Rouge',       code: 'ENM-05', hex: '#B4231F' },
+    { id: 'camel',    label: 'Camel',       code: 'ENM-06', hex: '#B08256' },
+    { id: 'beige',    label: 'Beige',       code: 'ENM-07', hex: '#D9C6AC' },
+    { id: 'creme',    label: 'Crème',       code: 'ENM-08', hex: '#F0E7D8' },
+    { id: 'blanc',    label: 'Blanc',       code: 'ENM-09', hex: '#F7F7F5' },
+    { id: 'vert',     label: 'Vert sapin',  code: 'ENM-10', hex: '#1F4436' },
+    { id: 'violet',   label: 'Violet',      code: 'ENM-11', hex: '#4B2A6B' },
+    { id: 'gris',     label: 'Gris perle',  code: 'ENM-12', hex: '#8D8D8A' },
+  ];
+
+  /* ---------- Ornement du chapeau ----------
+     Fleur ou strass : la cliente choisit d'abord la famille, la planche
+     correspondante s'ouvre ensuite. */
+  const ORNEMENTS = [
+    { id: 'strass', label: 'Strass', note: 'Éclat et relief' },
+    { id: 'fleur',  label: 'Fleur',  note: 'Composition florale' },
+    { id: 'aucun',  label: 'Aucun',  note: 'Chapeau nu' },
+  ];
+
+  /* Les strass sont photographies dans l'atelier, fond detoure. */
+  const STRASS_MODELS = [
+    { id: 'modele-1', label: 'Modèle 1', image: 'configurateur/chapeaux/supplements/modele-1.jpeg', imageWebp: 'configurateur/chapeaux/supplements/modele-1.webp' },
+    { id: 'modele-2', label: 'Modèle 2', image: 'configurateur/chapeaux/supplements/modele-2.jpeg', imageWebp: 'configurateur/chapeaux/supplements/modele-2.webp' },
+    { id: 'modele-3', label: 'Modèle 3', image: 'configurateur/chapeaux/supplements/modele-3.jpeg', imageWebp: 'configurateur/chapeaux/supplements/modele-3.webp' },
+    { id: 'modele-4', label: 'Modèle 4', image: 'configurateur/chapeaux/supplements/modele-4.jpeg', imageWebp: 'configurateur/chapeaux/supplements/modele-4.webp' },
+    { id: 'modele-5', label: 'Modèle 5', image: 'configurateur/chapeaux/supplements/modele-5.jpeg', imageWebp: 'configurateur/chapeaux/supplements/modele-5.webp' },
+    { id: 'modele-6', label: 'Modèle 6', image: 'configurateur/chapeaux/supplements/modele-6.jpeg', imageWebp: 'configurateur/chapeaux/supplements/modele-6.webp' },
+    { id: 'modele-7', label: 'Modèle 7', image: 'configurateur/chapeaux/supplements/modele-7.jpeg', imageWebp: 'configurateur/chapeaux/supplements/modele-7.webp' },
+    { id: 'modele-8', label: 'Modèle 8', image: 'configurateur/chapeaux/supplements/modele-8.jpeg', imageWebp: 'configurateur/chapeaux/supplements/modele-8.webp' },
+    { id: 'modele-9', label: 'Modèle 9', image: 'configurateur/chapeaux/supplements/modele-9.jpeg', imageWebp: 'configurateur/chapeaux/supplements/modele-9.webp' },
+    { id: 'modele-10', label: 'Modèle 10', image: 'configurateur/chapeaux/supplements/modele-10.jpeg', imageWebp: 'configurateur/chapeaux/supplements/modele-10.webp' },
+    { id: 'modele-11', label: 'Modèle 11', image: 'configurateur/chapeaux/supplements/modele-11.jpeg', imageWebp: 'configurateur/chapeaux/supplements/modele-11.webp' },
+    { id: 'modele-12', label: 'Modèle 12', image: 'configurateur/chapeaux/supplements/modele-12.jpeg', imageWebp: 'configurateur/chapeaux/supplements/modele-12.webp' },
+    { id: 'modele-13', label: 'Modèle 13', image: 'configurateur/chapeaux/supplements/modele-13.jpeg', imageWebp: 'configurateur/chapeaux/supplements/modele-13.webp' },
+    { id: 'modele-14', label: 'Modèle 14', image: 'configurateur/chapeaux/supplements/modele-14.jpeg', imageWebp: 'configurateur/chapeaux/supplements/modele-14.webp' },
+    { id: 'modele-15', label: 'Modèle 15', image: 'configurateur/chapeaux/supplements/modele-15.jpeg', imageWebp: 'configurateur/chapeaux/supplements/modele-15.webp' },
+  ];
+
+  /* Les fleurs n'ont pas encore de planche photographique : la liste
+     reste vide, et l'ecran le dit au lieu d'afficher une grille creuse. */
+  const FLEUR_MODELS = [];
+
   const MEASUREMENTS = [
     {
       id: 'height', label: 'Stature', unit: 'cm', min: 130, max: 215, placeholder: '172',
@@ -246,16 +309,17 @@
   /* Ordre de référence des étapes. Chaque produit n’en retient que
      celles qui le concernent — voir PRODUCTS et stepsFor() plus bas. */
   const STEPS = [
-    { id: 'upload',  title: 'Vos fichiers',   phase: 'Production', sub: 'Téléversez les designs à broder ou imprimer.' },
-    { id: 'robe',    title: 'La Robe',        phase: 'Modèle',     sub: 'Coupe des manches, col, bordure et broderie personnalisée.' },
-    { id: 'hood',    title: 'Le Cache-col',      phase: 'Modèle',     sub: 'Choisissez le modèle : chaque forme est illustrée.' },
-    { id: 'cap',     title: 'Le Chapeau',   phase: 'Modèle',     sub: 'Forme du plateau, matière, broderie et logo.' },
-    { id: 'tassel',  title: 'Le Gland',       phase: 'Modèle',     sub: 'Style du gland et année de promotion.' },
-    { id: 'measure', title: 'Vos Mesures',    phase: 'Atelier',    sub: 'Chaque mesure est accompagnée de son guide.' },
+    { id: 'upload',   title: 'Vos fichiers',  phase: 'Production', sub: 'Téléversez les designs à broder ou imprimer.' },
+    { id: 'robe',     title: 'La Robe',       phase: 'Modèle',     sub: 'Manches, tissu et couleur.' },
+    { id: 'hood',     title: 'Le Cache-col',  phase: 'Modèle',     sub: 'Tissu, couleur et contour.' },
+    { id: 'cap',      title: 'Le Chapeau',    phase: 'Modèle',     sub: 'Tissu, couleur et ornement.' },
+    { id: 'capeam',   title: 'Les Couleurs',  phase: 'Modèle',     sub: 'La cape américaine se porte en deux teintes.' },
+    { id: 'bande',    title: 'La Couleur',    phase: 'Modèle',     sub: 'Couleur du tissu de votre bande.' },
+    { id: 'measure',  title: 'Vos Mesures',   phase: 'Atelier',    sub: 'Chaque mesure est accompagnée de son guide.' },
     /* Dernière étape : la pièce rejoint le panier. Les coordonnées et
        l'envoi de la commande se font au panier, une seule fois pour
        toutes les pièces. */
-    { id: 'review',  title: 'Récapitulatif',  phase: 'Validation', sub: 'Vérifiez, puis ajoutez cette pièce au panier.' },
+    { id: 'review',   title: 'Récapitulatif', phase: 'Validation', sub: 'Vérifiez, puis ajoutez cette pièce au panier.' },
   ];
 
   /* ---------- Les trois pièces de soutenance ----------
@@ -289,7 +353,7 @@
       photo: 'img/cap.webp',
       tagline: 'Mortier de diplômé',
       desc: 'Plateau carré parfaitement plan, gland assorti et broderie du plateau.',
-      steps: ['upload', 'cap', 'tassel', 'measure', 'review'],
+      steps: ['upload', 'cap', 'measure', 'review'],
       measures: ['head'],
       fileRequired: false,
     },
@@ -329,7 +393,7 @@
       photo: 'img/soutenance/3.png',
       tagline: 'Coupe américaine',
       desc: 'Tombé court et épaules marquées, dans l’esprit des remises de diplôme américaines.',
-      steps: ['upload', 'measure', 'review'],
+      steps: ['upload', 'capeam', 'measure', 'review'],
       measures: ['height'],
       fileRequired: false,
     },
@@ -341,7 +405,7 @@
       photo: 'img/soutenance/1.png',
       tagline: 'Bande d’honneur',
       desc: 'Bande portée en écharpe, brodée à votre nom, votre promotion ou votre mention.',
-      steps: ['upload', 'measure', 'review'],
+      steps: ['upload', 'bande', 'measure', 'review'],
       measures: ['height'],
       fileRequired: false,
     },
@@ -389,6 +453,7 @@
     FILE_TYPES, MAX_FILE_MB,
     COLLARS, TRIM_STYLES, SLEEVES,
     HOOD_STYLES, CAP_STYLES, CAP_MATERIALS, TASSEL_STYLES,
+    FABRICS, FABRIC_COLORS, ORNEMENTS, STRASS_MODELS, FLEUR_MODELS,
     MEASUREMENTS, STEPS, REGIONS,
     PRODUCTS, product, stepsFor, measuresFor,
     PROMO_CODES, isPromo, normalizePromo,

@@ -42,54 +42,80 @@
     cap:    { src: 'img/cap.webp',    piece: 'Le mortier' },
     tassel: { src: 'img/tassel.webp', piece: 'Le gland' },
   };
-  const STEP_SHOT = { robe: 'robe', hood: 'hood', cap: 'cap', tassel: 'tassel' };
+  /* Les etapes qui ont une photographie de piece. Les etapes de
+     couleur pure (capeam, bande) n'en ont pas : l'apercu montre alors
+     la piece commandee. */
+  const STEP_SHOT = { robe: 'robe', hood: 'hood', cap: 'cap' };
 
   function chipList(state) {
+    const couleur = (id) => {
+      const c = cat.find(cat.FABRIC_COLORS, id);
+      return c ? c.label : '—';
+    };
+
     if (currentStep === 'robe') {
       return [
         { label: 'Manches', value: label(cat.SLEEVES, state.robe.sleeve) },
-        { label: 'Col', value: label(cat.COLLARS, state.robe.collar) },
-        { label: 'Bordure', value: label(cat.TRIM_STYLES, state.robe.trim) },
+        { label: 'Tissu', value: label(cat.FABRICS, state.robe.fabric) },
+        { label: 'Couleur', value: couleur(state.robe.fabricColor) },
       ];
     }
     if (currentStep === 'hood') {
-      const chips = [{ label: 'Modèle', value: label(cat.HOOD_STYLES, state.hood.style) }];
-      if (state.hood.emb.trim()) chips.push({ label: 'Broderie', value: state.hood.emb.trim() });
-      return chips;
+      return [
+        { label: 'Tissu', value: label(cat.FABRICS, state.hood.fabric) },
+        { label: 'Couleur', value: couleur(state.hood.fabricColor) },
+        { label: 'Contour', value: label(cat.TRIM_STYLES, state.hood.contour) },
+      ];
     }
     if (currentStep === 'cap') {
       const chips = [
-        { label: 'Forme', value: label(cat.CAP_STYLES, state.cap.style) },
-        { label: 'Matière', value: label(cat.CAP_MATERIALS, state.cap.material) },
+        { label: 'Tissu', value: label(cat.FABRICS, state.cap.fabric) },
+        { label: 'Couleur', value: couleur(state.cap.fabricColor) },
+        { label: 'Ornement', value: label(cat.ORNEMENTS, state.cap.ornement) },
       ];
-      if (state.cap.logoName) chips.push({ label: 'Logo', value: state.cap.logoName });
+      if (state.cap.ornement === 'strass' && state.cap.strass) {
+        chips.push({ label: 'Strass', value: label(cat.STRASS_MODELS, state.cap.strass) });
+      }
       return chips;
     }
-    if (currentStep === 'tassel') {
-      const chips = [{ label: 'Style', value: label(cat.TASSEL_STYLES, state.tassel.style) }];
-      if (state.tassel.year) chips.push({ label: 'Année', value: state.tassel.year });
-      return chips;
+    if (currentStep === 'capeam') {
+      return [
+        { label: 'Couleur 1', value: couleur(state.capeam.color1) },
+        { label: 'Couleur 2', value: couleur(state.capeam.color2) },
+      ];
     }
+    if (currentStep === 'bande') {
+      return [{ label: 'Couleur', value: couleur(state.bande.fabricColor) }];
+    }
+
     /* Vue d’ensemble (fichiers, mesures, récapitulatif, envoi).
 
        Les pastilles ne listent que ce qui appartient reellement a la
        piece en cours : une commande de robe n'a pas a afficher un
-       mortier et un gland, et une cape n'a aucune de ces options. */
+       chapeau, et une cape n'a aucune de ces options. */
     const etapes = (cat.product(state.product) || {}).steps || [];
     const chips = [];
     if (etapes.indexOf('robe') > -1) {
       chips.push({ label: 'Manches', value: label(cat.SLEEVES, state.robe.sleeve) });
-      chips.push({ label: 'Col', value: label(cat.COLLARS, state.robe.collar) });
-      chips.push({ label: 'Bordure', value: label(cat.TRIM_STYLES, state.robe.trim) });
+      chips.push({ label: 'Tissu', value: label(cat.FABRICS, state.robe.fabric) });
+      chips.push({ label: 'Couleur', value: couleur(state.robe.fabricColor) });
     }
     if (etapes.indexOf('hood') > -1) {
-      chips.push({ label: 'Modèle', value: label(cat.HOOD_STYLES, state.hood.style) });
+      chips.push({ label: 'Tissu', value: label(cat.FABRICS, state.hood.fabric) });
+      chips.push({ label: 'Couleur', value: couleur(state.hood.fabricColor) });
+      chips.push({ label: 'Contour', value: label(cat.TRIM_STYLES, state.hood.contour) });
     }
     if (etapes.indexOf('cap') > -1) {
-      chips.push({ label: 'Forme', value: label(cat.CAP_STYLES, state.cap.style) });
+      chips.push({ label: 'Tissu', value: label(cat.FABRICS, state.cap.fabric) });
+      chips.push({ label: 'Couleur', value: couleur(state.cap.fabricColor) });
+      chips.push({ label: 'Ornement', value: label(cat.ORNEMENTS, state.cap.ornement) });
     }
-    if (etapes.indexOf('tassel') > -1) {
-      chips.push({ label: 'Gland', value: label(cat.TASSEL_STYLES, state.tassel.style) });
+    if (etapes.indexOf('capeam') > -1) {
+      chips.push({ label: 'Couleur 1', value: couleur(state.capeam.color1) });
+      chips.push({ label: 'Couleur 2', value: couleur(state.capeam.color2) });
+    }
+    if (etapes.indexOf('bande') > -1) {
+      chips.push({ label: 'Couleur', value: couleur(state.bande.fabricColor) });
     }
     return chips;
   }

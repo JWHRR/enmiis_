@@ -247,17 +247,21 @@
 
   const ART = {
     'robe.sleeve': (id) => {
-      const item = (cat.SLEEVES || []).find((s) => s.id === id);
+      const item = (cat.SLEEVES || []).find((o) => o.id === id);
       return photoArt(item) || gownArt({ sleeve: id, focus: 'sleeve' });
     },
-    'robe.collar': (id) => gownArt({ collar: id, focus: 'collar' }),
-    'robe.trim':   (id) => gownArt({ trim: id, focus: 'trim' }),
-    'hood.style':  (id) => art(HOOD_ART[id]),
-    'cap.style':   (id) => capArt(id),
-    'cap.material': (id) => fabricArt(id),
-    'tassel.style': (id) => {
-      const item = (cat.TASSEL_STYLES || []).find((t) => t.id === id);
-      return photoArt(item) || tasselArt(id);
+    /* Le meme echantillon de tissage sert aux trois pieces. */
+    'robe.fabric': (id) => fabricArt(id),
+    'hood.fabric': (id) => fabricArt(id),
+    'cap.fabric':  (id) => fabricArt(id),
+    'hood.contour': (id) => gownArt({ trim: id, focus: 'trim' }),
+    'cap.strass': (id) => {
+      const item = (cat.STRASS_MODELS || []).find((o) => o.id === id);
+      return photoArt(item);
+    },
+    'cap.fleur': (id) => {
+      const item = (cat.FLEUR_MODELS || []).find((o) => o.id === id);
+      return photoArt(item);
     },
   };
 
@@ -287,7 +291,12 @@
         ].filter(Boolean).join(' ');
 
         return '<button type="button" class="' + cardClasses + '"' +
-          ' data-set="' + path + '" data-value="' + item.id + '" aria-pressed="' + (current === item.id) + '">' +
+          ' data-set="' + path + '" data-value="' + item.id + '"' +
+          /* Certains choix ne changent pas seulement leur propre carte :
+             ils ouvrent ou ferment une autre planche. Ceux-la demandent
+             un redessin de l'ecran, pas une simple bascule de classe. */
+          (opts.rerender ? ' data-rerender="1"' : '') +
+          ' aria-pressed="' + (current === item.id) + '">' +
           (artFn ? '<span class="cz-option__art' + (itemHasPhoto ? ' cz-option__art--photo' : '') + '">' + artFn(item.id) + '</span>' : '') +
           (item.label ? '<span class="cz-option__name">' + esc(item.label) + '</span>' : '') +
           (item.note ? '<span class="cz-option__note">' + esc(item.note) + '</span>' : '') +
@@ -296,6 +305,42 @@
           '<span class="cz-option__check"><svg viewBox="0 0 24 24"><polyline points="5 13 10 18 19 7"/></svg></span>' +
           '</button>';
       }).join('') + '</div>';
+  }
+
+  /* ---------- Palette de couleurs ----------
+     Une pastille de teinte, son nom et son code d'atelier. Le code est
+     affiche parce que c'est lui qui part en fabrication : un ecran mal
+     calibre ne suffit pas a commander un rouleau. */
+  function colorCards(path) {
+    const current = store.at(path);
+    return '<div class="cz-colors" role="group">' +
+      (cat.FABRIC_COLORS || []).map((c) => {
+        const actif = current === c.id;
+        return '<button type="button" class="cz-color' + (actif ? ' is-active' : '') + '"' +
+          ' data-set="' + path + '" data-value="' + esc(c.id) + '"' +
+          ' aria-pressed="' + actif + '"' +
+          ' title="' + esc(c.label + ' — ' + c.code) + '">' +
+          '<span class="cz-color__chip" style="background:' + esc(c.hex) + '"></span>' +
+          '<span class="cz-color__name">' + esc(c.label) + '</span>' +
+          '<span class="cz-color__code">' + esc(c.code) + '</span>' +
+          '</button>';
+      }).join('') + '</div>';
+  }
+
+  /* Planche d'ornement : strass ou fleurs. Tant qu'une famille n'a pas
+     de photographies, on le dit au lieu d'afficher une grille vide. */
+  function ornementPlanche() {
+    const famille = store.at('cap.ornement');
+    if (famille === 'aucun' || !famille) return '';
+    const liste = famille === 'strass' ? cat.STRASS_MODELS : cat.FLEUR_MODELS;
+    const chemin = famille === 'strass' ? 'cap.strass' : 'cap.fleur';
+    const nom = famille === 'strass' ? 'Modèle de strass' : 'Modèle de fleur';
+    if (!liste || !liste.length) {
+      return field(nom,
+        '<p class="cz-empty">Les modèles de fleurs arrivent très bientôt. ' +
+        'Déposez votre inspiration à l’étape « Vos fichiers » : l’atelier la reprendra.</p>');
+    }
+    return field(nom, optionCards(chemin, liste, { className: 'cz-options--sleeves' }));
   }
 
   function field(label, inner, help) {
@@ -410,12 +455,12 @@
   const robe = {
     html() {
       return '<div class="cz-group">' +
-        field('Coupe des manches', optionCards('robe.sleeve', cat.SLEEVES, { className: 'cz-options--sleeves' })) +
-        field('Col', optionCards('robe.collar', cat.COLLARS)) +
-        field('Bordure (contour)', optionCards('robe.trim', cat.TRIM_STYLES)) +
-      '</div>' +
-      '<p class="cz-help cz-help--workshop">Broderie et couleurs sont arrêtées avec vous par ' +
-      'l’atelier à la confirmation de la commande.</p>';
+        field('Coupe des manches',
+          optionCards('robe.sleeve', cat.SLEEVES, { className: 'cz-options--sleeves' })) +
+        field('Tissu', optionCards('robe.fabric', cat.FABRICS)) +
+        field('Couleur du tissu', colorCards('robe.fabricColor'),
+          'Le code accompagne votre commande jusqu’à l’atelier.') +
+      '</div>';
     },
   };
 
@@ -424,13 +469,12 @@
      ========================================================== */
   const hood = {
     html() {
-      return '<div class="cz-screen__intro"><p>Les cinq modèles de la planche « Cape », illustrés à la même ' +
-        'échelle : la doublure apparaît en doré.</p></div>' +
-        '<div class="cz-group">' +
-        field('Modèle', optionCards('hood.style', cat.HOOD_STYLES, { wide: true })) +
-        field('Broderie de capuche',
-          textInput('hood.emb', { maxlength: 40, placeholder: 'Ex : Faculté de Médecine de Tunis' })) +
-        '</div>';
+      return '<div class="cz-group">' +
+        field('Tissu', optionCards('hood.fabric', cat.FABRICS)) +
+        field('Couleur du tissu', colorCards('hood.fabricColor'),
+          'Le code accompagne votre commande jusqu’à l’atelier.') +
+        field('Contour', optionCards('hood.contour', cat.TRIM_STYLES)) +
+      '</div>';
     },
   };
 
@@ -439,42 +483,48 @@
      ========================================================== */
   const cap = {
     html() {
-      return '<div class="cz-screen__intro"><p>Chaque forme est montrée en perspective, avec ses vues ' +
-        'de face, de dessus et de profil.</p></div>' +
+      return '<div class="cz-group">' +
+        field('Tissu', optionCards('cap.fabric', cat.FABRICS)) +
+        field('Couleur du tissu', colorCards('cap.fabricColor'),
+          'Le code accompagne votre commande jusqu’à l’atelier.') +
+        field('Ornement', optionCards('cap.ornement', cat.ORNEMENTS, { rerender: true })) +
+        ornementPlanche() +
+      '</div>';
+    },
+  };
+
+  /* ==========================================================
+     Cape américaine — deux teintes
+     ========================================================== */
+  const capeam = {
+    html() {
+      return '<div class="cz-screen__intro"><p>La cape américaine se porte en deux teintes : ' +
+        'le corps et le revers.</p></div>' +
         '<div class="cz-group">' +
-        field('Forme du mortier', optionCards('cap.style', cat.CAP_STYLES, { wide: true })) +
-        field('Matière', optionCards('cap.material', cat.CAP_MATERIALS)) +
-        field('Broderie du plateau',
-          textInput('cap.emb', { maxlength: 24, placeholder: 'Ex : Promotion 2026' })) +
-        field('Logo brodé sur le mortier',
-          uploadSlot('cap.logo', 'cap.logoName', 'Ajouter un logo', 'PNG · JPG · SVG')) +
-        '</div>';
+        field('Couleur 1 — le corps', colorCards('capeam.color1')) +
+        field('Couleur 2 — le revers', colorCards('capeam.color2'),
+          'Les deux codes accompagnent votre commande jusqu’à l’atelier.') +
+      '</div>';
+    },
+  };
+
+  /* ==========================================================
+     Bond miss — une seule teinte
+     ========================================================== */
+  const bande = {
+    html() {
+      return '<div class="cz-group">' +
+        field('Couleur du tissu', colorCards('bande.fabricColor'),
+          'Le code accompagne votre commande jusqu’à l’atelier.') +
+      '</div>';
     },
   };
 
   /* ==========================================================
      Étape 5 — Gland
      ========================================================== */
-  const tassel = {
-    html() {
-      const years = [];
-      const thisYear = new Date().getFullYear();
-      for (let y = thisYear; y <= thisYear + 3; y += 1) years.push(String(y));
-      const current = store.at('tassel.year');
-      return '<div class="cz-screen__intro"><p>Chaque gland est photographié dans notre atelier. ' +
-        'Choisissez la couleur et la breloque qui accompagneront votre chapeau.</p></div>' +
-        '<div class="cz-group">' +
-        field('Style du gland', optionCards('tassel.style', cat.TASSEL_STYLES, { className: 'cz-options--sleeves' })) +
-        field('Année de promotion (breloque)', '<div class="cz-pills">' +
-          '<button type="button" class="cz-pill' + (!current ? ' is-active' : '') + '"' +
-          ' data-set="tassel.year" data-value="" aria-pressed="' + (!current) + '">Aucune</button>' +
-          years.map((y) => '<button type="button" class="cz-pill' + (current === y ? ' is-active' : '') + '"' +
-            ' data-set="tassel.year" data-value="' + y + '" aria-pressed="' + (current === y) + '">' + y +
-            '</button>').join('') + '</div>',
-          'La finition de la breloque est choisie avec l’atelier.') +
-        '</div>';
-    },
-  };
+  /* L’étape « gland » a été retirée : les strass la remplacent,
+     rattachés au chapeau. */
 
   /* ==========================================================
      Étape 6 — Mesures
@@ -526,38 +576,69 @@
       const labelOf = (list, id) => (cat.find(list, id) || {}).label || '—';
       const blocks = [];
 
+      const couleur = (id) => {
+        const c = cat.find(cat.FABRIC_COLORS, id);
+        return c ? c.label + ' (' + c.code + ')' : '—';
+      };
+
       if (product.id === 'robe') {
         blocks.push({
           step: 'robe', title: 'La Robe', rows: [
             { label: 'Coupe des manches', value: labelOf(cat.SLEEVES, s.robe.sleeve) },
-            { label: 'Col', value: labelOf(cat.COLLARS, s.robe.collar) },
-            { label: 'Bordure', value: labelOf(cat.TRIM_STYLES, s.robe.trim) },
+            { label: 'Tissu', value: labelOf(cat.FABRICS, s.robe.fabric) },
+            { label: 'Couleur du tissu', value: couleur(s.robe.fabricColor) },
           ],
         });
       }
 
       if (product.id === 'casquette') {
-        blocks.push({
-          step: 'cap', title: 'Le Chapeau', rows: [
-            { label: 'Forme', value: labelOf(cat.CAP_STYLES, s.cap.style) },
-            { label: 'Matière', value: labelOf(cat.CAP_MATERIALS, s.cap.material) },
-            { label: 'Broderie', value: s.cap.emb.trim() || 'Aucune' },
-            { label: 'Logo', value: s.cap.logoName || 'Aucun' },
-          ],
-        });
-        blocks.push({
-          step: 'tassel', title: 'Le Gland', rows: [
-            { label: 'Style', value: labelOf(cat.TASSEL_STYLES, s.tassel.style) },
-            { label: 'Année de promotion', value: s.tassel.year || 'Aucune' },
-          ],
-        });
+        const rows = [
+          { label: 'Tissu', value: labelOf(cat.FABRICS, s.cap.fabric) },
+          { label: 'Couleur du tissu', value: couleur(s.cap.fabricColor) },
+          { label: 'Ornement', value: labelOf(cat.ORNEMENTS, s.cap.ornement) },
+        ];
+        /* Le modele n'est repris que si sa famille est bien celle
+           choisie : afficher un strass sous un chapeau a fleurs
+           embrouillerait l'atelier. */
+        if (s.cap.ornement === 'strass') {
+          rows.push({
+            label: 'Modèle de strass',
+            value: s.cap.strass ? labelOf(cat.STRASS_MODELS, s.cap.strass) : '— à choisir —',
+            warn: !s.cap.strass,
+          });
+        }
+        if (s.cap.ornement === 'fleur') {
+          rows.push({
+            label: 'Modèle de fleur',
+            value: s.cap.fleur ? labelOf(cat.FLEUR_MODELS, s.cap.fleur) : 'Arrêté avec l’atelier',
+          });
+        }
+        blocks.push({ step: 'cap', title: 'Le Chapeau', rows });
       }
 
       if (product.id === 'echarpe') {
         blocks.push({
           step: 'hood', title: 'Le Cache-col', rows: [
-            { label: 'Modèle', value: labelOf(cat.HOOD_STYLES, s.hood.style) },
-            { label: 'Broderie', value: s.hood.emb.trim() || 'Aucune' },
+            { label: 'Tissu', value: labelOf(cat.FABRICS, s.hood.fabric) },
+            { label: 'Couleur du tissu', value: couleur(s.hood.fabricColor) },
+            { label: 'Contour', value: labelOf(cat.TRIM_STYLES, s.hood.contour) },
+          ],
+        });
+      }
+
+      if (product.id === 'cape-americaine') {
+        blocks.push({
+          step: 'capeam', title: 'Les Couleurs', rows: [
+            { label: 'Couleur 1 — le corps', value: couleur(s.capeam.color1) },
+            { label: 'Couleur 2 — le revers', value: couleur(s.capeam.color2) },
+          ],
+        });
+      }
+
+      if (product.id === 'bond-miss') {
+        blocks.push({
+          step: 'bande', title: 'La Couleur', rows: [
+            { label: 'Couleur du tissu', value: couleur(s.bande.fabricColor) },
           ],
         });
       }
@@ -688,6 +769,6 @@
 
   CZ.steps = {
     esc, kb, FIGURES,
-    upload, robe, hood, cap, tassel, measure, review, added,
+    upload, robe, hood, cap, capeam, bande, measure, review, added,
   };
 })(window);

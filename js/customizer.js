@@ -38,7 +38,8 @@
     robe: () => steps.robe.html(),
     hood: () => steps.hood.html(),
     cap: () => steps.cap.html(),
-    tassel: () => steps.tassel.html(),
+    capeam: () => steps.capeam.html(),
+    bande: () => steps.bande.html(),
     measure: () => steps.measure.html(),
     review: () => steps.review.html(),
   };
@@ -627,6 +628,21 @@
       const setter = event.target.closest('[data-set]');
       if (setter) {
         store.set(setter.getAttribute('data-set'), setter.getAttribute('data-value'));
+
+        /* Un choix qui ouvre une autre planche — l'ornement du chapeau —
+           exige de redessiner l'ecran : basculer une classe ne ferait pas
+           apparaitre la grille de strass. On rend sa position au panneau,
+           sinon la cliente se retrouve projetee en haut de page. */
+        if (setter.hasAttribute('data-rerender')) {
+          const y = screensRoot.scrollTop;
+          const page = global.scrollY;
+          renderScreen();
+          screensRoot.scrollTop = y;
+          global.scrollTo({ top: page });
+          preview.render();
+          return;
+        }
+
         syncPressed(setter);
         preview.render();
         renderRail();
@@ -757,26 +773,43 @@
   /* Modèles de la galerie : chaque pièce a les siens. La photo choisie
      rejoint les fichiers comme référence pour l'atelier, et les options
      de la pièce sont pré-réglées pour coller au modèle montré. */
+  /* Un modele choisi dans la galerie pre-regle les options de la piece
+     et joint sa photographie comme reference. Les cles suivent la forme
+     actuelle de l'etat : un `collar` ou un `trim` ici serait ignore en
+     silence par le store, et la cliente verrait un ecran non pre-rempli. */
   const PRESETS = {
     robe: {
+      'robe-1': { name: 'Design Robe Camel — Parements Bordeaux (Photo de référence)',
+                  src: 'img/designs/robe/robe-1-3.webp',
+                  apply: { sleeve: 'modele-1', fabric: 'gabardine', fabricColor: 'camel' } },
+      'robe-2': { name: 'Design Robe Marine — Liseré Or (Photo de référence)',
+                  src: 'img/designs/robe/robe-2-1.webp',
+                  apply: { sleeve: 'modele-1', fabric: 'gabardine', fabricColor: 'marine' } },
       '1': { name: 'Modèle Toge d’Excellence #1 (Photo de référence)',
-             src: 'img/soutenance/1.png', apply: { sleeve: 'modele-1', collar: 'v', trim: 'double' } },
+             src: 'img/soutenance/1.png',
+             apply: { sleeve: 'modele-1', fabric: 'gabardine', fabricColor: 'creme' } },
       '2': { name: 'Modèle Toge de Prestance #2 (Photo de référence)',
-             src: 'img/soutenance/2.png', apply: { sleeve: 'modele-1', collar: 'v', trim: 'simple' } },
+             src: 'img/soutenance/2.png',
+             apply: { sleeve: 'modele-2', fabric: 'velours', fabricColor: 'noir' } },
       '3': { name: 'Modèle Toge Marine #3 (Photo de référence)',
-             src: 'img/soutenance/3.png', apply: { sleeve: 'modele-1', collar: 'v', trim: 'double' } },
+             src: 'img/soutenance/3.png',
+             apply: { sleeve: 'modele-3', fabric: 'gabardine', fabricColor: 'marine' } },
     },
     casquette: {
       '1': { name: 'Mortier Classique (Photo de référence)',
-             src: 'img/cap.webp', apply: { style: 'classique', material: 'gabardine' } },
-      '2': { name: 'Mortier & Gland Personnalisé (Photo de référence)',
-             src: 'img/tassel.webp', apply: { style: 'classique', material: 'velours' } },
+             src: 'img/cap.webp',
+             apply: { fabric: 'gabardine', fabricColor: 'noir', ornement: 'aucun' } },
+      '2': { name: 'Mortier & Ornement Personnalisé (Photo de référence)',
+             src: 'img/tassel.webp',
+             apply: { fabric: 'velours', fabricColor: 'noir', ornement: 'strass' } },
     },
     echarpe: {
-      '1': { name: 'Écharpe « Félicitations Dr » (Photo de référence)',
-             src: 'img/hood.webp', apply: { style: 'etole-droite' } },
-      '2': { name: 'Écharpe Nom & Date (Photo de référence)',
-             src: 'img/hood.webp', apply: { style: 'etole-v' } },
+      '1': { name: 'Cache-col « Félicitations Dr » (Photo de référence)',
+             src: 'img/hood.webp',
+             apply: { fabric: 'satin', fabricColor: 'noir', contour: 'double' } },
+      '2': { name: 'Cache-col Nom & Date (Photo de référence)',
+             src: 'img/hood.webp',
+             apply: { fabric: 'satin', fabricColor: 'bordeaux', contour: 'simple' } },
     },
   };
 
@@ -787,9 +820,11 @@
 
     /* Pré-règle les options de la pièce en cours selon le modèle. */
     store.commit((draft) => {
-      if (productId() === 'robe') Object.assign(draft.robe, preset.apply);
-      if (productId() === 'casquette') Object.assign(draft.cap, preset.apply);
-      if (productId() === 'echarpe') Object.assign(draft.hood, preset.apply);
+      const cible = {
+        robe: draft.robe, casquette: draft.cap, echarpe: draft.hood,
+        'cape-americaine': draft.capeam, 'bond-miss': draft.bande,
+      }[productId()];
+      if (cible) Object.assign(cible, preset.apply);
     });
 
     const dataUrl = await loadPresetDataUrl(preset.src);

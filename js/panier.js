@@ -33,33 +33,63 @@
     return item.product ? cat.product(item.product) : null;
   }
 
+  /* Le nom de la ligne vient du catalogue. L'ancienne version lisait la
+     broderie du chapeau — un champ qui n'existe plus : la page entiere
+     levait alors une exception et le panier s'affichait vide. */
   function itemName(item) {
     const product = productOf(item);
     if (!product) return 'Tenue de soutenance';
-    if (product.id === 'robe') return 'Robe de soutenance';
-    if (product.id === 'casquette') return item.cap.emb.trim() || 'Casquette de diplômé';
-    return item.hood.emb.trim() || 'Écharpe de félicitations';
+    return product.label + ' de soutenance';
   }
 
+  const couleurDe = (id) => {
+    const c = cat.find(cat.FABRIC_COLORS, id);
+    return c ? c.label + ' (' + c.code + ')' : null;
+  };
+
+  /* Chaque ligne n'affiche que ce que la piece porte reellement. Les
+     commandes passees avant la refonte gardent leurs anciens champs :
+     on les lit encore, sinon un panier ancien deviendrait illisible. */
   function itemLines(item) {
     const rows = [];
+    const ajouter = (libelle, valeur) => { if (valeur) rows.push({ label: libelle, value: valeur }); };
+
     if (item.robe) {
-      rows.push({ label: 'Manches', value: label(cat.SLEEVES, item.robe.sleeve) });
-      rows.push({ label: 'Col', value: label(cat.COLLARS, item.robe.collar) });
-      rows.push({ label: 'Bordure', value: label(cat.TRIM_STYLES, item.robe.trim) });
+      ajouter('Manches', label(cat.SLEEVES, item.robe.sleeve));
+      ajouter('Tissu', item.robe.fabric && label(cat.FABRICS, item.robe.fabric));
+      ajouter('Couleur', couleurDe(item.robe.fabricColor));
+      ajouter('Col', item.robe.collar && label(cat.COLLARS, item.robe.collar));
+      ajouter('Bordure', item.robe.trim && label(cat.TRIM_STYLES, item.robe.trim));
     }
     if (item.cap) {
-      rows.push({ label: 'Forme', value: label(cat.CAP_STYLES, item.cap.style) });
-      rows.push({ label: 'Matière', value: label(cat.CAP_MATERIALS, item.cap.material) });
-      if (item.cap.emb) rows.push({ label: 'Broderie', value: item.cap.emb });
+      ajouter('Tissu', item.cap.fabric && label(cat.FABRICS, item.cap.fabric));
+      ajouter('Couleur', couleurDe(item.cap.fabricColor));
+      ajouter('Ornement', item.cap.ornement && label(cat.ORNEMENTS, item.cap.ornement));
+      if (item.cap.ornement === 'strass' && item.cap.strass) {
+        ajouter('Strass', label(cat.STRASS_MODELS, item.cap.strass));
+      }
+      if (item.cap.ornement === 'fleur' && item.cap.fleur) {
+        ajouter('Fleur', label(cat.FLEUR_MODELS, item.cap.fleur));
+      }
+      ajouter('Forme', item.cap.style && label(cat.CAP_STYLES, item.cap.style));
+      ajouter('Broderie', item.cap.emb);
     }
     if (item.tassel) {
-      rows.push({ label: 'Gland', value: label(cat.TASSEL_STYLES, item.tassel.style) +
-        (item.tassel.year ? ' · ' + item.tassel.year : '') });
+      ajouter('Gland', item.tassel.style && label(cat.TASSEL_STYLES, item.tassel.style));
     }
     if (item.hood) {
-      rows.push({ label: 'Modèle', value: label(cat.HOOD_STYLES, item.hood.style) });
-      if (item.hood.emb) rows.push({ label: 'Broderie', value: item.hood.emb });
+      ajouter('Tissu', item.hood.fabric && label(cat.FABRICS, item.hood.fabric));
+      ajouter('Couleur', couleurDe(item.hood.fabricColor));
+      ajouter('Contour', item.hood.contour && label(cat.TRIM_STYLES, item.hood.contour));
+      ajouter('Modèle', item.hood.style && label(cat.HOOD_STYLES, item.hood.style));
+      ajouter('Broderie', item.hood.emb);
+    }
+    if (item.capeam) {
+      ajouter('Couleur 1', couleurDe(item.capeam.color1));
+      ajouter('Couleur 2', couleurDe(item.capeam.color2));
+    }
+    if (item.bande) {
+      ajouter('Couleur', couleurDe(item.bande.fabricColor));
     }
     return rows;
   }
@@ -315,25 +345,9 @@
       lines.push('Fichiers : ' + ((item.files || []).length
         ? item.files.map((f) => f.name).join(', ') : '—'));
 
-      if (item.robe) {
-        lines.push('Manches : ' + label(cat.SLEEVES, item.robe.sleeve));
-        lines.push('Col : ' + label(cat.COLLARS, item.robe.collar));
-        lines.push('Bordure : ' + label(cat.TRIM_STYLES, item.robe.trim));
-      }
-      if (item.cap) {
-        lines.push('Casquette : ' + label(cat.CAP_STYLES, item.cap.style) +
-          ' / ' + label(cat.CAP_MATERIALS, item.cap.material));
-        lines.push('Broderie du plateau : ' + (item.cap.emb || '—'));
-        lines.push('Logo brodé : ' + (item.cap.logoName || '—'));
-      }
-      if (item.tassel) {
-        lines.push('Gland : ' + label(cat.TASSEL_STYLES, item.tassel.style) +
-          (item.tassel.year ? ' / ' + item.tassel.year : ''));
-      }
-      if (item.hood) {
-        lines.push('Écharpe : ' + label(cat.HOOD_STYLES, item.hood.style));
-        lines.push('Broderie de l’écharpe : ' + (item.hood.emb || '—'));
-      }
+      /* Le recapitulatif imprime exactement les memes lignes que la
+         carte a l'ecran : une seule source, aucune divergence possible. */
+      itemLines(item).forEach((row) => { lines.push(row.label + ' : ' + row.value); });
 
       lines.push('— Mesures —');
       cat.MEASUREMENTS

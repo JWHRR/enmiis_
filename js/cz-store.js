@@ -32,18 +32,22 @@
      définies par l'atelier lors de la confirmation. Le client ne choisit
      que les modèles, illustrés un à un. */
   const DEFAULTS = {
-    /* Le configurateur ne compose qu'une pièce à la fois : robe,
-       casquette ou écharpe. Chacune part au panier séparément. */
+    /* Le configurateur ne compose qu'une pièce à la fois. Chacune part
+       au panier séparément, avec ses propres options. */
     product: 'robe',
     /* Identifiant de la ligne de panier en cours de modification
        (bouton « Modifier » du panier), sinon null pour un ajout. */
     editing: null,
     step: 0,
     files: [],
-    robe: { sleeve: 'modele-1', collar: 'v', trim: 'double' },
-    hood: { style: 'etole-droite', emb: '' },
-    cap: { style: 'classique', material: 'gabardine', emb: '', logo: null, logoName: '' },
-    tassel: { style: 'modele-1', year: '' },
+    /* Une clé par piece : ce que l'atelier doit savoir pour la tailler.
+       Les options retirees d'un ecran disparaissent d'elles-memes a la
+       restauration, mergeInto ne recopiant que les cles presentes ici. */
+    robe:   { sleeve: 'modele-1', fabric: 'gabardine', fabricColor: 'noir' },
+    hood:   { fabric: 'satin', fabricColor: 'noir', contour: 'double' },
+    cap:    { fabric: 'gabardine', fabricColor: 'noir', ornement: 'aucun', strass: '', fleur: '' },
+    capeam: { color1: 'noir', color2: 'creme' },
+    bande:  { fabricColor: 'noir' },
     measures: {
       height: '', weight: '', head: '', chest: '', waist: '',
       hip: '', shoulder: '', sleeve: '', gown: '',
@@ -117,11 +121,30 @@
       const rattraper = (objet, cle, liste, defaut) => {
         if (!objet || !objet[cle]) return;
         const connus = (liste || []).map((o) => o.id);
+        /* Une planche vide (les fleurs, tant qu'il n'y a pas de photos)
+           ne doit pas invalider un choix : on ne tranche que si la liste
+           existe vraiment. */
         if (connus.length && connus.indexOf(objet[cle]) === -1) objet[cle] = defaut;
       };
       const catalogue = CZ.catalog || {};
       rattraper(merged.robe, 'sleeve', catalogue.SLEEVES, DEFAULTS.robe.sleeve);
-      rattraper(merged.tassel, 'style', catalogue.TASSEL_STYLES, DEFAULTS.tassel.style);
+      rattraper(merged.robe, 'fabric', catalogue.FABRICS, DEFAULTS.robe.fabric);
+      rattraper(merged.robe, 'fabricColor', catalogue.FABRIC_COLORS, DEFAULTS.robe.fabricColor);
+      rattraper(merged.hood, 'fabric', catalogue.FABRICS, DEFAULTS.hood.fabric);
+      rattraper(merged.hood, 'fabricColor', catalogue.FABRIC_COLORS, DEFAULTS.hood.fabricColor);
+      rattraper(merged.hood, 'contour', catalogue.TRIM_STYLES, DEFAULTS.hood.contour);
+      rattraper(merged.cap, 'fabric', catalogue.FABRICS, DEFAULTS.cap.fabric);
+      rattraper(merged.cap, 'fabricColor', catalogue.FABRIC_COLORS, DEFAULTS.cap.fabricColor);
+      rattraper(merged.cap, 'ornement', catalogue.ORNEMENTS, DEFAULTS.cap.ornement);
+      rattraper(merged.capeam, 'color1', catalogue.FABRIC_COLORS, DEFAULTS.capeam.color1);
+      rattraper(merged.capeam, 'color2', catalogue.FABRIC_COLORS, DEFAULTS.capeam.color2);
+      rattraper(merged.bande, 'fabricColor', catalogue.FABRIC_COLORS, DEFAULTS.bande.fabricColor);
+      /* Le modèle d'ornement n'est valide que dans sa propre planche, et
+         seulement si la famille correspondante est choisie. */
+      if (merged.cap) {
+        rattraper(merged.cap, 'strass', catalogue.STRASS_MODELS, '');
+        rattraper(merged.cap, 'fleur', catalogue.FLEUR_MODELS, '');
+      }
       state = merged;
     } catch (err) {
       state = clone(DEFAULTS);
@@ -329,12 +352,14 @@
       item.measures[field.id] = state.measures[field.id];
     });
 
+    /* Chaque piece n'emporte que son propre bloc d'options : une cape
+       n'a rien a faire des manches, et l'admin lit exactement ce que la
+       cliente a choisi. */
     if (product.id === 'robe') item.robe = clone(state.robe);
-    if (product.id === 'casquette') {
-      item.cap = clone(state.cap);
-      item.tassel = clone(state.tassel);
-    }
+    if (product.id === 'casquette') item.cap = clone(state.cap);
     if (product.id === 'echarpe') item.hood = clone(state.hood);
+    if (product.id === 'cape-americaine') item.capeam = clone(state.capeam);
+    if (product.id === 'bond-miss') item.bande = clone(state.bande);
 
     return item;
   }
@@ -356,8 +381,9 @@
     mergeInto(draft.measures, item.measures);
     if (item.robe) mergeInto(draft.robe, item.robe);
     if (item.cap) mergeInto(draft.cap, item.cap);
-    if (item.tassel) mergeInto(draft.tassel, item.tassel);
     if (item.hood) mergeInto(draft.hood, item.hood);
+    if (item.capeam) mergeInto(draft.capeam, item.capeam);
+    if (item.bande) mergeInto(draft.bande, item.bande);
 
     draft.files = (item.files || []).map((file) => {
       const restored = {

@@ -548,27 +548,60 @@
       '<div class="ad-row"><dt>' + esc(label) + '</dt><dd>' + esc(value) + '</dd></div>';
     let rows = '';
 
+    /* La fiche affiche ce que la commande contient reellement. Les
+       commandes passees avant la refonte des options portent encore
+       col, bordure, forme de mortier ou gland : elles doivent rester
+       lisibles, sinon l'atelier ne peut plus les fabriquer. */
+    const couleur = (id) => {
+      const c = cat.find(cat.FABRIC_COLORS, id);
+      return c ? c.label + ' (' + c.code + ')' : null;
+    };
+    const siPresent = (valeur, libelle, rendu) => {
+      if (valeur === undefined || valeur === null || valeur === '') return '';
+      const texte = rendu ? rendu(valeur) : valeur;
+      return texte ? row(libelle, texte) : '';
+    };
+
     if (item.robe) {
-      rows += row('Manches', labelOf(cat.SLEEVES, item.robe.sleeve)) +
-        row('Col', labelOf(cat.COLLARS, item.robe.collar)) +
-        row('Bordure', labelOf(cat.TRIM_STYLES, item.robe.trim));
+      rows += siPresent(item.robe.sleeve, 'Manches', (v) => labelOf(cat.SLEEVES, v)) +
+        siPresent(item.robe.fabric, 'Tissu', (v) => labelOf(cat.FABRICS, v)) +
+        siPresent(item.robe.fabricColor, 'Couleur du tissu', couleur) +
+        siPresent(item.robe.collar, 'Col (ancienne fiche)', (v) => labelOf(cat.COLLARS, v)) +
+        siPresent(item.robe.trim, 'Bordure (ancienne fiche)', (v) => labelOf(cat.TRIM_STYLES, v));
     }
     if (item.cap) {
-      rows += row('Chapeau', labelOf(cat.CAP_STYLES, item.cap.style) + ' · ' +
-          labelOf(cat.CAP_MATERIALS, item.cap.material)) +
-        row('Broderie du plateau', item.cap.emb || 'Aucune') +
-        row('Logo brodé', item.cap.logoName || 'Aucun');
+      rows += siPresent(item.cap.fabric, 'Tissu', (v) => labelOf(cat.FABRICS, v)) +
+        siPresent(item.cap.fabricColor, 'Couleur du tissu', couleur) +
+        siPresent(item.cap.ornement, 'Ornement', (v) => labelOf(cat.ORNEMENTS, v)) +
+        (item.cap.ornement === 'strass'
+          ? siPresent(item.cap.strass, 'Modèle de strass', (v) => labelOf(cat.STRASS_MODELS, v)) : '') +
+        (item.cap.ornement === 'fleur'
+          ? siPresent(item.cap.fleur, 'Modèle de fleur', (v) => labelOf(cat.FLEUR_MODELS, v)) : '') +
+        siPresent(item.cap.style, 'Forme (ancienne fiche)', (v) => labelOf(cat.CAP_STYLES, v)) +
+        siPresent(item.cap.material, 'Matière (ancienne fiche)', (v) => labelOf(cat.CAP_MATERIALS, v)) +
+        siPresent(item.cap.emb, 'Broderie du plateau') +
+        siPresent(item.cap.logoName, 'Logo brodé');
     }
     if (item.tassel) {
-      rows += row('Gland', labelOf(cat.TASSEL_STYLES, item.tassel.style)) +
-        row('Année de promotion', item.tassel.year || 'Aucune');
+      rows += siPresent(item.tassel.style, 'Gland (ancienne fiche)', (v) => labelOf(cat.TASSEL_STYLES, v)) +
+        siPresent(item.tassel.year, 'Année de promotion');
     }
     if (item.hood) {
-      rows += row('Cache-col', labelOf(cat.HOOD_STYLES, item.hood.style)) +
-        row('Broderie de l’écharpe', item.hood.emb || 'Aucune');
+      rows += siPresent(item.hood.fabric, 'Tissu', (v) => labelOf(cat.FABRICS, v)) +
+        siPresent(item.hood.fabricColor, 'Couleur du tissu', couleur) +
+        siPresent(item.hood.contour, 'Contour', (v) => labelOf(cat.TRIM_STYLES, v)) +
+        siPresent(item.hood.style, 'Modèle (ancienne fiche)', (v) => labelOf(cat.HOOD_STYLES, v)) +
+        siPresent(item.hood.emb, 'Broderie du cache-col');
+    }
+    if (item.capeam) {
+      rows += siPresent(item.capeam.color1, 'Couleur 1 — le corps', couleur) +
+        siPresent(item.capeam.color2, 'Couleur 2 — le revers', couleur);
+    }
+    if (item.bande) {
+      rows += siPresent(item.bande.fabricColor, 'Couleur du tissu', couleur);
     }
 
-    rows += row('Couleurs', 'À définir avec le client — voir note d’atelier');
+    if (!rows) rows = row('Options', 'Aucune option — pièce réalisée sur la référence fournie');
     return '<dl class="ad-rows">' + rows + '</dl>';
   }
 
@@ -991,24 +1024,57 @@
       lines.push('Fichiers : ' + ((item.files || []).length
         ? item.files.map((f) => f.name + ' (' + f.label + ')').join(', ') : '—'));
 
+      /* Meme regle que la fiche a l'ecran : on n'imprime que ce que la
+         commande porte, anciennes options comprises. */
+      const couleurTxt = (id) => {
+        const c = cat.find(cat.FABRIC_COLORS, id);
+        return c ? c.label + ' (' + c.code + ')' : null;
+      };
+      const ligne = (libelle, valeur, rendu) => {
+        if (valeur === undefined || valeur === null || valeur === '') return;
+        const texte = rendu ? rendu(valeur) : valeur;
+        if (texte) lines.push(libelle + ' : ' + texte);
+      };
+
       if (item.robe) {
-        lines.push('Manches : ' + labelOf(cat.SLEEVES, item.robe.sleeve));
-        lines.push('Col : ' + labelOf(cat.COLLARS, item.robe.collar));
-        lines.push('Bordure : ' + labelOf(cat.TRIM_STYLES, item.robe.trim));
+        ligne('Manches', item.robe.sleeve, (v) => labelOf(cat.SLEEVES, v));
+        ligne('Tissu', item.robe.fabric, (v) => labelOf(cat.FABRICS, v));
+        ligne('Couleur du tissu', item.robe.fabricColor, couleurTxt);
+        ligne('Col (ancienne fiche)', item.robe.collar, (v) => labelOf(cat.COLLARS, v));
+        ligne('Bordure (ancienne fiche)', item.robe.trim, (v) => labelOf(cat.TRIM_STYLES, v));
       }
       if (item.cap) {
-        lines.push('Chapeau : ' + labelOf(cat.CAP_STYLES, item.cap.style) +
-          ' / ' + labelOf(cat.CAP_MATERIALS, item.cap.material) +
-          (item.cap.emb ? ' · broderie : ' + item.cap.emb : ''));
-        lines.push('Logo brodé : ' + (item.cap.logoName || '—'));
+        ligne('Tissu', item.cap.fabric, (v) => labelOf(cat.FABRICS, v));
+        ligne('Couleur du tissu', item.cap.fabricColor, couleurTxt);
+        ligne('Ornement', item.cap.ornement, (v) => labelOf(cat.ORNEMENTS, v));
+        if (item.cap.ornement === 'strass') {
+          ligne('Modèle de strass', item.cap.strass, (v) => labelOf(cat.STRASS_MODELS, v));
+        }
+        if (item.cap.ornement === 'fleur') {
+          ligne('Modèle de fleur', item.cap.fleur, (v) => labelOf(cat.FLEUR_MODELS, v));
+        }
+        ligne('Forme (ancienne fiche)', item.cap.style, (v) => labelOf(cat.CAP_STYLES, v));
+        ligne('Matière (ancienne fiche)', item.cap.material, (v) => labelOf(cat.CAP_MATERIALS, v));
+        ligne('Broderie du plateau', item.cap.emb);
+        ligne('Logo brodé', item.cap.logoName);
       }
       if (item.tassel) {
-        lines.push('Gland : ' + labelOf(cat.TASSEL_STYLES, item.tassel.style) +
-          (item.tassel.year ? ' / ' + item.tassel.year : ''));
+        ligne('Gland (ancienne fiche)', item.tassel.style, (v) => labelOf(cat.TASSEL_STYLES, v));
+        ligne('Année de promotion', item.tassel.year);
       }
       if (item.hood) {
-        lines.push('Cache-col : ' + labelOf(cat.HOOD_STYLES, item.hood.style) +
-          (item.hood.emb ? ' · broderie : ' + item.hood.emb : ''));
+        ligne('Tissu', item.hood.fabric, (v) => labelOf(cat.FABRICS, v));
+        ligne('Couleur du tissu', item.hood.fabricColor, couleurTxt);
+        ligne('Contour', item.hood.contour, (v) => labelOf(cat.TRIM_STYLES, v));
+        ligne('Modèle (ancienne fiche)', item.hood.style, (v) => labelOf(cat.HOOD_STYLES, v));
+        ligne('Broderie du cache-col', item.hood.emb);
+      }
+      if (item.capeam) {
+        ligne('Couleur 1 — le corps', item.capeam.color1, couleurTxt);
+        ligne('Couleur 2 — le revers', item.capeam.color2, couleurTxt);
+      }
+      if (item.bande) {
+        ligne('Couleur du tissu', item.bande.fabricColor, couleurTxt);
       }
 
       lines.push('— Mesures —');
