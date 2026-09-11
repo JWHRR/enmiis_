@@ -2020,8 +2020,45 @@ svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width:
 }
 .work-card:hover .work-card__media img { transform: scale(1.05); }
 
+/* --- Robes — la photographie de face ouvre les trois vues ---
+   La fiche garde exactement le gabarit des autres : meme rapport 5/7,
+   meme fond chaud. Une vignette plus large tranchait dans la grille. */
+.work-card__media-open {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+}
+.work-card__media-open:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -4px;
+}
+
+/* Discret, mais il faut bien annoncer qu'il y a autre chose a voir. */
+.work-card__views {
+  position: absolute;
+  bottom: 0.6rem;
+  left: 0.6rem;
+  z-index: 2;
+  padding: 0.24rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(17, 17, 17, 0.7);
+  color: #FFFFFF;
+  font-family: var(--sans);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.work-card:hover .work-card__views { opacity: 0; }
+
 .work-card__wishlist {
   position: absolute;
+  z-index: 3;
   top: 0.6rem; right: 0.6rem;
   width: 40px; height: 40px;
   display: inline-flex;
@@ -2254,6 +2291,56 @@ svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width:
   border-radius: 99px;
   pointer-events: none;
 }
+
+/* Les autres vues, en vignettes : on voit ce qu'on va ouvrir, ce qu'une
+   pastille portant le seul mot « Dos » ne montrait pas. */
+.model-modal__thumbs {
+  position: absolute;
+  right: 0.9rem;
+  bottom: 0.9rem;
+  z-index: 5;
+  display: flex;
+  gap: 0.4rem;
+}
+.model-modal__thumb {
+  width: 54px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 3px;
+  background: #FFFFFF;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.model-modal__thumb img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 5 / 7;
+  object-fit: cover;
+  object-position: center top;
+}
+.model-modal__thumb span {
+  display: block;
+  padding: 0.18rem 0 0.24rem;
+  background: #FFFFFF;
+  font-family: var(--sans);
+  font-size: 0.56rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.model-modal__thumb:hover { border-color: var(--ink); }
+.model-modal__thumb.is-active {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 1px var(--ink);
+}
+.model-modal__thumb.is-active span { color: var(--ink); }
+
+/* Viser une vignette ne doit pas declencher le zoom de la grande photo. */
+.model-modal__zoom-container:has(.model-modal__thumbs:hover) .model-modal__img {
+  transform: none;
+}
+
 
 .model-modal__info {
   padding: 2.2rem 2rem;

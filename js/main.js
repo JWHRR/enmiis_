@@ -688,6 +688,44 @@
         "Livraison offerte & suivi dédié par notre atelier"
       ],
       presetUrl: "customizer.html?preset=3"
+    },
+    /* « views » ouvre la bande de vignettes : la premiere vue est celle
+       que porte deja la fiche, les suivantes se decouvrent au clic. */
+    'robe-1': {
+      title: "Robe Camel — Parements Bordeaux",
+      category: "Toges d'Apparat",
+      img: "img/designs/robe/robe-1-1.webp",
+      views: [
+        { label: "Face",   src: "img/designs/robe/robe-1-1.webp" },
+        { label: "Profil", src: "img/designs/robe/robe-1-2.webp" },
+        { label: "Dos",    src: "img/designs/robe/robe-1-3.webp" }
+      ],
+      desc: "Drapé camel, manches à parements bordeaux et fermeture centrale nette. Photographiée sous trois angles à l'atelier.",
+      highlights: [
+        "Camel chaud et parements bordeaux",
+        "Manches d'apparat soulignées d'un liseré or",
+        "Tombé fluide et fermeture centrale nette",
+        "Trois vues : face, profil et dos"
+      ],
+      presetUrl: "customizer.html?produit=robe&preset=robe-1"
+    },
+    'robe-2': {
+      title: "Robe Marine — Liséré Or",
+      category: "Toges d'Apparat",
+      img: "img/designs/robe/robe-2-1.webp",
+      views: [
+        { label: "Face",   src: "img/designs/robe/robe-2-1.webp" },
+        { label: "Détail", src: "img/designs/robe/robe-2-2.webp" },
+        { label: "Dos",    src: "img/designs/robe/robe-2-3.webp" }
+      ],
+      desc: "Marine profond, liséré doré sur les manches et le devant. Photographiée sous trois angles à l'atelier.",
+      highlights: [
+        "Marine profond, haute tenue",
+        "Liséré doré aux manches et au parement",
+        "Col en V net",
+        "Trois vues : face, détail et dos"
+      ],
+      presetUrl: "customizer.html?produit=robe&preset=robe-2"
     }
   };
 
@@ -713,6 +751,31 @@
        configurateur de sa pièce (robe, casquette ou écharpe). */
     modelModalChooseBtn.href = chooseUrl || data.presetUrl;
     modelModalHighlights.innerHTML = data.highlights.map(h => '<li><span>✓</span> ' + h + '</li>').join('');
+
+    const modalThumbs = document.getElementById('modelModalThumbs');
+    if (modalThumbs) {
+      if (data.views && data.views.length) {
+        modalThumbs.innerHTML = data.views.map((v, idx) =>
+          '<button type="button" class="model-modal__thumb' + (idx === 0 ? ' is-active' : '') +
+            '" data-thumb-src="' + v.src + '" aria-label="Voir la vue : ' + v.label + '">' +
+            '<img src="' + v.src + '" alt="" loading="lazy" decoding="async">' +
+            '<span>' + v.label + '</span>' +
+          '</button>'
+        ).join('');
+        modalThumbs.hidden = false;
+        modalThumbs.querySelectorAll('.model-modal__thumb').forEach(btn => {
+          btn.addEventListener('click', () => {
+            modalThumbs.querySelectorAll('.model-modal__thumb').forEach(b => b.classList.remove('is-active'));
+            btn.classList.add('is-active');
+            const targetSrc = btn.getAttribute('data-thumb-src');
+            if (targetSrc) modelModalImg.src = targetSrc;
+          });
+        });
+      } else {
+        modalThumbs.innerHTML = '';
+        modalThumbs.hidden = true;
+      }
+    }
 
     modelModal.classList.add('is-open');
     modelModal.setAttribute('aria-hidden', 'false');
