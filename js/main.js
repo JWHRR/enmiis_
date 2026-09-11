@@ -689,6 +689,71 @@
       ],
       presetUrl: "customizer.html?preset=3"
     },
+    /* Une seule vue : la bande de vignettes reste fermee d'elle-meme. */
+    'cachecol-1': {
+      title: "Cache-col Noir",
+      category: "Cache-col",
+      img: "img/designs/cache-col/cachecol-1-1.webp",
+      desc: "Noir mat, pointes nettes, porté sans bordure.",
+      highlights: [
+        "Crêpe noir mat",
+        "Pointes nettes, sans bordure",
+        "Se porte ouvert sur la robe"
+      ],
+      presetUrl: "customizer.html?produit=echarpe&preset=cachecol-1"
+    },
+    /* Une seule vue : la bande de vignettes reste fermee d'elle-meme. */
+    'cachecol-2': {
+      title: "Cache-col Noir — Liseré Ivoire",
+      category: "Cache-col",
+      img: "img/designs/cache-col/cachecol-2-1.webp",
+      desc: "Noir souligné d’un liseré ivoire, avec son gland.",
+      highlights: [
+        "Crêpe noir mat",
+        "Liseré ivoire sur tout le contour",
+        "Gland assorti"
+      ],
+      presetUrl: "customizer.html?produit=echarpe&preset=cachecol-2"
+    },
+    /* Une seule vue : la bande de vignettes reste fermee d'elle-meme. */
+    'capeam-1': {
+      title: "Cape Bordeaux & Noir",
+      category: "Cape américaine",
+      img: "img/designs/cape-americaine/capeam-1-1.webp",
+      desc: "Corps bordeaux, chevron et pan noirs.",
+      highlights: [
+        "Corps bordeaux",
+        "Chevron et pan noirs",
+        "Épaules structurées"
+      ],
+      presetUrl: "customizer.html?produit=cape-americaine&preset=capeam-1"
+    },
+    /* Une seule vue : la bande de vignettes reste fermee d'elle-meme. */
+    'capeam-2': {
+      title: "Cape Camel & Bordeaux",
+      category: "Cape américaine",
+      img: "img/designs/cape-americaine/capeam-2-1.webp",
+      desc: "Corps camel, chevron bordeaux.",
+      highlights: [
+        "Corps camel",
+        "Chevron bordeaux",
+        "Tombé souple dans le dos"
+      ],
+      presetUrl: "customizer.html?produit=cape-americaine&preset=capeam-2"
+    },
+    /* Une seule vue : la bande de vignettes reste fermee d'elle-meme. */
+    'bande-1': {
+      title: "Bande Miss Noire",
+      category: "Bande miss",
+      img: "img/designs/bande-miss/bande-1-1.webp",
+      desc: "Bande d’honneur noire, portée en écharpe.",
+      highlights: [
+        "Bande d’honneur noire",
+        "Se porte en écharpe",
+        "Pointe nette sur la hanche"
+      ],
+      presetUrl: "customizer.html?produit=bond-miss&preset=bande-1"
+    },
     /* « views » ouvre la bande de vignettes : la premiere vue est celle
        que porte deja la fiche, les suivantes se decouvrent au clic. */
     'robe-1': {

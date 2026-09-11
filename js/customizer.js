@@ -804,12 +804,33 @@
              apply: { finish: 'mat', fabricColor: 'noir', ornement: 'strass' } },
     },
     echarpe: {
+      'cachecol-1': { name: 'Design Cache-col Noir (Photo de référence)',
+                      src: 'img/designs/cache-col/cachecol-1-1.webp',
+                      apply: { finish: 'mat', fabricColor: 'noir', contour: 'aucun' } },
+      'cachecol-2': { name: 'Design Cache-col Noir — Liseré Ivoire (Photo de référence)',
+                      src: 'img/designs/cache-col/cachecol-2-1.webp',
+                      apply: { finish: 'mat', fabricColor: 'noir', contour: 'liseré' } },
       '1': { name: 'Cache-col « Félicitations Dr » (Photo de référence)',
              src: 'img/hood.webp',
              apply: { finish: 'brillant', fabricColor: 'noir', contour: 'double' } },
       '2': { name: 'Cache-col Nom & Date (Photo de référence)',
              src: 'img/hood.webp',
              apply: { finish: 'brillant', fabricColor: 'bordeaux', contour: 'simple' } },
+    },
+    /* Ces deux pieces n'ont pas d'ancien modele numerote : seuls leurs
+       designs reels y figurent. */
+    'cape-americaine': {
+      'capeam-1': { name: 'Design Cape Américaine Bordeaux & Noir (Photo de référence)',
+                    src: 'img/designs/cape-americaine/capeam-1-1.webp',
+                    apply: { color1: 'bordeaux', color2: 'noir' } },
+      'capeam-2': { name: 'Design Cape Américaine Camel & Bordeaux (Photo de référence)',
+                    src: 'img/designs/cape-americaine/capeam-2-1.webp',
+                    apply: { color1: 'camel', color2: 'bordeaux' } },
+    },
+    'bond-miss': {
+      'bande-1': { name: 'Design Bande Miss Noire (Photo de référence)',
+                   src: 'img/designs/bande-miss/bande-1-1.webp',
+                   apply: { fabricColor: 'noir' } },
     },
   };
 
