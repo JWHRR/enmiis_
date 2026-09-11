@@ -119,10 +119,19 @@
   ];
 
   /* ---------- Mesures (repères 1 à 6 de la planche « ROBE ») ---------- */
-  /* ---------- Tissus ----------
-     Communs a la robe, au chapeau et au cache-col : l'atelier travaille
-     les memes matieres, seule la piece change. Les illustrations de
-     tissage existent deja dans cz-steps (WEAVES) et suivent ces ids. */
+  /* ---------- Aspect du tissu ----------
+     On ne demande plus a la cliente de nommer une matiere : devant une
+     photographie, la seule chose qu'elle distingue vraiment, c'est le
+     reflet. Elle tranche entre brillant et mat, l'atelier choisit
+     ensuite le rouleau qui rend cet effet. */
+  const FINISHES = [
+    { id: 'brillant', label: 'Brillant', note: 'Reflet marqué, la lumière glisse' },
+    { id: 'mat',      label: 'Mat',      note: 'Sans reflet, rendu profond' },
+  ];
+
+  /* Ancienne liste de matieres. Aucun ecran ne la propose plus : elle
+     ne sert qu'a relire les commandes passees avant ce changement, pour
+     qu'une fiche ancienne reste lisible a l'atelier. */
   const FABRICS = [
     { id: 'gabardine', label: 'Gabardine', note: 'Tenue nette, tombé structuré' },
     { id: 'crepe',     label: 'Crêpe',     note: 'Souple, légèrement grainé' },
@@ -310,9 +319,9 @@
      celles qui le concernent — voir PRODUCTS et stepsFor() plus bas. */
   const STEPS = [
     { id: 'upload',   title: 'Vos fichiers',  phase: 'Production', sub: 'Téléversez les designs à broder ou imprimer.' },
-    { id: 'robe',     title: 'La Robe',       phase: 'Modèle',     sub: 'Manches, tissu et couleur.' },
-    { id: 'hood',     title: 'Le Cache-col',  phase: 'Modèle',     sub: 'Tissu, couleur et contour.' },
-    { id: 'cap',      title: 'Le Chapeau',    phase: 'Modèle',     sub: 'Tissu, couleur et ornement.' },
+    { id: 'robe',     title: 'La Robe',       phase: 'Modèle',     sub: 'Manches, aspect et couleur.' },
+    { id: 'hood',     title: 'Le Cache-col',  phase: 'Modèle',     sub: 'Aspect, couleur et contour.' },
+    { id: 'cap',      title: 'Le Chapeau',    phase: 'Modèle',     sub: 'Aspect, couleur et ornement.' },
     { id: 'capeam',   title: 'Les Couleurs',  phase: 'Modèle',     sub: 'La cape américaine se porte en deux teintes.' },
     { id: 'bande',    title: 'La Couleur',    phase: 'Modèle',     sub: 'Couleur du tissu de votre bande.' },
     { id: 'measure',  title: 'Vos Mesures',   phase: 'Atelier',    sub: 'Chaque mesure est accompagnée de son guide.' },
@@ -453,7 +462,7 @@
     FILE_TYPES, MAX_FILE_MB,
     COLLARS, TRIM_STYLES, SLEEVES,
     HOOD_STYLES, CAP_STYLES, CAP_MATERIALS, TASSEL_STYLES,
-    FABRICS, FABRIC_COLORS, ORNEMENTS, STRASS_MODELS, FLEUR_MODELS,
+    FINISHES, FABRICS, FABRIC_COLORS, ORNEMENTS, STRASS_MODELS, FLEUR_MODELS,
     MEASUREMENTS, STEPS, REGIONS,
     PRODUCTS, product, stepsFor, measuresFor,
     PROMO_CODES, isPromo, normalizePromo,

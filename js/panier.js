@@ -56,13 +56,15 @@
 
     if (item.robe) {
       ajouter('Manches', label(cat.SLEEVES, item.robe.sleeve));
-      ajouter('Tissu', item.robe.fabric && label(cat.FABRICS, item.robe.fabric));
+      ajouter('Aspect du tissu', item.robe.finish && label(cat.FINISHES, item.robe.finish));
+      ajouter('Tissu (ancienne fiche)', item.robe.fabric && label(cat.FABRICS, item.robe.fabric));
       ajouter('Couleur', couleurDe(item.robe.fabricColor));
       ajouter('Col', item.robe.collar && label(cat.COLLARS, item.robe.collar));
       ajouter('Bordure', item.robe.trim && label(cat.TRIM_STYLES, item.robe.trim));
     }
     if (item.cap) {
-      ajouter('Tissu', item.cap.fabric && label(cat.FABRICS, item.cap.fabric));
+      ajouter('Aspect du tissu', item.cap.finish && label(cat.FINISHES, item.cap.finish));
+      ajouter('Tissu (ancienne fiche)', item.cap.fabric && label(cat.FABRICS, item.cap.fabric));
       ajouter('Couleur', couleurDe(item.cap.fabricColor));
       ajouter('Ornement', item.cap.ornement && label(cat.ORNEMENTS, item.cap.ornement));
       if (item.cap.ornement === 'strass' && item.cap.strass) {
@@ -78,7 +80,8 @@
       ajouter('Gland', item.tassel.style && label(cat.TASSEL_STYLES, item.tassel.style));
     }
     if (item.hood) {
-      ajouter('Tissu', item.hood.fabric && label(cat.FABRICS, item.hood.fabric));
+      ajouter('Aspect du tissu', item.hood.finish && label(cat.FINISHES, item.hood.finish));
+      ajouter('Tissu (ancienne fiche)', item.hood.fabric && label(cat.FABRICS, item.hood.fabric));
       ajouter('Couleur', couleurDe(item.hood.fabricColor));
       ajouter('Contour', item.hood.contour && label(cat.TRIM_STYLES, item.hood.contour));
       ajouter('Modèle', item.hood.style && label(cat.HOOD_STYLES, item.hood.style));

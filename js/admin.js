@@ -564,13 +564,15 @@
 
     if (item.robe) {
       rows += siPresent(item.robe.sleeve, 'Manches', (v) => labelOf(cat.SLEEVES, v)) +
-        siPresent(item.robe.fabric, 'Tissu', (v) => labelOf(cat.FABRICS, v)) +
+        siPresent(item.robe.finish, 'Aspect du tissu', (v) => labelOf(cat.FINISHES, v)) +
+        siPresent(item.robe.fabric, 'Tissu (ancienne fiche)', (v) => labelOf(cat.FABRICS, v)) +
         siPresent(item.robe.fabricColor, 'Couleur du tissu', couleur) +
         siPresent(item.robe.collar, 'Col (ancienne fiche)', (v) => labelOf(cat.COLLARS, v)) +
         siPresent(item.robe.trim, 'Bordure (ancienne fiche)', (v) => labelOf(cat.TRIM_STYLES, v));
     }
     if (item.cap) {
-      rows += siPresent(item.cap.fabric, 'Tissu', (v) => labelOf(cat.FABRICS, v)) +
+      rows += siPresent(item.cap.finish, 'Aspect du tissu', (v) => labelOf(cat.FINISHES, v)) +
+        siPresent(item.cap.fabric, 'Tissu (ancienne fiche)', (v) => labelOf(cat.FABRICS, v)) +
         siPresent(item.cap.fabricColor, 'Couleur du tissu', couleur) +
         siPresent(item.cap.ornement, 'Ornement', (v) => labelOf(cat.ORNEMENTS, v)) +
         (item.cap.ornement === 'strass'
@@ -587,7 +589,8 @@
         siPresent(item.tassel.year, 'Année de promotion');
     }
     if (item.hood) {
-      rows += siPresent(item.hood.fabric, 'Tissu', (v) => labelOf(cat.FABRICS, v)) +
+      rows += siPresent(item.hood.finish, 'Aspect du tissu', (v) => labelOf(cat.FINISHES, v)) +
+        siPresent(item.hood.fabric, 'Tissu (ancienne fiche)', (v) => labelOf(cat.FABRICS, v)) +
         siPresent(item.hood.fabricColor, 'Couleur du tissu', couleur) +
         siPresent(item.hood.contour, 'Contour', (v) => labelOf(cat.TRIM_STYLES, v)) +
         siPresent(item.hood.style, 'Modèle (ancienne fiche)', (v) => labelOf(cat.HOOD_STYLES, v)) +
@@ -1038,13 +1041,15 @@
 
       if (item.robe) {
         ligne('Manches', item.robe.sleeve, (v) => labelOf(cat.SLEEVES, v));
-        ligne('Tissu', item.robe.fabric, (v) => labelOf(cat.FABRICS, v));
+        ligne('Aspect du tissu', item.robe.finish, (v) => labelOf(cat.FINISHES, v));
+        ligne('Tissu (ancienne fiche)', item.robe.fabric, (v) => labelOf(cat.FABRICS, v));
         ligne('Couleur du tissu', item.robe.fabricColor, couleurTxt);
         ligne('Col (ancienne fiche)', item.robe.collar, (v) => labelOf(cat.COLLARS, v));
         ligne('Bordure (ancienne fiche)', item.robe.trim, (v) => labelOf(cat.TRIM_STYLES, v));
       }
       if (item.cap) {
-        ligne('Tissu', item.cap.fabric, (v) => labelOf(cat.FABRICS, v));
+        ligne('Aspect du tissu', item.cap.finish, (v) => labelOf(cat.FINISHES, v));
+        ligne('Tissu (ancienne fiche)', item.cap.fabric, (v) => labelOf(cat.FABRICS, v));
         ligne('Couleur du tissu', item.cap.fabricColor, couleurTxt);
         ligne('Ornement', item.cap.ornement, (v) => labelOf(cat.ORNEMENTS, v));
         if (item.cap.ornement === 'strass') {
@@ -1063,7 +1068,8 @@
         ligne('Année de promotion', item.tassel.year);
       }
       if (item.hood) {
-        ligne('Tissu', item.hood.fabric, (v) => labelOf(cat.FABRICS, v));
+        ligne('Aspect du tissu', item.hood.finish, (v) => labelOf(cat.FINISHES, v));
+        ligne('Tissu (ancienne fiche)', item.hood.fabric, (v) => labelOf(cat.FABRICS, v));
         ligne('Couleur du tissu', item.hood.fabricColor, couleurTxt);
         ligne('Contour', item.hood.contour, (v) => labelOf(cat.TRIM_STYLES, v));
         ligne('Modèle (ancienne fiche)', item.hood.style, (v) => labelOf(cat.HOOD_STYLES, v));

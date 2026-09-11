@@ -43,9 +43,9 @@
     /* Une clé par piece : ce que l'atelier doit savoir pour la tailler.
        Les options retirees d'un ecran disparaissent d'elles-memes a la
        restauration, mergeInto ne recopiant que les cles presentes ici. */
-    robe:   { sleeve: 'modele-1', fabric: 'gabardine', fabricColor: 'noir' },
-    hood:   { fabric: 'satin', fabricColor: 'noir', contour: 'double' },
-    cap:    { fabric: 'gabardine', fabricColor: 'noir', ornement: 'aucun', strass: '', fleur: '' },
+    robe:   { sleeve: 'modele-1', finish: 'mat', fabricColor: 'noir' },
+    hood:   { finish: 'brillant', fabricColor: 'noir', contour: 'double' },
+    cap:    { finish: 'mat', fabricColor: 'noir', ornement: 'aucun', strass: '', fleur: '' },
     capeam: { color1: 'noir', color2: 'creme' },
     bande:  { fabricColor: 'noir' },
     measures: {
@@ -128,12 +128,12 @@
       };
       const catalogue = CZ.catalog || {};
       rattraper(merged.robe, 'sleeve', catalogue.SLEEVES, DEFAULTS.robe.sleeve);
-      rattraper(merged.robe, 'fabric', catalogue.FABRICS, DEFAULTS.robe.fabric);
+      rattraper(merged.robe, 'finish', catalogue.FINISHES, DEFAULTS.robe.finish);
       rattraper(merged.robe, 'fabricColor', catalogue.FABRIC_COLORS, DEFAULTS.robe.fabricColor);
-      rattraper(merged.hood, 'fabric', catalogue.FABRICS, DEFAULTS.hood.fabric);
+      rattraper(merged.hood, 'finish', catalogue.FINISHES, DEFAULTS.hood.finish);
       rattraper(merged.hood, 'fabricColor', catalogue.FABRIC_COLORS, DEFAULTS.hood.fabricColor);
       rattraper(merged.hood, 'contour', catalogue.TRIM_STYLES, DEFAULTS.hood.contour);
-      rattraper(merged.cap, 'fabric', catalogue.FABRICS, DEFAULTS.cap.fabric);
+      rattraper(merged.cap, 'finish', catalogue.FINISHES, DEFAULTS.cap.finish);
       rattraper(merged.cap, 'fabricColor', catalogue.FABRIC_COLORS, DEFAULTS.cap.fabricColor);
       rattraper(merged.cap, 'ornement', catalogue.ORNEMENTS, DEFAULTS.cap.ornement);
       rattraper(merged.capeam, 'color1', catalogue.FABRIC_COLORS, DEFAULTS.capeam.color1);

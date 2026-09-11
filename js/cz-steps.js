@@ -88,33 +88,24 @@
     );
   }
 
-  /* --- Échantillons de matière (tissus robe & mortier) --- */
-  const WEAVES = {
-    gabardine:
-      '<path class="a-dim" d="M32 104 L 88 42 M32 88 L 80 36 M40 110 L 88 58 M52 112 L 88 74"/>' +
-      '<path class="a-gold" stroke-width="2" d="M32 72 L 66 36"/>',
-    crepe:
-      '<path class="a-dim" d="M32 52 q 8 -7 16 0 t 16 0 t 16 0 M32 70 q 8 -7 16 0 t 16 0 t 16 0 ' +
-      'M32 88 q 8 -7 16 0 t 16 0 t 16 0"/>' +
-      '<path class="a-gold" stroke-width="2" d="M32 106 q 8 -7 16 0 t 16 0 t 16 0"/>',
-    satin:
-      '<path class="a-gold" stroke-width="7" opacity="0.35" d="M30 96 L 90 44"/>' +
-      '<path class="a-gold" stroke-width="3" d="M30 82 L 90 30"/>' +
-      '<path class="a-dim" d="M34 112 L 90 62"/>',
-    velours:
-      Array.from({ length: 5 }, (_, r) => Array.from({ length: 5 }, (_, c) =>
-        '<circle class="a-dimf" cx="' + (36 + c * 12 + (r % 2) * 6) + '" cy="' + (44 + r * 14) + '" r="2"/>',
-      ).join('')).join('') +
-      '<circle class="a-goldc" cx="60" cy="72" r="2.6"/>',
-    taffetas:
-      '<path class="a-dim" d="M32 100 L 88 44 M32 76 L 76 32 M48 112 L 88 72"/>' +
-      '<path class="a-dim" d="M32 44 L 88 100 M32 68 L 72 108 M44 32 L 88 76"/>' +
-      '<path class="a-gold" stroke-width="2" d="M32 56 L 82 106"/>',
+  /* --- Échantillons d'aspect ---
+     Deux coupons du meme tissu, sous la meme lumiere : l'un renvoie une
+     bande de lumiere franche, l'autre l'absorbe dans un grain regulier.
+     C'est exactement la difference que la cliente doit trancher. */
+  const FINISH_ART = {
+    brillant:
+      '<path class="a-gold" stroke-width="10" opacity="0.28" d="M28 104 L 92 40"/>' +
+      '<path class="a-gold" stroke-width="4" d="M28 88 L 92 24"/>' +
+      '<path class="a-dim" stroke-width="2" d="M34 118 L 92 60"/>',
+    mat:
+      Array.from({ length: 6 }, (_, r) => Array.from({ length: 6 }, (_, c) =>
+        '<circle class="a-dimf" cx="' + (32 + c * 11 + (r % 2) * 5) + '" cy="' + (34 + r * 14) + '" r="1.6"/>',
+      ).join('')).join(''),
   };
 
-  function fabricArt(id) {
+  function finishArt(id) {
     return art('<rect class="a-soft" x="24" y="24" width="72" height="94" rx="12"/>' +
-      '<g clip-path="inset(0 round 12px)">' + (WEAVES[id] || WEAVES.gabardine) + '</g>');
+      '<g clip-path="inset(0 round 12px)">' + (FINISH_ART[id] || FINISH_ART.mat) + '</g>');
   }
 
   /* --- Capuche / étole : les cinq modèles de la planche --- */
@@ -250,10 +241,10 @@
       const item = (cat.SLEEVES || []).find((o) => o.id === id);
       return photoArt(item) || gownArt({ sleeve: id, focus: 'sleeve' });
     },
-    /* Le meme echantillon de tissage sert aux trois pieces. */
-    'robe.fabric': (id) => fabricArt(id),
-    'hood.fabric': (id) => fabricArt(id),
-    'cap.fabric':  (id) => fabricArt(id),
+    /* Le meme echantillon d'aspect sert aux trois pieces. */
+    'robe.finish': (id) => finishArt(id),
+    'hood.finish': (id) => finishArt(id),
+    'cap.finish':  (id) => finishArt(id),
     'hood.contour': (id) => gownArt({ trim: id, focus: 'trim' }),
     'cap.strass': (id) => {
       const item = (cat.STRASS_MODELS || []).find((o) => o.id === id);
@@ -457,7 +448,8 @@
       return '<div class="cz-group">' +
         field('Coupe des manches',
           optionCards('robe.sleeve', cat.SLEEVES, { className: 'cz-options--sleeves' })) +
-        field('Tissu', optionCards('robe.fabric', cat.FABRICS)) +
+        field('Aspect du tissu', optionCards('robe.finish', cat.FINISHES),
+          'L’atelier choisit ensuite la matière qui rend cet effet.') +
         field('Couleur du tissu', colorCards('robe.fabricColor'),
           'Le code accompagne votre commande jusqu’à l’atelier.') +
       '</div>';
@@ -470,7 +462,8 @@
   const hood = {
     html() {
       return '<div class="cz-group">' +
-        field('Tissu', optionCards('hood.fabric', cat.FABRICS)) +
+        field('Aspect du tissu', optionCards('hood.finish', cat.FINISHES),
+          'L’atelier choisit ensuite la matière qui rend cet effet.') +
         field('Couleur du tissu', colorCards('hood.fabricColor'),
           'Le code accompagne votre commande jusqu’à l’atelier.') +
         field('Contour', optionCards('hood.contour', cat.TRIM_STYLES)) +
@@ -484,7 +477,8 @@
   const cap = {
     html() {
       return '<div class="cz-group">' +
-        field('Tissu', optionCards('cap.fabric', cat.FABRICS)) +
+        field('Aspect du tissu', optionCards('cap.finish', cat.FINISHES),
+          'L’atelier choisit ensuite la matière qui rend cet effet.') +
         field('Couleur du tissu', colorCards('cap.fabricColor'),
           'Le code accompagne votre commande jusqu’à l’atelier.') +
         field('Ornement', optionCards('cap.ornement', cat.ORNEMENTS, { rerender: true })) +
@@ -585,7 +579,7 @@
         blocks.push({
           step: 'robe', title: 'La Robe', rows: [
             { label: 'Coupe des manches', value: labelOf(cat.SLEEVES, s.robe.sleeve) },
-            { label: 'Tissu', value: labelOf(cat.FABRICS, s.robe.fabric) },
+            { label: 'Aspect du tissu', value: labelOf(cat.FINISHES, s.robe.finish) },
             { label: 'Couleur du tissu', value: couleur(s.robe.fabricColor) },
           ],
         });
@@ -593,7 +587,7 @@
 
       if (product.id === 'casquette') {
         const rows = [
-          { label: 'Tissu', value: labelOf(cat.FABRICS, s.cap.fabric) },
+          { label: 'Aspect du tissu', value: labelOf(cat.FINISHES, s.cap.finish) },
           { label: 'Couleur du tissu', value: couleur(s.cap.fabricColor) },
           { label: 'Ornement', value: labelOf(cat.ORNEMENTS, s.cap.ornement) },
         ];
@@ -619,7 +613,7 @@
       if (product.id === 'echarpe') {
         blocks.push({
           step: 'hood', title: 'Le Cache-col', rows: [
-            { label: 'Tissu', value: labelOf(cat.FABRICS, s.hood.fabric) },
+            { label: 'Aspect du tissu', value: labelOf(cat.FINISHES, s.hood.finish) },
             { label: 'Couleur du tissu', value: couleur(s.hood.fabricColor) },
             { label: 'Contour', value: labelOf(cat.TRIM_STYLES, s.hood.contour) },
           ],

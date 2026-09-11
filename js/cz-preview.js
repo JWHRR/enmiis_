@@ -56,20 +56,20 @@
     if (currentStep === 'robe') {
       return [
         { label: 'Manches', value: label(cat.SLEEVES, state.robe.sleeve) },
-        { label: 'Tissu', value: label(cat.FABRICS, state.robe.fabric) },
+        { label: 'Aspect', value: label(cat.FINISHES, state.robe.finish) },
         { label: 'Couleur', value: couleur(state.robe.fabricColor) },
       ];
     }
     if (currentStep === 'hood') {
       return [
-        { label: 'Tissu', value: label(cat.FABRICS, state.hood.fabric) },
+        { label: 'Aspect', value: label(cat.FINISHES, state.hood.finish) },
         { label: 'Couleur', value: couleur(state.hood.fabricColor) },
         { label: 'Contour', value: label(cat.TRIM_STYLES, state.hood.contour) },
       ];
     }
     if (currentStep === 'cap') {
       const chips = [
-        { label: 'Tissu', value: label(cat.FABRICS, state.cap.fabric) },
+        { label: 'Aspect', value: label(cat.FINISHES, state.cap.finish) },
         { label: 'Couleur', value: couleur(state.cap.fabricColor) },
         { label: 'Ornement', value: label(cat.ORNEMENTS, state.cap.ornement) },
       ];
@@ -97,16 +97,16 @@
     const chips = [];
     if (etapes.indexOf('robe') > -1) {
       chips.push({ label: 'Manches', value: label(cat.SLEEVES, state.robe.sleeve) });
-      chips.push({ label: 'Tissu', value: label(cat.FABRICS, state.robe.fabric) });
+      chips.push({ label: 'Aspect', value: label(cat.FINISHES, state.robe.finish) });
       chips.push({ label: 'Couleur', value: couleur(state.robe.fabricColor) });
     }
     if (etapes.indexOf('hood') > -1) {
-      chips.push({ label: 'Tissu', value: label(cat.FABRICS, state.hood.fabric) });
+      chips.push({ label: 'Aspect', value: label(cat.FINISHES, state.hood.finish) });
       chips.push({ label: 'Couleur', value: couleur(state.hood.fabricColor) });
       chips.push({ label: 'Contour', value: label(cat.TRIM_STYLES, state.hood.contour) });
     }
     if (etapes.indexOf('cap') > -1) {
-      chips.push({ label: 'Tissu', value: label(cat.FABRICS, state.cap.fabric) });
+      chips.push({ label: 'Aspect', value: label(cat.FINISHES, state.cap.finish) });
       chips.push({ label: 'Couleur', value: couleur(state.cap.fabricColor) });
       chips.push({ label: 'Ornement', value: label(cat.ORNEMENTS, state.cap.ornement) });
     }
