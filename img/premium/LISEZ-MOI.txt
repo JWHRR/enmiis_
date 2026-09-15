@@ -1,0 +1,9 @@
+Deposez ici votre QR code de paiement, sous le nom exact :
+
+    qr-paiement.png
+
+Il s'affiche alors dans le panneau « Voyez-vous porter cette tenue »,
+au bas du panier. Tant que le fichier manque, le panneau ecrit le
+chemin attendu au lieu d'afficher une image cassee.
+
+Format conseille : PNG carre, 600 x 600 px minimum, fond blanc.

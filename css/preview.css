@@ -1,0 +1,268 @@
+/* ============================================================
+   ENMIIS — Aperçu IA, le panneau du panier.
+
+   Il reprend la boîte du configurateur (.cz-group) pour ne pas
+   ressembler à une pièce rapportée, et se distingue par un seul
+   signe : le filet doré du haut.
+   ============================================================ */
+
+.ia-panneau {
+  position: relative;
+  overflow: hidden;
+}
+.ia-panneau::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold), var(--gold-deep), var(--gold));
+}
+
+.ia-kicker {
+  margin: 0 0 0.35rem;
+  font-family: var(--sans);
+  font-size: var(--fs-label);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+}
+.ia-titre {
+  margin: 0 0 0.9rem;
+  font-family: var(--serif);
+  font-size: var(--fs-h3);
+  font-weight: 400;
+  color: var(--ink);
+}
+.ia-lead {
+  margin: 0 0 1rem;
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+.ia-note {
+  margin: 0.8rem 0 0;
+  font-size: var(--fs-small);
+  color: var(--ink-faint);
+}
+.ia-btn { width: 100%; margin-top: 1rem; }
+
+/* ---------- L'offre ---------- */
+
+.ia-offer {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--off-white);
+}
+.ia-offer__price {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 1.6rem;
+  color: var(--ink);
+}
+.ia-offer__price strong { font-weight: 600; }
+.ia-offer__credits {
+  margin: 0;
+  font-size: var(--fs-small);
+  color: var(--ink-soft);
+}
+
+/* ---------- Le QR ---------- */
+
+.ia-qr {
+  text-align: center;
+  padding: 1.1rem;
+  border: 1px dashed var(--line);
+  border-radius: 4px;
+  margin-bottom: 1.1rem;
+}
+.ia-qr img {
+  width: 190px;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto 0.7rem;
+}
+.ia-qr__missing { display: none; }
+/* Tant que le fichier n'est pas déposé, on le dit franchement plutôt
+   que de laisser une image cassée dans une page de paiement. */
+.ia-qr.is-missing img { display: none; }
+.ia-qr.is-missing .ia-qr__missing {
+  display: block;
+  margin: 0 0 0.5rem;
+  font-size: var(--fs-small);
+  color: #A33;
+}
+.ia-qr.is-missing .ia-qr__missing code {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 0.8em;
+}
+.ia-qr__help {
+  margin: 0;
+  font-size: var(--fs-small);
+  color: var(--ink-soft);
+}
+
+/* ---------- L'attente ---------- */
+
+.ia-wait { text-align: center; padding: 0.5rem 0; }
+.ia-wait__dot {
+  display: block;
+  width: 10px; height: 10px;
+  margin: 0 auto 0.9rem;
+  border-radius: 50%;
+  background: var(--gold);
+  animation: ia-pulse 1.8s ease-in-out infinite;
+}
+@keyframes ia-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.3; transform: scale(0.7); }
+}
+
+/* ---------- Le dépôt du portrait ---------- */
+
+.ia-drop {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  min-height: 160px;
+  padding: 1.2rem;
+  border: 1px dashed var(--line);
+  border-radius: 4px;
+  background: var(--off-white);
+  cursor: pointer;
+  transition: border-color 0.25s var(--ease-lux), background 0.25s var(--ease-lux);
+}
+.ia-drop:hover,
+.ia-drop:focus-visible {
+  border-color: var(--gold);
+  background: var(--white);
+  outline: none;
+}
+.ia-drop__icone { font-size: 1.7rem; color: var(--gold-deep); line-height: 1; }
+.ia-drop__texte { font-size: var(--fs-body); color: var(--ink); }
+.ia-drop__note { font-size: var(--fs-small); color: var(--ink-faint); }
+.ia-drop__vignette {
+  width: 118px;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: 3px;
+}
+.ia-drop__nom {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-small);
+  color: var(--ink-soft);
+}
+.ia-drop__change { font-size: var(--fs-small); color: var(--gold-deep); }
+
+.ia-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin-top: 0.9rem;
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.ia-consent input { margin-top: 0.15rem; flex: none; }
+
+/* ---------- La génération ---------- */
+
+.ia-busy { text-align: center; padding: 1.6rem 0; }
+.ia-busy__anneau {
+  display: block;
+  width: 34px; height: 34px;
+  margin: 0 auto 1rem;
+  border: 2px solid var(--line);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: ia-tourne 0.9s linear infinite;
+}
+@keyframes ia-tourne { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ia-busy__anneau { animation-duration: 3s; }
+  .ia-wait__dot { animation: none; opacity: 1; }
+}
+
+/* ---------- Les aperçus déjà faits ---------- */
+
+.ia-galerie { margin-top: 1.6rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
+.ia-galerie__titre {
+  margin: 0 0 0.8rem;
+  font-family: var(--sans);
+  font-size: var(--fs-label);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+.ia-galerie__grille {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 0.6rem;
+}
+.ia-vignette { position: relative; margin: 0; }
+.ia-vignette img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: 3px;
+  border: 1px solid var(--line);
+  display: block;
+}
+.ia-vignette figcaption {
+  margin-top: 0.25rem;
+  font-size: 0.68rem;
+  color: var(--ink-faint);
+  text-align: center;
+}
+.ia-vignette--echec {
+  display: flex;
+  align-items: center;
+  padding: 0.6rem;
+  aspect-ratio: 3 / 4;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--off-white);
+}
+.ia-vignette--echec p {
+  margin: 0;
+  font-size: 0.68rem;
+  line-height: 1.4;
+  color: var(--ink-faint);
+}
+.ia-vignette__x {
+  position: absolute;
+  top: 4px; right: 4px;
+  width: 22px; height: 22px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(17, 17, 17, 0.72);
+  color: var(--white);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.ia-vignette:hover .ia-vignette__x,
+.ia-vignette__x:focus-visible { opacity: 1; }
+/* Au doigt, il n'y a pas de survol : la croix reste visible. */
+@media (hover: none) {
+  .ia-vignette__x { opacity: 1; }
+}

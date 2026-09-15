@@ -1007,3 +1007,75 @@ select.ad-input {
     align-items: center;
   }
 }
+
+/* ============================================================
+   Aperçu IA — le tableau de bord premium
+   ============================================================ */
+
+.ad-prem { list-style: none; margin: 0 0 1.2rem; padding: 0; }
+
+.ad-prem__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+/* Une demande en attente doit sauter aux yeux : c'est la seule ligne
+   qui appelle un geste. */
+.ad-prem__row.is-open { border-left: 3px solid var(--gold); background: #FFFDF8; }
+
+.ad-prem__who { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+.ad-prem__who strong { font-size: 0.9rem; color: var(--ink); }
+.ad-prem__who a,
+.ad-prem__who span { font-size: 0.78rem; color: var(--ink-soft); text-decoration: none; }
+.ad-prem__who a:hover { color: var(--gold-deep); }
+
+.ad-prem__meta { display: flex; flex-wrap: wrap; gap: 0.2rem 0.9rem; min-width: 0; }
+.ad-prem__meta span { font-size: 0.78rem; color: var(--ink-soft); }
+.ad-prem__ref { color: var(--ink-faint); overflow: hidden; text-overflow: ellipsis; }
+
+.ad-prem__do { display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: flex-end; }
+.ad-prem__btn { padding: 0.32rem 0.75rem; font-size: 0.72rem; }
+.ad-prem__btn--out { color: #A33; border-color: #E3C9C9; }
+
+.ad-prem__etat { font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; }
+.ad-prem__etat--valide { color: #2E7D4F; }
+.ad-prem__etat--refuse { color: #A33; }
+
+.ad-prem__grille {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.7rem;
+}
+.ad-prem__vig { margin: 0; }
+.ad-prem__vig img,
+.ad-prem__vig-vide {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  display: block;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+}
+.ad-prem__vig-vide {
+  display: grid;
+  place-items: center;
+  padding: 0.5rem;
+  background: var(--off-white);
+  font-size: 0.68rem;
+  line-height: 1.4;
+  text-align: center;
+  color: var(--ink-faint);
+}
+.ad-prem__vig figcaption { display: flex; flex-direction: column; gap: 0.1rem; margin-top: 0.3rem; }
+.ad-prem__vig figcaption strong { font-size: 0.76rem; color: var(--ink); }
+.ad-prem__vig figcaption span { font-size: 0.68rem; color: var(--ink-faint); }
+
+@media (max-width: 720px) {
+  .ad-prem__row { grid-template-columns: 1fr; }
+  .ad-prem__do { justify-content: flex-start; }
+}

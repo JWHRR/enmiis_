@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/customizer.css">
   <link rel="stylesheet" href="css/panier.css">
+  <link rel="stylesheet" href="css/preview.css">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23111111'/%3E%3Ctext x='16' y='22' font-family='Georgia' font-size='18' fill='%23C8A86B' text-anchor='middle'%3EE%3C/text%3E%3C/svg%3E">
 </head>
 <body class="cz-body pn-body">
@@ -79,7 +80,10 @@
           <p class="pn-more__title">Compléter votre tenue</p>
           <div class="pn-more__row" id="pnMoreRow"></div>
         </div>
-        </div>
+
+        <!-- Aperçu IA. Rempli par js/preview.js, et seulement pour une
+             cliente connectée : une invitée ne voit rien. -->
+        <section class="pn-preview" id="pnPreview" hidden aria-label="Aperçu IA"></section>
 
       </section>
 
@@ -179,5 +183,6 @@
   <script src="js/cz-store.js" defer></script>
   <script src="js/account.js" defer></script>
   <script src="js/panier.js" defer></script>
+  <script src="js/preview.js" defer></script>
 </body>
 </html>

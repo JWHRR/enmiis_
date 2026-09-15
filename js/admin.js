@@ -16,6 +16,7 @@
   const cat = (global.CZ && global.CZ.catalog) || null;
   const PASSWORD = 'enmiis987';
   const SESSION_KEY = 'enmiis-admin-session';
+  const KEY_KEY = 'enmiis-admin-key';
   const ORDERS_KEY = 'enmiis-orders-v1';
 
   const API_BASE = '/api/orders';
@@ -59,8 +60,22 @@
     }
   }
 
-  function rememberSession() {
+  /* Le mot de passe tapé sert aussi à signer les appels premium :
+     api/preview.js le revérifie. Changer le mot de passe de l'atelier,
+     c'est donc changer PASSWORD ici ET ADMIN_PASSWORD dans Vercel. */
+  let adminTyped = '';
+  const adminKey = () => {
+    if (adminTyped) return adminTyped;
+    try { return sessionStorage.getItem(KEY_KEY) || PASSWORD; }
+    catch (err) { return PASSWORD; }
+  };
+
+  function rememberSession(typed) {
     memorySession = true;
+    if (typed) {
+      adminTyped = typed;
+      try { sessionStorage.setItem(KEY_KEY, typed); } catch (err) { /* cet onglet seulement */ }
+    }
     try {
       sessionStorage.setItem(SESSION_KEY, '1');
     } catch (err) {
@@ -70,8 +85,10 @@
 
   function forgetSession() {
     memorySession = false;
+    adminTyped = '';
     try {
       sessionStorage.removeItem(SESSION_KEY);
+      sessionStorage.removeItem(KEY_KEY);
     } catch (err) {
       /* rien à effacer */
     }
@@ -811,6 +828,204 @@
             '</span>' +
           '</li>').join('') + '</ul>'
       : '<p class="ad-note">Aucun client pour le moment.</p>';
+  }
+
+  /* ==========================================================
+     Aperçu IA — le premium
+
+     Trois listes dans une seule fenêtre : ce qu'il faut valider, qui a
+     l'accès, et ce qui a été généré. Tout passe par api/preview.js,
+     qui revérifie le mot de passe côté serveur — le portail de cette
+     page, lui, ne protège rien (voir l'en-tête du fichier).
+     ========================================================== */
+
+  let premiumData = null;
+
+  async function premiumCall(action, extra) {
+    const res = await fetch('/api/preview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(Object.assign({ action, adminPassword: adminKey() }, extra || {})),
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      const err = new Error((data && data.message) || (data && data.error) || 'Erreur');
+      err.code = data && data.error;
+      throw err;
+    }
+    return data;
+  }
+
+  const premiumDate = (v) => (v ? new Date(v).toLocaleDateString('fr-FR', {
+    day: '2-digit', month: '2-digit', year: '2-digit',
+  }) : '\u2014');
+
+  function premiumDemandes(list) {
+    const attente = list.filter((p) => p.status === 'en_attente');
+    const reste = list.filter((p) => p.status !== 'en_attente').slice(0, 20);
+
+    const ligne = (p) => '<li class="ad-prem__row' + (p.status === 'en_attente' ? ' is-open' : '') + '">' +
+      '<div class="ad-prem__who">' +
+        '<strong>' + esc(p.client.name) + '</strong>' +
+        (p.client.phone
+          ? '<a href="https://wa.me/216' + esc(p.client.phone) + '" target="_blank" rel="noopener">' +
+            esc(p.client.phone) + '</a>'
+          : '') +
+      '</div>' +
+      '<div class="ad-prem__meta">' +
+        '<span>' + premiumDate(p.created_at) + '</span>' +
+        '<span>' + esc(p.amount || '\u2014') + ' ' + esc(p.currency) + '</span>' +
+        '<span class="ad-prem__ref">' + esc(p.reference || 'sans référence') + '</span>' +
+      '</div>' +
+      (p.status === 'en_attente'
+        ? '<div class="ad-prem__do">' +
+            '<button type="button" class="btn btn--solid ad-prem__btn" data-prem="valider" ' +
+              'data-id="' + esc(p.id) + '">Valider</button>' +
+            '<button type="button" class="btn btn--line ad-prem__btn" data-prem="refuser" ' +
+              'data-id="' + esc(p.id) + '" data-client="' + esc(p.client_id) + '">Refuser</button>' +
+          '</div>'
+        : '<span class="ad-prem__etat ad-prem__etat--' + esc(p.status) + '">' +
+            (p.status === 'valide' ? 'Validé' : 'Refusé') + '</span>') +
+    '</li>';
+
+    return '<section class="ad-block">' +
+      '<h3 class="ad-block__title">À valider' +
+        (attente.length ? ' <span class="ad-block__count">' + attente.length + '</span>' : '') + '</h3>' +
+      (attente.length
+        ? '<ul class="ad-prem">' + attente.map(ligne).join('') + '</ul>'
+        : '<p class="ad-note">Aucune demande en attente.</p>') +
+      (reste.length
+        ? '<h3 class="ad-block__title">Demandes traitées</h3>' +
+          '<ul class="ad-prem">' + reste.map(ligne).join('') + '</ul>'
+        : '') +
+    '</section>';
+  }
+
+  function premiumAcces(list) {
+    const vivants = list.filter((a) => a.active);
+    return '<section class="ad-block">' +
+      '<h3 class="ad-block__title">Accès ouverts' +
+        (vivants.length ? ' <span class="ad-block__count">' + vivants.length + '</span>' : '') + '</h3>' +
+      (vivants.length
+        ? '<ul class="ad-prem">' + vivants.map((a) => {
+            const perime = a.expiration_date && new Date(a.expiration_date) < new Date();
+            return '<li class="ad-prem__row">' +
+              '<div class="ad-prem__who"><strong>' + esc(a.client.name) + '</strong>' +
+                (a.client.phone ? '<span>' + esc(a.client.phone) + '</span>' : '') + '</div>' +
+              '<div class="ad-prem__meta">' +
+                '<span>' + esc(a.credits) + ' aperçu' + (a.credits > 1 ? 's' : '') + '</span>' +
+                '<span>depuis le ' + premiumDate(a.purchase_date) + '</span>' +
+                '<span' + (perime ? ' class="ad-prem__ref"' : '') + '>' +
+                  (a.expiration_date ? (perime ? 'expiré le ' : 'jusqu\u2019au ') + premiumDate(a.expiration_date)
+                                     : 'sans expiration') + '</span>' +
+              '</div>' +
+              '<div class="ad-prem__do">' +
+                '<button type="button" class="btn btn--line ad-prem__btn" data-prem="ajouter" ' +
+                  'data-client="' + esc(a.client_id) + '">+ crédits</button>' +
+                '<button type="button" class="btn btn--line ad-prem__btn ad-prem__btn--out" data-prem="retirer" ' +
+                  'data-client="' + esc(a.client_id) + '">Retirer</button>' +
+              '</div>' +
+            '</li>';
+          }).join('') + '</ul>'
+        : '<p class="ad-note">Aucun accès ouvert.</p>') +
+    '</section>';
+  }
+
+  function premiumApercus(list) {
+    return '<section class="ad-block">' +
+      '<h3 class="ad-block__title">Aperçus générés' +
+        (list.length ? ' <span class="ad-block__count">' + list.length + '</span>' : '') + '</h3>' +
+      (list.length
+        ? '<div class="ad-prem__grille">' + list.map((a) =>
+            '<figure class="ad-prem__vig">' +
+              (a.url
+                ? '<a href="' + esc(a.url) + '" target="_blank" rel="noopener">' +
+                    '<img src="' + esc(a.url) + '" alt="Aperçu de ' + esc(a.client.name) + '" loading="lazy">' +
+                  '</a>'
+                : '<div class="ad-prem__vig-vide">' + esc(a.error || a.status) + '</div>') +
+              '<figcaption>' +
+                '<strong>' + esc(a.client.name) + '</strong>' +
+                '<span>' + premiumDate(a.createdAt) +
+                  (a.ms ? ' \u00b7 ' + Math.round(a.ms / 1000) + ' s' : '') + '</span>' +
+                (a.pieces && a.pieces.length
+                  ? '<span class="ad-prem__ref">' + esc(a.pieces.length) + ' pièce' +
+                    (a.pieces.length > 1 ? 's' : '') + '</span>'
+                  : '') +
+              '</figcaption>' +
+            '</figure>').join('') + '</div>'
+        : '<p class="ad-note">Aucun aperçu généré pour l\u2019instant.</p>') +
+    '</section>';
+  }
+
+  function premiumRendre() {
+    if (!premiumData) return;
+    $('#adPremiumMeta').textContent =
+      'Moteur : ' + premiumData.provider +
+      ' \u00b7 ' + premiumData.offer.price + ' ' + premiumData.offer.currency +
+      ' pour ' + premiumData.offer.credits + ' aperçus';
+    $('#adPremiumBody').innerHTML =
+      premiumDemandes(premiumData.payments) +
+      premiumAcces(premiumData.access) +
+      premiumApercus(premiumData.previews);
+  }
+
+  async function premiumCharger() {
+    $('#adPremiumBody').innerHTML = '<p class="ad-note">Chargement\u2026</p>';
+    $('#adPremiumMeta').textContent = '';
+    try {
+      premiumData = await premiumCall('admin_overview');
+      premiumRendre();
+    } catch (err) {
+      premiumData = null;
+      $('#adPremiumBody').innerHTML = '<p class="ad-note">' + esc(
+        err.code === 'premium_not_configured'
+          ? 'L\u2019aperçu IA n\u2019est pas encore activé : exécutez sql/premium.sql et posez les clés dans Vercel.'
+          : err.message) + '</p>';
+    }
+  }
+
+  function openPremium() {
+    const modal = $('#adPremiumModal');
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('is-locked');
+    premiumCharger();
+  }
+
+  function closePremium() {
+    const modal = $('#adPremiumModal');
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('is-locked');
+  }
+
+  /* Les quatre gestes de l'atelier. Chacun redemande la liste après
+     coup : deux personnes peuvent valider en même temps, et l'écran
+     doit montrer l'état réel, pas celui qu'on espérait. */
+  async function premiumAction(quoi, el) {
+    const id = el.getAttribute('data-id');
+    const clientId = el.getAttribute('data-client');
+    try {
+      if (quoi === 'valider') {
+        const n = prompt('Combien d\u2019aperçus accorder ?', String(premiumData.offer.credits));
+        if (n === null) return;
+        await premiumCall('admin_validate', { paymentId: Number(id), credits: Number(n) });
+      } else if (quoi === 'refuser') {
+        const note = prompt('Motif du refus (facultatif) :', '');
+        if (note === null) return;
+        await premiumCall('admin_reject', { paymentId: Number(id), clientId: Number(clientId), note });
+      } else if (quoi === 'ajouter') {
+        const n = prompt('Combien d\u2019aperçus ajouter ?', String(premiumData.offer.credits));
+        if (n === null) return;
+        await premiumCall('admin_grant', { clientId: Number(clientId), credits: Number(n) });
+      } else if (quoi === 'retirer') {
+        if (!confirm('Retirer l\u2019accès à cette cliente ?')) return;
+        await premiumCall('admin_revoke', { clientId: Number(clientId) });
+      }
+      await premiumCharger();
+    } catch (err) {
+      alert(err.message);
+    }
   }
 
   function closeClients() {
@@ -1691,6 +1906,13 @@
       if (event.target.closest('[data-new-close]')) closeNewOrder();
     });
 
+    $('#adPremium').addEventListener('click', openPremium);
+    $('#adPremiumModal').addEventListener('click', (event) => {
+      if (event.target.closest('[data-premium-close]')) { closePremium(); return; }
+      const geste = event.target.closest('[data-prem]');
+      if (geste) premiumAction(geste.getAttribute('data-prem'), geste);
+    });
+
     $('#adClients').addEventListener('click', openClients);
     $('#adClientsModal').addEventListener('click', (event) => {
       if (event.target.closest('[data-clients-close]')) closeClients();
@@ -1747,7 +1969,7 @@
       event.preventDefault();
       const value = $('#adPass').value;
       if (value === PASSWORD) {
-        rememberSession();
+        rememberSession(value);
         openApp();
         return;
       }
