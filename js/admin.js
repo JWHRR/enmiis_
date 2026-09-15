@@ -851,6 +851,7 @@
     if (!res.ok) {
       const err = new Error((data && data.message) || (data && data.error) || 'Erreur');
       err.code = data && data.error;
+      err.hint = data && data.hint;
       throw err;
     }
     return data;
@@ -1015,10 +1016,11 @@
       premiumRendre();
     } catch (err) {
       premiumData = null;
-      $('#adPremiumBody').innerHTML = '<p class="ad-note">' + esc(
-        err.code === 'premium_not_configured'
-          ? 'L\u2019aperçu IA n\u2019est pas encore activé : exécutez sql/premium.sql et posez les clés dans Vercel.'
-          : err.message) + '</p>';
+      /* Le conseil du serveur vaut mieux qu'un message ecrit ici : il
+         sait, lui, ce qui manque exactement. */
+      $('#adPremiumBody').innerHTML =
+        '<p class="ad-note"><strong>' + esc(err.message) + '</strong></p>' +
+        (err.hint ? '<p class="ad-note">' + esc(err.hint) + '</p>' : '');
     }
   }
 

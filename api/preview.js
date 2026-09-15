@@ -821,6 +821,14 @@ async function atelierRetirer(body) {
    Aiguillage
    ========================================================== */
 
+/* PostgREST annonce une table inconnue par le code PGRST205, ou par ce
+   message quand le cache de schema n'a pas encore ete rafraichi. */
+function tablesAbsentes(message) {
+  return /PGRST205/.test(message)
+    || /Could not find the table/i.test(message)
+    || /relation .* does not exist/i.test(message);
+}
+
 const ACTIONS = {
   status: etat,
   payment: demanderAcces,
@@ -867,7 +875,22 @@ module.exports = async (req, res) => {
     const out = await action(body);
     res.status(out.code).json(out.payload);
   } catch (err) {
-    console.error('[ENMIIS Aperçu IA]', err && err.message ? err.message : err);
+    const message = (err && err.message) || String(err);
+    console.error('[ENMIIS Aperçu IA]', message);
+
+    /* Le cas de loin le plus frequent au demarrage : les tables ne sont
+       pas encore creees. PostgREST repond 404 et l'on rendait « Service
+       indisponible » — exact, et parfaitement inutile. On dit quoi
+       faire. */
+    if (tablesAbsentes(message)) {
+      res.status(503).json({
+        error: 'premium_not_configured',
+        message: 'L’aperçu IA n’est pas encore activé : les tables n’existent pas.',
+        hint: 'Supabase → SQL Editor → exécutez sql/premium.sql, puis rouvrez cette fenêtre.',
+      });
+      return;
+    }
+
     res.status(502).json({ error: 'server_error', message: 'Service indisponible, réessayez.' });
   }
 };
