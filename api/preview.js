@@ -725,6 +725,9 @@ async function atelierVue(body) {
     payload: {
       offer: { price: PRICE, currency: 'TND', credits: CREDITS_PAR_ACHAT, days: JOURS_VALIDITE },
       provider: PROVIDER,
+      /* Pour ouvrir un acces a une cliente qui n'a rien demande : sans
+         cette liste, l'atelier n'aurait personne a designer. */
+      clients: clients,
       payments: paiements.map((p) => Object.assign({ client: nommer(p.client_id) }, p)),
       access: acces.map((a) => Object.assign({ client: nommer(a.client_id) }, a)),
       previews: await Promise.all(apercus.map(async (a) => ({

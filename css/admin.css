@@ -1079,3 +1079,29 @@ select.ad-input {
   .ad-prem__row { grid-template-columns: 1fr; }
   .ad-prem__do { justify-content: flex-start; }
 }
+
+/* Ouvrir un accès : trois champs sur une ligne, la cliente d'abord. */
+.ad-prem__forme {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 90px auto;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.6rem;
+}
+.ad-prem__forme select,
+.ad-prem__forme input {
+  width: 100%;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--white);
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  color: var(--ink);
+}
+.ad-prem__forme select:focus,
+.ad-prem__forme input:focus { outline: none; border-color: var(--gold); }
+
+@media (max-width: 720px) {
+  .ad-prem__forme { grid-template-columns: 1fr; }
+}

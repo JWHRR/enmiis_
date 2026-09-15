@@ -931,6 +931,43 @@
     '</section>';
   }
 
+  /* Ouvrir un acces sans passer par une demande de paiement : pour une
+     cliente qui a regle de la main a la main, ou a qui l'on offre le
+     service. Le serveur acceptait deja ; il manquait le geste. */
+  function premiumOuvrir(clients, acces) {
+    const ouverts = {};
+    (acces || []).forEach((a) => { if (a.active) ouverts[a.client_id] = a.credits; });
+
+    if (!clients || !clients.length) {
+      return '<section class="ad-block">' +
+        '<h3 class="ad-block__title">Ouvrir un accès</h3>' +
+        '<p class="ad-note">Aucun compte client pour le moment. ' +
+        'L’accès se donne à une cliente inscrite sur le site.</p>' +
+      '</section>';
+    }
+
+    const tries = clients.slice().sort((x, y) =>
+      String(x.name || '').localeCompare(String(y.name || ''), 'fr'));
+
+    return '<section class="ad-block ad-prem__ouvrir">' +
+      '<h3 class="ad-block__title">Ouvrir un accès</h3>' +
+      '<p class="ad-note">Sans attendre de demande — pour un paiement reçu ' +
+        'autrement, ou pour offrir le service.</p>' +
+      '<div class="ad-prem__forme">' +
+        '<select id="adPremQui" aria-label="Choisir la cliente">' +
+          tries.map((c) => '<option value="' + esc(c.id) + '">' +
+            esc(c.name || ('Compte ' + c.id)) +
+            (c.phone ? ' · ' + esc(c.phone) : '') +
+            (ouverts[c.id] !== undefined ? ' — déjà ' + esc(ouverts[c.id]) + ' aperçu(s)' : '') +
+          '</option>').join('') +
+        '</select>' +
+        '<input type="number" id="adPremCombien" min="1" max="99" ' +
+          'value="' + esc(premiumData.offer.credits) + '" aria-label="Nombre d’aperçus">' +
+        '<button type="button" class="btn btn--solid ad-prem__btn" data-prem="ouvrir">Ouvrir</button>' +
+      '</div>' +
+    '</section>';
+  }
+
   function premiumApercus(list) {
     return '<section class="ad-block">' +
       '<h3 class="ad-block__title">Aperçus générés' +
@@ -966,6 +1003,7 @@
     $('#adPremiumBody').innerHTML =
       premiumDemandes(premiumData.payments) +
       premiumAcces(premiumData.access) +
+      premiumOuvrir(premiumData.clients, premiumData.access) +
       premiumApercus(premiumData.previews);
   }
 
@@ -1018,6 +1056,11 @@
         const n = prompt('Combien d\u2019aperçus ajouter ?', String(premiumData.offer.credits));
         if (n === null) return;
         await premiumCall('admin_grant', { clientId: Number(clientId), credits: Number(n) });
+      } else if (quoi === 'ouvrir') {
+        const qui = Number($('#adPremQui').value);
+        const combien = Number($('#adPremCombien').value);
+        if (!qui || !(combien > 0)) { alert('Choisissez une cliente et un nombre d’aperçus.'); return; }
+        await premiumCall('admin_grant', { clientId: qui, credits: combien });
       } else if (quoi === 'retirer') {
         if (!confirm('Retirer l\u2019accès à cette cliente ?')) return;
         await premiumCall('admin_revoke', { clientId: Number(clientId) });
