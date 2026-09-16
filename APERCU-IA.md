@@ -23,6 +23,7 @@ Trois tables verrouillées et un dépôt d'images privé.
 | `AI_PROVIDER` | non | `gemini`, `fal` ou `mock` |
 | `GEMINI_API_KEY` | si `gemini` | |
 | `FAL_KEY` | si `fal` | |
+| `AI_MODEL` | non | impose un nom de modèle ; sinon celui par défaut du fournisseur |
 | `SITE_URL` | recommandé | `https://votre-domaine` — sert à joindre les photos d'atelier |
 | `PREMIUM_TIERS` | non | `2,5,10` — les paliers d'essais proposés |
 | `PREMIUM_UNIT_PRICE` | non | 1 dinar par essai |

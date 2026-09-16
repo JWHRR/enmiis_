@@ -23,6 +23,8 @@
         AI_PROVIDER                 gemini | fal | mock
         GEMINI_API_KEY              si AI_PROVIDER=gemini
         FAL_KEY                     si AI_PROVIDER=fal
+        AI_MODEL                    facultatif : impose un nom de modele
+                                    (sinon celui par defaut du fournisseur)
         SITE_URL                    https://votre-domaine (photos de référence)
         PREMIUM_TIERS               2,5,10 (paliers d'essais proposés)
         PREMIUM_UNIT_PRICE          1   (dinars par essai)
@@ -435,7 +437,7 @@ const MODELES = {
     async generer(texte, images, modele) {
       const cle = process.env.FAL_KEY;
       if (!cle) throw new Error('FAL_KEY absente');
-      const nom = modele || process.env.FAL_MODEL || MODELES.fal.defaut;
+      const nom = modele || MODELES.fal.defaut;
 
       const res = await fetch('https://fal.run/' + nom, {
         method: 'POST',
@@ -661,7 +663,10 @@ async function generer(body) {
     const moteur = MODELES[PROVIDER] || MODELES.mock;
     const images = await imagesDeReference(items, portrait);
     const texte = consigne(items);
-    const rendu = await moteur.generer(texte, images, body.model);
+    /* Le nom du modele vient de l'environnement, jamais du navigateur :
+       sinon une cliente pourrait reclamer un modele plus cher que celui
+       que l'atelier a choisi de payer. */
+    const rendu = await moteur.generer(texte, images, process.env.AI_MODEL || '');
 
     const dossier = String(cliente.id);
     const extension = rendu.mime.indexOf('svg') > -1 ? 'svg' : (rendu.mime.indexOf('jpeg') > -1 ? 'jpg' : 'png');
