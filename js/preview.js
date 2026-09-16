@@ -34,6 +34,7 @@
   let racine = null;
   let etat = null;
   let portrait = null;     /* { dataUrl, nom } */
+  let palier = 0;          /* nombre d'essais choisi, 0 = le plus petit */
   let occupe = false;
 
   /* ---------- Outils ---------- */
@@ -123,16 +124,41 @@
 
   /* ---------- Rendu ---------- */
 
+  /* Les paliers viennent du serveur : c'est lui qui fixe le prix, et
+     lui seul qui acceptera le nombre choisi ici. */
+  const paliers = () => ((etat && etat.offer && etat.offer.tiers) || []);
+  const devise = () => ((etat && etat.offer && etat.offer.currency) || 'TND');
+
+  function palierChoisi() {
+    const liste = paliers();
+    if (!liste.length) return null;
+    return liste.find((t) => t.credits === palier) || liste[0];
+  }
+
   function offre() {
-    const o = (etat && etat.offer) || { price: 29, currency: 'TND', credits: 5 };
-    return '<div class="ia-offer">' +
-      '<p class="ia-offer__price"><strong>' + esc(o.price) + '</strong> ' + esc(o.currency) + '</p>' +
-      '<p class="ia-offer__credits">' + esc(o.credits) + ' aperçus' +
-        (o.days > 0 ? ' · valables ' + esc(o.days) + ' jours' : '') + '</p>' +
-    '</div>';
+    const liste = paliers();
+    if (!liste.length) return '';
+    const choisi = palierChoisi();
+    const o = etat.offer;
+
+    return '<div class="ia-tiers" role="group" aria-label="Choisir le nombre d’essais">' +
+      liste.map((t) => {
+        const actif = t.credits === choisi.credits;
+        return '<button type="button" class="ia-tier' + (actif ? ' is-active' : '') + '"' +
+          ' data-ia="palier" data-n="' + esc(t.credits) + '" aria-pressed="' + actif + '">' +
+          '<span class="ia-tier__n">' + esc(t.credits) + '</span>' +
+          '<span class="ia-tier__l">essai' + (t.credits > 1 ? 's' : '') + '</span>' +
+          '<span class="ia-tier__p">' + esc(t.price) + ' ' + esc(o.currency) + '</span>' +
+        '</button>';
+      }).join('') +
+    '</div>' +
+    '<p class="ia-note ia-tiers__note">' + esc(o.unit) + ' ' + esc(o.currency) + ' l’essai · ' +
+      esc(o.min) + ' au minimum' +
+      (o.days > 0 ? ' · valables ' + esc(o.days) + ' jours' : '') + '</p>';
   }
 
   function ecranPaiement() {
+    const choisi = palierChoisi();
     return '<div class="ia-pay">' +
       '<p class="ia-lead">Déposez une photo de votre visage : nous vous montrons portant exactement la ' +
         'tenue que vous venez de composer, couleurs et finitions comprises.</p>' +
@@ -148,7 +174,8 @@
         '<input class="cz-input" id="iaRef" type="text" maxlength="120" ' +
           'placeholder="Numéro de transaction, ou les 4 derniers chiffres">' +
       '</div>' +
-      '<button type="button" class="btn btn--solid ia-btn" data-ia="payer">J’ai payé — demander l’accès</button>' +
+      '<button type="button" class="btn btn--solid ia-btn" data-ia="payer">' +
+        'J’ai payé ' + esc(choisi ? choisi.price + ' ' + devise() : '') + ' — demander l’accès</button>' +
       '<p class="ia-note">L’atelier vérifie puis ouvre l’accès sur votre compte. Vous serez prévenue ici même.</p>' +
     '</div>';
   }
@@ -268,8 +295,12 @@
   async function payer() {
     const champ = document.getElementById('iaRef');
     const reference = champ ? champ.value.trim() : '';
+    const choisi = palierChoisi();
     try {
-      const out = await appel('payment', { reference });
+      const out = await appel('payment', {
+        reference,
+        credits: choisi ? choisi.credits : undefined,
+      });
       toast(out.message || 'Demande envoyée.');
       await charger();
     } catch (err) {
@@ -364,7 +395,8 @@
       const el = ev.target.closest('[data-ia]');
       if (!el) return;
       const quoi = el.getAttribute('data-ia');
-      if (quoi === 'payer') payer();
+      if (quoi === 'palier') { palier = Number(el.getAttribute('data-n')); rendre(); }
+      else if (quoi === 'payer') payer();
       else if (quoi === 'rafraichir') charger();
       else if (quoi === 'generer') generer();
       else if (quoi === 'supprimer') supprimer(el.getAttribute('data-id'));

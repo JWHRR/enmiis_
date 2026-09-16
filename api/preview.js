@@ -24,8 +24,8 @@
         GEMINI_API_KEY              si AI_PROVIDER=gemini
         FAL_KEY                     si AI_PROVIDER=fal
         SITE_URL                    https://votre-domaine (photos de référence)
-        PREMIUM_PRICE               29  (dinars, affiché à la cliente)
-        PREMIUM_CREDITS             5   (générations par achat)
+        PREMIUM_TIERS               2,5,10 (paliers d'essais proposés)
+        PREMIUM_UNIT_PRICE          1   (dinars par essai)
         PREMIUM_DAYS                365 (0 = sans expiration)
 
    Sans clé d'IA, le service tourne en mode « mock » : tout le parcours
@@ -47,9 +47,35 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'enmiis987';
 const BUCKET = 'apercus-ia';
 const PROVIDER = (process.env.AI_PROVIDER || (process.env.GEMINI_API_KEY ? 'gemini' : 'mock')).toLowerCase();
 
-const PRICE = Number(process.env.PREMIUM_PRICE || 29);
-const CREDITS_PAR_ACHAT = Number(process.env.PREMIUM_CREDITS || 5);
+/* Un essai vaut un dinar, et l'on n'en vend pas moins de deux. Trois
+   paliers seulement : choisir entre trois chiffres ronds est plus
+   simple que de taper un nombre, et l'atelier sait d'avance ce qu'il
+   doit voir arriver. */
+const PRIX_UNITAIRE = Number(process.env.PREMIUM_UNIT_PRICE || 1);
+const PALIERS = String(process.env.PREMIUM_TIERS || '2,5,10')
+  .split(',')
+  .map((n) => Math.round(Number(String(n).trim())))
+  .filter((n) => Number.isFinite(n) && n > 0)
+  .sort((a, b) => a - b);
+const MIN_ESSAIS = PALIERS.length ? PALIERS[0] : 2;
 const JOURS_VALIDITE = Number(process.env.PREMIUM_DAYS || 365);
+
+const prixDe = (essais) => Math.round(essais * PRIX_UNITAIRE * 100) / 100;
+
+const offre = () => ({
+  currency: 'TND',
+  unit: PRIX_UNITAIRE,
+  min: MIN_ESSAIS,
+  days: JOURS_VALIDITE,
+  tiers: PALIERS.map((n) => ({ credits: n, price: prixDe(n) })),
+});
+
+/* Le nombre demande vient du navigateur : on ne retient que s'il
+   correspond a un palier reellement propose. Sinon, le plus petit. */
+function palierDemande(brut) {
+  const n = Math.round(Number(brut));
+  return PALIERS.indexOf(n) > -1 ? n : MIN_ESSAIS;
+}
 
 /* Un portrait arrive déjà réduit par le navigateur. Cette borne est la
    dernière défense : Vercel refuse les corps au-delà de 4,5 Mo, et une
@@ -477,7 +503,7 @@ async function etat(body) {
     payload: {
       access: accesPublic(acces),
       pending: demandes.length > 0,
-      offer: { price: PRICE, currency: 'TND', credits: CREDITS_PAR_ACHAT, days: JOURS_VALIDITE },
+      offer: offre(),
       previews: await Promise.all(apercus.map(apercuPublic)),
     },
   };
@@ -514,6 +540,8 @@ async function demanderAcces(body) {
   const cliente = await clienteDuJeton(body.token);
   if (!cliente) return { code: 401, payload: { error: 'no_session' } };
 
+  const essais = palierDemande(body.credits);
+
   const ouvertes = await lire('premium_payments',
     'client_id=eq.' + cliente.id + '&status=eq.en_attente&select=id&limit=1');
   if (ouvertes.length) {
@@ -527,7 +555,8 @@ async function demanderAcces(body) {
     client_id: cliente.id,
     reference: String(body.reference || '').slice(0, 120),
     note: String(body.note || '').slice(0, 400),
-    amount: PRICE,
+    credits: essais,
+    amount: prixDe(essais),
     currency: 'TND',
     method: 'qr',
     status: 'en_attente',
@@ -723,7 +752,7 @@ async function atelierVue(body) {
   return {
     code: 200,
     payload: {
-      offer: { price: PRICE, currency: 'TND', credits: CREDITS_PAR_ACHAT, days: JOURS_VALIDITE },
+      offer: offre(),
       provider: PROVIDER,
       /* Pour ouvrir un acces a une cliente qui n'a rien demande : sans
          cette liste, l'atelier n'aurait personne a designer. */
@@ -782,7 +811,9 @@ async function atelierValider(body) {
     reviewed_at: new Date().toISOString(),
   }, 'id=eq.' + paiement.id);
 
-  const credits = Number(body.credits) > 0 ? Number(body.credits) : CREDITS_PAR_ACHAT;
+  /* Par defaut, exactement ce que la cliente a demande et paye. */
+  const credits = Number(body.credits) > 0 ? Math.round(Number(body.credits))
+    : (Number(paiement.credits) > 0 ? Number(paiement.credits) : MIN_ESSAIS);
   const jours = body.days === undefined ? JOURS_VALIDITE : Number(body.days);
   await ouvrirAcces(paiement.client_id, credits, jours);
 
@@ -803,7 +834,7 @@ async function atelierRefuser(body) {
 
 async function atelierAccorder(body) {
   if (!atelierAutorise(body)) return { code: 401, payload: { error: 'forbidden' } };
-  const credits = Number(body.credits) > 0 ? Number(body.credits) : CREDITS_PAR_ACHAT;
+  const credits = Number(body.credits) > 0 ? Math.round(Number(body.credits)) : MIN_ESSAIS;
   const jours = body.days === undefined ? JOURS_VALIDITE : Number(body.days);
   await ouvrirAcces(Number(body.clientId), credits, jours);
   return { code: 200, payload: { ok: true } };

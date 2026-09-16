@@ -44,6 +44,9 @@ create table if not exists premium_payments (
   reference   text not null default '',
   method      text not null default 'qr',
   amount      numeric(10, 2),
+  -- Le palier demande par la cliente : 2, 5 ou 10 essais. L'atelier
+  -- n'accorde par defaut que ce qui a ete paye.
+  credits     integer not null default 0,
   currency    text not null default 'TND',
   -- en_attente | valide | refuse
   status      text not null default 'en_attente',
@@ -55,6 +58,11 @@ create table if not exists premium_payments (
 
 create index if not exists premium_payments_status_idx
   on premium_payments (status, created_at desc);
+
+-- Mise a niveau d'une installation anterieure aux paliers : « create
+-- table if not exists » ne touche pas une table qui existe deja.
+alter table premium_payments
+  add column if not exists credits integer not null default 0;
 
 -- ------------------------------------------------------------
 -- 3. Les aperçus générés

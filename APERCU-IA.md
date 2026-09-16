@@ -24,8 +24,8 @@ Trois tables verrouillées et un dépôt d'images privé.
 | `GEMINI_API_KEY` | si `gemini` | |
 | `FAL_KEY` | si `fal` | |
 | `SITE_URL` | recommandé | `https://votre-domaine` — sert à joindre les photos d'atelier |
-| `PREMIUM_PRICE` | non | 29 par défaut |
-| `PREMIUM_CREDITS` | non | 5 générations par achat |
+| `PREMIUM_TIERS` | non | `2,5,10` — les paliers d'essais proposés |
+| `PREMIUM_UNIT_PRICE` | non | 1 dinar par essai |
 | `PREMIUM_DAYS` | non | 365 ; mettre 0 pour ne jamais expirer |
 
 **3. Le QR.** Déposez votre QR de paiement dans
@@ -102,7 +102,7 @@ publiable qui figure dans le code du navigateur ne peut rien y lire.
 | Table | Rôle | Colonnes notables |
 |---|---|---|
 | `premium_access` | le droit, une ligne par cliente | `active`, `credits`, `expiration_date` |
-| `premium_payments` | les demandes à valider | `reference`, `status`, `admin_note` |
+| `premium_payments` | les demandes à valider | `reference`, `credits`, `amount`, `status` |
 | `ai_previews` | les aperçus | `cart_snapshot`, `portrait_path`, `result_path`, `cost_usd`, `ms` |
 
 Le dépôt `apercus-ia` est privé. Les images ne sont servies que par des
@@ -122,7 +122,7 @@ Branchez-la sur un cron Supabase.
 | Action | Rend |
 |---|---|
 | `status` | accès, crédits, offre, demande en cours, 12 derniers aperçus |
-| `payment` | enregistre une demande ; une seconde ne crée pas de doublon |
+| `payment` | enregistre une demande avec son palier ; une seconde ne crée pas de doublon |
 | `generate` | l'aperçu, ou 402 si le droit manque |
 | `delete` | efface la ligne **et** les deux fichiers |
 
@@ -131,12 +131,31 @@ Branchez-la sur un cron Supabase.
 | Action | Effet |
 |---|---|
 | `admin_overview` | paiements, accès, aperçus, avec les noms |
-| `admin_validate` | valide et ouvre l'accès |
+| `admin_validate` | valide et ouvre l'accès, sur le palier payé par défaut |
 | `admin_reject` | refuse |
 | `admin_grant` | ouvre à la main, sans paiement |
 | `admin_revoke` | ferme |
 
 Un rachat **s'ajoute** au reliquat au lieu de l'écraser.
+
+### Les paliers
+
+Un essai vaut un dinar, et l'on n'en vend pas moins de deux.
+
+| Palier | Prix |
+|---|---|
+| 2 essais | 2 TND |
+| 5 essais | 5 TND |
+| 10 essais | 10 TND |
+
+La cliente choisit avant de payer ; le bouton annonce alors la somme
+exacte. Le serveur n'accepte que les paliers qu'il propose : un nombre
+inventé retombe sur le plus petit. L'atelier voit le palier payé sur la
+demande, et la fenêtre de validation le propose d'office — il n'y a rien
+à retaper.
+
+Pour changer les paliers ou le prix unitaire, posez `PREMIUM_TIERS` et
+`PREMIUM_UNIT_PRICE` dans Vercel. Rien à toucher dans le code.
 
 ---
 
@@ -219,8 +238,9 @@ correctement, parce que la photographie d'atelier est jointe.
 Une broderie fine, un logo d'université, un texte brodé : non. Aucun
 modèle actuel ne reproduit un texte brodé au caractère près. Annoncez
 l'aperçu comme un aperçu, pas comme un bon à tirer. C'est aussi
-pourquoi le service se vend par crédits : une cliente relance deux ou
-trois fois avant d'obtenir ce qu'elle veut.
+pourquoi le service se vend par essais, et pas à l'unité : une cliente
+relance deux ou trois fois avant d'obtenir ce qu'elle veut. C'est la
+raison du minimum de deux.
 
 ---
 
@@ -235,9 +255,10 @@ Ordres de grandeur, à confronter aux tarifs du jour.
 | Dépôt Supabase (2 images) | négligeable |
 | Fonction Vercel | négligeable |
 
-À 0,04 $ l'image et cinq crédits par achat, un forfait coûte environ
-0,20 $ de modèle. Vendu 29 TND, la marge est large même en tenant
-compte des relances.
+À 0,04 $ l'image, un essai coûte environ 0,04 $ de modèle et se vend
+1 TND, soit à peu près 0,32 $. La marge tient même si une cliente
+relance plusieurs fois : le palier de 10 essais coûte 0,40 $ de modèle
+pour 10 TND encaissés.
 
 | Volume mensuel | Coût modèle |
 |---|---|

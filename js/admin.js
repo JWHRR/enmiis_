@@ -875,13 +875,14 @@
       '</div>' +
       '<div class="ad-prem__meta">' +
         '<span>' + premiumDate(p.created_at) + '</span>' +
-        '<span>' + esc(p.amount || '\u2014') + ' ' + esc(p.currency) + '</span>' +
+        '<span>' + esc(p.amount || '\u2014') + ' ' + esc(p.currency) +
+          (p.credits > 0 ? ' \u00b7 ' + esc(p.credits) + ' essais' : '') + '</span>' +
         '<span class="ad-prem__ref">' + esc(p.reference || 'sans référence') + '</span>' +
       '</div>' +
       (p.status === 'en_attente'
         ? '<div class="ad-prem__do">' +
             '<button type="button" class="btn btn--solid ad-prem__btn" data-prem="valider" ' +
-              'data-id="' + esc(p.id) + '">Valider</button>' +
+              'data-id="' + esc(p.id) + '" data-credits="' + esc(p.credits || '') + '">Valider</button>' +
             '<button type="button" class="btn btn--line ad-prem__btn" data-prem="refuser" ' +
               'data-id="' + esc(p.id) + '" data-client="' + esc(p.client_id) + '">Refuser</button>' +
           '</div>'
@@ -914,7 +915,7 @@
               '<div class="ad-prem__who"><strong>' + esc(a.client.name) + '</strong>' +
                 (a.client.phone ? '<span>' + esc(a.client.phone) + '</span>' : '') + '</div>' +
               '<div class="ad-prem__meta">' +
-                '<span>' + esc(a.credits) + ' aperçu' + (a.credits > 1 ? 's' : '') + '</span>' +
+                '<span>' + esc(a.credits) + ' essai' + (a.credits > 1 ? 's' : '') + '</span>' +
                 '<span>depuis le ' + premiumDate(a.purchase_date) + '</span>' +
                 '<span' + (perime ? ' class="ad-prem__ref"' : '') + '>' +
                   (a.expiration_date ? (perime ? 'expiré le ' : 'jusqu\u2019au ') + premiumDate(a.expiration_date)
@@ -922,7 +923,7 @@
               '</div>' +
               '<div class="ad-prem__do">' +
                 '<button type="button" class="btn btn--line ad-prem__btn" data-prem="ajouter" ' +
-                  'data-client="' + esc(a.client_id) + '">+ crédits</button>' +
+                  'data-client="' + esc(a.client_id) + '">+ essais</button>' +
                 '<button type="button" class="btn btn--line ad-prem__btn ad-prem__btn--out" data-prem="retirer" ' +
                   'data-client="' + esc(a.client_id) + '">Retirer</button>' +
               '</div>' +
@@ -963,7 +964,7 @@
           '</option>').join('') +
         '</select>' +
         '<input type="number" id="adPremCombien" min="1" max="99" ' +
-          'value="' + esc(premiumData.offer.credits) + '" aria-label="Nombre d’aperçus">' +
+          'value="' + esc(premiumData.offer.min) + '" aria-label="Nombre d’essais">' +
         '<button type="button" class="btn btn--solid ad-prem__btn" data-prem="ouvrir">Ouvrir</button>' +
       '</div>' +
     '</section>';
@@ -997,10 +998,11 @@
 
   function premiumRendre() {
     if (!premiumData) return;
+    const o = premiumData.offer;
     $('#adPremiumMeta').textContent =
       'Moteur : ' + premiumData.provider +
-      ' \u00b7 ' + premiumData.offer.price + ' ' + premiumData.offer.currency +
-      ' pour ' + premiumData.offer.credits + ' aperçus';
+      ' \u00b7 ' + (o.tiers || []).map((t) => t.credits).join(', ') + ' essais' +
+      ' \u00b7 ' + o.unit + ' ' + o.currency + ' l\u2019essai';
     $('#adPremiumBody').innerHTML =
       premiumDemandes(premiumData.payments) +
       premiumAcces(premiumData.access) +
@@ -1047,7 +1049,9 @@
     const clientId = el.getAttribute('data-client');
     try {
       if (quoi === 'valider') {
-        const n = prompt('Combien d\u2019aperçus accorder ?', String(premiumData.offer.credits));
+        /* Par defaut, exactement le palier que la cliente a paye. */
+        const demande = Number(el.getAttribute('data-credits')) || premiumData.offer.min;
+        const n = prompt('Combien d\u2019essais accorder ?', String(demande));
         if (n === null) return;
         await premiumCall('admin_validate', { paymentId: Number(id), credits: Number(n) });
       } else if (quoi === 'refuser') {
@@ -1055,7 +1059,7 @@
         if (note === null) return;
         await premiumCall('admin_reject', { paymentId: Number(id), clientId: Number(clientId), note });
       } else if (quoi === 'ajouter') {
-        const n = prompt('Combien d\u2019aperçus ajouter ?', String(premiumData.offer.credits));
+        const n = prompt('Combien d\u2019essais ajouter ?', String(premiumData.offer.min));
         if (n === null) return;
         await premiumCall('admin_grant', { clientId: Number(clientId), credits: Number(n) });
       } else if (quoi === 'ouvrir') {
