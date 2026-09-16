@@ -552,6 +552,16 @@
     const own = document.getElementById('worksOwn');
     const ownCta = document.getElementById('worksOwnCta');
 
+    /* Deux pieces n'ont pas encore de creation photographiee. Plutot
+       qu'une grille blanche sans un mot, on le dit — et le bouton
+       « televerser » juste dessous garde un chemin ouvert. */
+    const vide = document.getElementById('worksEmpty');
+    function syncVide(filter) {
+      if (!vide) return;
+      const visibles = cards.filter((c) => filter === 'all' || c.dataset.category === filter);
+      vide.hidden = visibles.length > 0;
+    }
+
     function syncOwn(filter) {
       if (!own || !ownCta) return;
       const entry = OWN[filter];
@@ -573,10 +583,13 @@
           card.classList.toggle('is-hidden', !show);
         });
         syncOwn(filter);
+        syncVide(filter);
       });
     });
 
-    syncOwn((chips.find((c) => c.classList.contains('is-active')) || {}).dataset?.filter || 'all');
+    const depart = (chips.find((c) => c.classList.contains('is-active')) || {}).dataset?.filter || 'all';
+    syncOwn(depart);
+    syncVide(depart);
   }
 
   /* ----------------------------------------------------------
@@ -650,45 +663,6 @@
      Modal Zoom & Description — Créations Soutenance
      ---------------------------------------------------------- */
   const MODELS_DATA = {
-    '1': {
-      title: "Toge d’Excellence — Broderie Or & Logos Universitaires",
-      category: "Toges d'Apparat",
-      img: "img/soutenance/1.png",
-      desc: "Confectionnée dans notre gabardine de laine d'exception, cette tenue d'excellence se distingue par son tombé fluide, ses finitions dorées et ses broderies héraldiques sur mesure. Comprend le col en V avec double galon, les manches cloches sculptées, l'écharpe d'honneur ainsi que la personnalisation avec votre logo universitaire et le texte 'Félicitations Docteur'. Idéale pour les soutenances de thèse de médecine, pharmacie, droit et doctorats d'État.",
-      highlights: [
-        "Gabardine de laine noble & finitions satinées dorées",
-        "Broderie haute précision au fil métallisé",
-        "Écharpe d'honneur personnalisable nominative",
-        "Modèle officiel pour doctorats & soutenances"
-      ],
-      presetUrl: "customizer.html?preset=1"
-    },
-    '2': {
-      title: "Toge de Prestance — Finition Velours & Écharpe Satin",
-      category: "Toges de Soutenance",
-      img: "img/soutenance/2.png",
-      desc: "Incarnation du raffinement académique, cette toge associe la légèreté de la gabardine à la profondeur du velours noir. Dotée d'un mortier traditionnel ajusté avec gland torsadé et d'une écharpe brodée au fil d'or, elle offre une allure solennelle et élégante. Parfaitement adaptée pour marquer la réussite des diplômés lors de la cérémonie officielle.",
-      highlights: [
-        "Tissu satiné ultra-léger et agréable au porté",
-        "Col et rehausses en velours haute qualité",
-        "Mortier ajustable avec gland millésimé",
-        "Coupe élégante mixte convenant à toutes les statures"
-      ],
-      presetUrl: "customizer.html?preset=2"
-    },
-    '3': {
-      title: "Pack Soutenance Complète — Toge, Écharpe & Mortier",
-      category: "Coffret Soutenance",
-      img: "img/soutenance/3.png",
-      desc: "Le coffret ultime pour célébrer votre grand jour. Ce pack réunit votre tenue sur mesure (toge, mortier, écharpe brodée nominative avec votre nom, diplôme et date de soutenance) ainsi que le dossier de fabrication préparé par notre atelier. Conçu pour garantir un confort parfait durant votre présentation et des photos de diplôme inoubliables.",
-      highlights: [
-        "Ensemble complet sur mesure prêt pour le jour J",
-        "Écharpe nominative brodée (Nom, Spécialité & Date)",
-        "Inclus la housse de protection sérigraphiée ENMIIS",
-        "Livraison offerte & suivi dédié par notre atelier"
-      ],
-      presetUrl: "customizer.html?preset=3"
-    },
     /* Une seule vue : la bande de vignettes reste fermee d'elle-meme. */
     'cachecol-1': {
       title: "Cache-col Noir",

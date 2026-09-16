@@ -785,23 +785,6 @@
       'robe-2': { name: 'Design Robe Marine — Liseré Or (Photo de référence)',
                   src: 'img/designs/robe/robe-2-1.webp',
                   apply: { sleeve: 'modele-1', finish: 'mat', fabricColor: 'marine' } },
-      '1': { name: 'Modèle Toge d’Excellence #1 (Photo de référence)',
-             src: 'img/soutenance/1.png',
-             apply: { sleeve: 'modele-1', finish: 'mat', fabricColor: 'creme' } },
-      '2': { name: 'Modèle Toge de Prestance #2 (Photo de référence)',
-             src: 'img/soutenance/2.png',
-             apply: { sleeve: 'modele-2', finish: 'mat', fabricColor: 'noir' } },
-      '3': { name: 'Modèle Toge Marine #3 (Photo de référence)',
-             src: 'img/soutenance/3.png',
-             apply: { sleeve: 'modele-3', finish: 'mat', fabricColor: 'marine' } },
-    },
-    casquette: {
-      '1': { name: 'Mortier Classique (Photo de référence)',
-             src: 'img/cap.webp',
-             apply: { finish: 'mat', fabricColor: 'noir', ornement: 'aucun' } },
-      '2': { name: 'Mortier & Ornement Personnalisé (Photo de référence)',
-             src: 'img/tassel.webp',
-             apply: { finish: 'mat', fabricColor: 'noir', ornement: 'strass' } },
     },
     echarpe: {
       'cachecol-1': { name: 'Design Cache-col Noir (Photo de référence)',
@@ -810,12 +793,6 @@
       'cachecol-2': { name: 'Design Cache-col Noir — Liseré Ivoire (Photo de référence)',
                       src: 'img/designs/cache-col/cachecol-2-1.webp',
                       apply: { finish: 'mat', fabricColor: 'noir', contour: 'liseré' } },
-      '1': { name: 'Cache-col « Félicitations Dr » (Photo de référence)',
-             src: 'img/hood.webp',
-             apply: { finish: 'brillant', fabricColor: 'noir', contour: 'double' } },
-      '2': { name: 'Cache-col Nom & Date (Photo de référence)',
-             src: 'img/hood.webp',
-             apply: { finish: 'brillant', fabricColor: 'bordeaux', contour: 'simple' } },
     },
     /* Ces deux pieces n'ont pas d'ancien modele numerote : seuls leurs
        designs reels y figurent. */
@@ -835,8 +812,11 @@
   };
 
   async function applyPresetModel(id) {
-    const family = PRESETS[productId()] || PRESETS.robe;
-    const preset = family[id] || family['1'];
+    /* Chaque famille ne contient plus que des creations reelles. Un
+       identifiant inconnu ne pre-regle donc rien, au lieu de retomber
+       sur un modele qui n'existe plus. */
+    const family = PRESETS[productId()] || {};
+    const preset = family[id];
     if (!preset) return;
 
     /* Pré-règle les options de la pièce en cours selon le modèle. */
