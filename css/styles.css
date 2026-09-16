@@ -883,7 +883,7 @@ svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width:
 
 .category-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 .category-grid a {
   display: flex;
@@ -1686,7 +1686,7 @@ svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width:
   }
 
   .product-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 3rem 1.5rem;
   }
 
@@ -1853,7 +1853,7 @@ svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width:
   .collection-card--tall { grid-row: span 2; }
   .collection-card--wide { grid-column: span 2; }
 
-  .product-grid { grid-template-columns: repeat(4, 1fr); gap: 3.5rem 2rem; }
+  .product-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 3.5rem 2rem; }
 
   .experiences__grid { grid-template-columns: repeat(4, 1fr); gap: 2rem; }
 
@@ -1991,7 +1991,11 @@ svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width:
 
 .works-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  /* « minmax(0, 1fr) » et non « 1fr » : une piste 1fr ne descend jamais
+     sous la largeur minimale de son contenu, et la rangee de boutons,
+     en nowrap, imposait 334 px par carte. La grille depassait alors le
+     cadre de la page et tout le site glissait horizontalement. */
+  grid-template-columns: minmax(0, 1fr);
   gap: 2.25rem 1.25rem;
 }
 
@@ -2129,13 +2133,16 @@ svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width:
 
 .work-card__actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   margin-top: 0.8rem;
 }
 
 .work-card__btn-zoom,
 .work-card__btn-choose {
-  flex: 1;
+  /* Cote a cote tant qu'il y a la place, l'un sous l'autre sinon. */
+  flex: 1 1 8rem;
+  min-width: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;

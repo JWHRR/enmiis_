@@ -16,6 +16,10 @@
   'use strict';
 
   const TOKEN_KEY = 'enmiis-account-v1';
+  /* Le profil de la derniere session valide. Il ne sert qu'a peindre
+     l'ecran juste : le serveur reste seul juge, et revalide le jeton a
+     chaque appel. */
+  const PROFILE_KEY = 'enmiis-account-profile-v1';
   const CART_KEY = 'enmiis-cart-v1';
   const API = '/api/auth';
 
@@ -35,6 +39,26 @@
       if (value) localStorage.setItem(TOKEN_KEY, value);
       else localStorage.removeItem(TOKEN_KEY);
     } catch (err) { /* mode privé : la session vaut pour cet onglet */ }
+  }
+
+  /* ---------- Profil retenu ----------
+     Sans lui, la page s'ouvre sur « creez un compte » puis se corrige
+     un demi-seconde plus tard. Ce clignotement dit quelque chose de
+     faux a une cliente qui est connectee depuis des semaines. */
+
+  function cachedProfile() {
+    try {
+      const raw = localStorage.getItem(PROFILE_KEY);
+      const lu = raw ? JSON.parse(raw) : null;
+      return lu && lu.phone ? lu : null;
+    } catch (err) { return null; }
+  }
+
+  function cacheProfile(profile) {
+    try {
+      if (profile) localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+      else localStorage.removeItem(PROFILE_KEY);
+    } catch (err) { /* mode prive : on repartira du reseau */ }
   }
 
   /* ---------- Appels ---------- */
@@ -104,16 +128,25 @@
   }
 
   async function restore() {
-    if (!token()) { settle(null); return; }
+    if (!token()) { cacheProfile(null); settle(null); return; }
     try {
       const data = await call('session', { token: token() });
       mergeCart(data.cart);
+      cacheProfile(data.client);
       settle(data.client);
     } catch (err) {
-      /* Jeton expiré ou service coupé : on repart déconnecté sans
-         effacer le panier local. */
-      if (err.code === 'no_session') setToken('');
-      settle(null);
+      /* Le jeton est refusé : la session est bien finie, on oublie. */
+      if (err.code === 'no_session') {
+        setToken('');
+        cacheProfile(null);
+        settle(null);
+        return;
+      }
+      /* Service injoignable : la cliente est probablement toujours
+         connectée. La déclarer déconnectée l'inviterait à recréer un
+         compte qu'elle a déjà. On garde le profil connu ; toute action
+         qui demande le serveur echouera avec son propre message. */
+      settle(cachedProfile());
     }
   }
 
@@ -122,6 +155,7 @@
   async function register(fields) {
     const data = await call('register', fields);
     setToken(data.token);
+    cacheProfile(data.client);
     settle(data.client);
     await pushCart();
     return data.client;
@@ -132,12 +166,14 @@
     setToken(data.token);
     const profile = await call('session', { token: data.token }).catch(() => null);
     mergeCart(profile && profile.cart);
+    cacheProfile(data.client);
     settle(data.client);
     return data.client;
   }
 
   function logout() {
     setToken('');
+    cacheProfile(null);
     settle(null);
   }
 
@@ -151,6 +187,11 @@
     register, login, logout, whenReady, pushCart,
     current: () => client,
     isReady: () => ready,
+    /* Ce que l'on savait avant de demander au serveur : de quoi peindre
+       l'ecran tout de suite, a confirmer par whenReady. */
+    cached: cachedProfile,
+    /* Le profil connu, courant ou retenu. */
+    known: () => client || cachedProfile(),
   };
 
   /* Le panier change (ajout, retrait, commande envoyée) : on le

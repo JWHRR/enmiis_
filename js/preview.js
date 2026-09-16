@@ -400,6 +400,13 @@
       if (!cliente) { etat = null; rendre(); return; }
       charger();
     };
+
+    /* api/preview verifie le jeton lui-meme : inutile d'attendre que
+       la session soit revenue pour demander l'etat. Les deux appels
+       partent ensemble au lieu de se suivre, et le panneau est la au
+       moment ou la cliente arrive en bas de page. */
+    if (global.enmiisAccount.cached()) charger();
+
     global.enmiisAccount.whenReady(suivre);
     document.addEventListener('enmiis:account', (ev) => suivre(ev.detail && ev.detail.client));
   }

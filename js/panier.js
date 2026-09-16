@@ -140,6 +140,14 @@
 
   function renderExpiry() {
     const node = $('#pnExpiry');
+
+    /* Un panier porte par un compte ne tient pas a cet appareil : il
+       est sur le serveur. Annoncer un compte a rebours « sur cet
+       appareil » juste au-dessus de « vous le retrouverez sur tous vos
+       appareils » disait deux choses contraires. */
+    const compte = global.enmiisAccount && global.enmiisAccount.known();
+    if (compte) { node.hidden = true; return; }
+
     const ms = store.cartExpiresIn();
     if (!ms) { node.hidden = true; return; }
     const hours = Math.floor(ms / 3600000);
@@ -488,9 +496,19 @@
        réaffiche dès qu'elle est connue, sans faire attendre la page. */
     const account = global.enmiisAccount;
     if (account) {
+      /* On peint d'abord ce que l'on sait deja. Sans cela, la page
+         s'ouvre sur « creez un compte » et se corrige un demi-seconde
+         plus tard, sous les yeux d'une cliente qui a un compte. */
+      const connu = account.cached();
+      if (connu) {
+        renderAccount(connu);
+        prefillFromAccount(connu);
+        renderExpiry();
+      }
       account.whenReady((client) => {
         renderAccount(client);
         prefillFromAccount(client);
+        renderExpiry();
       });
     }
 
