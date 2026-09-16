@@ -1105,3 +1105,42 @@ select.ad-input {
 @media (max-width: 720px) {
   .ad-prem__forme { grid-template-columns: 1fr; }
 }
+
+/* La photographie du modele choisi, sur la fiche d'atelier. Un numero
+   ne se fabrique pas ; une image, si. */
+/* Une ligne ordinaire s'aligne sur la ligne de base du texte. Avec
+   une vignette, cette base tombe au bas de l'image et le libelle
+   glissait sous elle : ces lignes-la se centrent. */
+.ad-row--photo { align-items: center; }
+
+.ad-shot {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  text-decoration: none;
+  color: inherit;
+}
+.ad-shot picture {
+  display: block;
+  width: 56px;
+  flex: none;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  overflow: hidden;
+  background: #F4EFEA;
+  transition: border-color 0.2s ease;
+}
+.ad-shot img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+}
+.ad-shot:hover picture { border-color: var(--gold); }
+.ad-shot span { font-size: 0.82rem; }
+
+/* A l'impression, l'image ne sert a rien : le chemin du fichier est
+   ecrit sur la fiche texte. */
+@media print {
+  .ad-shot picture { display: none; }
+}

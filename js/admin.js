@@ -579,8 +579,31 @@
       return texte ? row(libelle, texte) : '';
     };
 
+    /* Manches, strass, fleurs : la cliente a choisi en regardant une
+       photographie, pas un numero. « Modele 4 » ne se fabrique pas ;
+       la photographie, si. On la remet donc sur la fiche, cliquable
+       pour l'ouvrir en grand. */
+    const rowPhoto = (libelle, liste, id) => {
+      if (id === undefined || id === null || id === '') return '';
+      const modele = cat.find(liste, id);
+      if (!modele) return row(libelle, String(id));
+      if (!modele.image) return row(libelle, modele.label);
+      return '<div class="ad-row ad-row--photo"><dt>' + esc(libelle) + '</dt><dd>' +
+        '<a class="ad-shot" href="' + esc(modele.image) + '" target="_blank" rel="noopener"' +
+          ' title="Ouvrir la photographie">' +
+          '<picture>' +
+            (modele.imageWebp
+              ? '<source srcset="' + esc(modele.imageWebp) + '" type="image/webp">' : '') +
+            '<img src="' + esc(modele.image) + '" alt="' + esc(modele.label) + '"' +
+              ' loading="lazy" decoding="async">' +
+          '</picture>' +
+          '<span>' + esc(modele.label) + '</span>' +
+        '</a>' +
+      '</dd></div>';
+    };
+
     if (item.robe) {
-      rows += siPresent(item.robe.sleeve, 'Manches', (v) => labelOf(cat.SLEEVES, v)) +
+      rows += rowPhoto('Manches', cat.SLEEVES, item.robe.sleeve) +
         siPresent(item.robe.finish, 'Aspect du tissu', (v) => labelOf(cat.FINISHES, v)) +
         siPresent(item.robe.fabric, 'Tissu (ancienne fiche)', (v) => labelOf(cat.FABRICS, v)) +
         siPresent(item.robe.fabricColor, 'Couleur du tissu', couleur) +
@@ -593,9 +616,9 @@
         siPresent(item.cap.fabricColor, 'Couleur du tissu', couleur) +
         siPresent(item.cap.ornement, 'Ornement', (v) => labelOf(cat.ORNEMENTS, v)) +
         (item.cap.ornement === 'strass'
-          ? siPresent(item.cap.strass, 'Modèle de strass', (v) => labelOf(cat.STRASS_MODELS, v)) : '') +
+          ? rowPhoto('Modèle de strass', cat.STRASS_MODELS, item.cap.strass) : '') +
         (item.cap.ornement === 'fleur'
-          ? siPresent(item.cap.fleur, 'Modèle de fleur', (v) => labelOf(cat.FLEUR_MODELS, v)) : '') +
+          ? rowPhoto('Modèle de fleur', cat.FLEUR_MODELS, item.cap.fleur) : '') +
         siPresent(item.cap.style, 'Forme (ancienne fiche)', (v) => labelOf(cat.CAP_STYLES, v)) +
         siPresent(item.cap.material, 'Matière (ancienne fiche)', (v) => labelOf(cat.CAP_MATERIALS, v)) +
         siPresent(item.cap.emb, 'Broderie du plateau') +
@@ -1303,8 +1326,17 @@
         if (texte) lines.push(libelle + ' : ' + texte);
       };
 
+      /* Sur le papier on ne peut pas montrer la photographie : on
+         ecrit ou la trouver, pour que l'atelier ouvre le bon fichier
+         sans avoir a deviner. */
+      const avecChemin = (liste) => (v) => {
+        const modele = cat.find(liste, v);
+        if (!modele) return String(v);
+        return modele.label + (modele.image ? ' — ' + modele.image : '');
+      };
+
       if (item.robe) {
-        ligne('Manches', item.robe.sleeve, (v) => labelOf(cat.SLEEVES, v));
+        ligne('Manches', item.robe.sleeve, avecChemin(cat.SLEEVES));
         ligne('Aspect du tissu', item.robe.finish, (v) => labelOf(cat.FINISHES, v));
         ligne('Tissu (ancienne fiche)', item.robe.fabric, (v) => labelOf(cat.FABRICS, v));
         ligne('Couleur du tissu', item.robe.fabricColor, couleurTxt);
@@ -1317,10 +1349,10 @@
         ligne('Couleur du tissu', item.cap.fabricColor, couleurTxt);
         ligne('Ornement', item.cap.ornement, (v) => labelOf(cat.ORNEMENTS, v));
         if (item.cap.ornement === 'strass') {
-          ligne('Modèle de strass', item.cap.strass, (v) => labelOf(cat.STRASS_MODELS, v));
+          ligne('Modèle de strass', item.cap.strass, avecChemin(cat.STRASS_MODELS));
         }
         if (item.cap.ornement === 'fleur') {
-          ligne('Modèle de fleur', item.cap.fleur, (v) => labelOf(cat.FLEUR_MODELS, v));
+          ligne('Modèle de fleur', item.cap.fleur, avecChemin(cat.FLEUR_MODELS));
         }
         ligne('Forme (ancienne fiche)', item.cap.style, (v) => labelOf(cat.CAP_STYLES, v));
         ligne('Matière (ancienne fiche)', item.cap.material, (v) => labelOf(cat.CAP_MATERIALS, v));
