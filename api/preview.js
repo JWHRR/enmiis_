@@ -418,7 +418,7 @@ const MODELES = {
           body: JSON.stringify({ contents: [{ parts }] }),
         },
       );
-      if (!res.ok) throw new Error('gemini ' + res.status + ' ' + (await res.text()).slice(0, 300));
+      if (!res.ok) throw new Error('gemini ' + res.status + ' ' + (await res.text()).slice(0, 700));
 
       const data = await res.json();
       const sorties = (((data.candidates || [])[0] || {}).content || {}).parts || [];
@@ -697,7 +697,10 @@ async function generer(body) {
     console.error('[ENMIIS Aperçu IA]', message);
     await ecrire('ai_previews', {
       status: 'echec',
-      error: message.slice(0, 400),
+      /* Assez long pour porter le diagnostic complet du fournisseur :
+         un quota refuse nomme la limite atteinte, et c'est la seule
+         chose qui dise quoi faire. */
+      error: message.slice(0, 900),
       ms: Date.now() - depart,
       completed_at: new Date().toISOString(),
     }, 'id=eq.' + ligne.id).catch(() => null);
