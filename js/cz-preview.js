@@ -139,6 +139,14 @@
     const visible = layers[front];
     const hidden = layers[1 - front];
     if (visible.getAttribute('src') === src) return;
+
+    /* Sans source, on efface au lieu de laisser la derniere image :
+       une image vide ne declenche aucun onload, et la piece precedente
+       resterait affichee. */
+    if (!src) {
+      layers.forEach((l) => { l.classList.remove('is-on'); l.removeAttribute('src'); });
+      return;
+    }
     hidden.onload = () => {
       visible.classList.remove('is-on');
       hidden.classList.add('is-on');
@@ -148,6 +156,7 @@
   }
 
   /* ---------- Caméra ---------- */
+  /* Rien a agrandir dans un cadre vide. */
   function applyCamera() {
     /* Le déplacement est borné pour que l’image ne quitte jamais le cadre. */
     const bound = (zoom - 1) * 50;
@@ -184,6 +193,8 @@
         el.doc.hidden = false;
         el.doc.textContent = file.label;
       }
+      el.frame.classList.remove('is-vide');
+      if (el.tools) el.tools.hidden = false;
       el.piece.textContent = 'Votre design';
       el.style.textContent = file.name;
     } else {
@@ -194,7 +205,16 @@
       const shot = PHOTOS[STEP_SHOT[currentStep]];
       el.frame.classList.remove('is-doc');
       el.doc.hidden = true;
-      setImage(shot ? shot.src : (produit.photo || 'img/robe.webp'));
+
+      /* Une piece sans silhouette neutre n'emprunte pas celle d'une
+         autre : le cadre reste vide, et son nom suffit a dire ce qui
+         se configure. Montrer une robe au-dessus d'une bande miss
+         etait pire que ne rien montrer. */
+      const source = shot ? shot.src : (produit.photo || '');
+      setImage(source);
+      el.frame.classList.toggle('is-vide', !source);
+      /* Les commandes de zoom n'ont plus d'objet sur un cadre vide. */
+      if (el.tools) el.tools.hidden = !source;
       el.piece.textContent = shot ? shot.piece : (produit.label || 'Votre tenue');
       el.style.textContent = shot ? '' : (produit.tagline || '');
     }
@@ -352,6 +372,7 @@
     el.frame = document.getElementById('czShotFrame');
     el.view = document.getElementById('czShotView');
     el.doc = document.getElementById('czShotDoc');
+    el.tools = document.querySelector('.cz-shot__tools');
     el.spec = document.getElementById('czSpec');
     el.spot = document.getElementById('czSpot');
     el.piece = document.getElementById('czShotPiece');

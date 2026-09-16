@@ -346,7 +346,9 @@
       label: 'Robe',
       the: 'la robe',
       cta: 'Configurer la robe',
-      photo: 'img/soutenance/1.png',
+      /* Silhouette neutre, sans couleur ni design : l'apercu ne doit
+         pas promettre un modele que la cliente n'a pas choisi. */
+      photo: 'img/robe.webp',
       tagline: 'Toge de soutenance',
       desc: 'Gabardine de laine noble, coupe sur mesure et broderie personnalisée au fil d’or.',
       steps: ['upload', 'robe', 'measure', 'review'],
@@ -387,7 +389,8 @@
       label: 'Cape',
       the: 'la cape',
       cta: 'Configurer la cape',
-      photo: 'img/soutenance/2.png',
+      /* Pas encore de silhouette neutre : l'apercu reste vide. */
+      photo: '',
       tagline: 'Cape de cérémonie',
       desc: 'Drapé long, doublure contrastée et finitions brodées selon votre modèle.',
       steps: ['upload', 'measure', 'review'],
@@ -399,7 +402,8 @@
       label: 'Cape américaine',
       the: 'la cape américaine',
       cta: 'Configurer la cape américaine',
-      photo: 'img/soutenance/3.png',
+      /* Pas encore de silhouette neutre : l'apercu reste vide. */
+      photo: '',
       tagline: 'Coupe américaine',
       desc: 'Tombé court et épaules marquées, dans l’esprit des remises de diplôme américaines.',
       steps: ['upload', 'capeam', 'measure', 'review'],
@@ -411,7 +415,8 @@
       label: 'Bond miss',
       the: 'le bond miss',
       cta: 'Configurer le bond miss',
-      photo: 'img/soutenance/1.png',
+      /* Pas encore de silhouette neutre : l'apercu reste vide. */
+      photo: '',
       tagline: 'Bande d’honneur',
       desc: 'Bande portée en écharpe, brodée à votre nom, votre promotion ou votre mention.',
       steps: ['upload', 'bande', 'measure', 'review'],

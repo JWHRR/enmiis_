@@ -1716,3 +1716,7 @@ body.is-added .cz-preview { display: none; }
   color: var(--ink-soft, #555);
   background: var(--off-white, #FAFAFA);
 }
+
+/* Aucune silhouette pour cette pièce : le cadre garde sa matière mais
+   ne montre rien, plutôt que d'emprunter le vêtement d'une autre. */
+.cz-shot__frame.is-vide { box-shadow: 0 1px 2px rgba(17, 17, 17, 0.06); }
